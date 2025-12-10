@@ -1,0 +1,36 @@
+<%= turbo_frame_tag "pull_request_list" do %>
+  <div class="divide-y divide-gray-200">
+    <% if @pull_requests.empty? %>
+      <div class="p-6 text-center text-gray-500">
+        <p>No merged pull requests found.</p>
+      </div>
+    <% else %>
+      <% @pull_requests.each do |pr| %>
+        <div class="p-4 hover:bg-gray-50">
+          <div class="flex items-start gap-3">
+            <img src="<%= pr[:user][:avatar_url] %>" alt="<%= pr[:user][:login] %>" class="w-8 h-8 rounded-full flex-shrink-0">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <%= link_to pr[:html_url], target: "_blank", class: "font-medium text-gray-900 hover:text-indigo-600 truncate" do %>
+                  <%= pr[:title] %>
+                <% end %>
+              </div>
+              <p class="text-sm text-gray-500">
+                #<%= pr[:number] %> merged <%= time_ago_in_words(pr[:merged_at]) %> ago by <%= pr[:user][:login] %>
+              </p>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <% if @has_more %>
+        <div class="p-4 text-center">
+          <%= link_to "Load more pull requests",
+              pull_requests_project_path(@project, page: @page + 1),
+              class: "text-indigo-600 hover:text-indigo-800",
+              data: { turbo_frame: "pull_request_list" } %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

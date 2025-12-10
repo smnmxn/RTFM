@@ -1,0 +1,51 @@
+<div id="<%= dom_id(project, :analysis) %>" class="bg-white shadow rounded-lg p-6 mb-6">
+  <div class="flex justify-between items-start">
+    <div>
+      <h3 class="text-lg font-semibold text-gray-900">Project Overview</h3>
+      <% if project.analysis_status == "completed" && project.project_overview.present? %>
+        <p class="mt-2 text-gray-600"><%= project.project_overview %></p>
+        <p class="mt-3 text-xs text-gray-500">
+          Last analyzed: <%= time_ago_in_words(project.analyzed_at) %> ago
+          <% if project.analysis_commit_sha.present? %>
+            · Commit: <code class="text-xs bg-gray-100 px-1 py-0.5 rounded"><%= project.analysis_commit_sha[0..7] %></code>
+          <% end %>
+        </p>
+      <% elsif project.analysis_status == "failed" %>
+        <p class="mt-2 text-sm text-red-600">
+          Analysis failed. Please try again.
+        </p>
+      <% elsif project.analysis_status == "running" || project.analysis_status == "pending" %>
+        <p class="mt-2 text-sm text-yellow-700">
+          <span class="inline-flex items-center">
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <%= project.analysis_status == "pending" ? "Analysis queued..." : "Analyzing repository..." %>
+          </span>
+        </p>
+      <% else %>
+        <p class="mt-2 text-sm text-gray-500">
+          Analyze this repository to generate an overview.
+        </p>
+      <% end %>
+    </div>
+    <div class="flex-shrink-0 ml-4">
+      <% if project.analysis_status == "running" || project.analysis_status == "pending" %>
+        <!-- No button while running -->
+      <% elsif project.analysis_status == "completed" %>
+        <%= button_to "Re-analyze", analyze_project_path(project),
+            class: "inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50",
+            data: { turbo_frame: "_top" } %>
+      <% elsif project.analysis_status == "failed" %>
+        <%= button_to "Retry", analyze_project_path(project),
+            class: "inline-flex items-center px-3 py-1.5 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700",
+            data: { turbo_frame: "_top" } %>
+      <% else %>
+        <%= button_to "Analyze", analyze_project_path(project),
+            class: "inline-flex items-center px-3 py-1.5 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700",
+            data: { turbo_frame: "_top" } %>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,163 @@
+require "open3"
+require "fileutils"
+require "json"
+require "timeout"
+
+class AnalyzeCodebaseJob < ApplicationJob
+  queue_as :analysis
+
+  # Longer timeout for analysis (10 minutes)
+  ANALYSIS_TIMEOUT = 600
+
+  def perform(project_id)
+    project = Project.find_by(id: project_id)
+    return unless project
+
+    user = project.user
+    return unless user&.github_token.present?
+
+    project.update!(analysis_status: "running")
+
+    begin
+      result = run_analysis(project, user)
+
+      if result[:success]
+        project.update!(
+          analysis_summary: result[:summary],
+          analysis_metadata: result[:metadata],
+          analysis_status: "completed",
+          analyzed_at: Time.current,
+          analysis_commit_sha: result[:commit_sha],
+          project_overview: result[:overview]
+        )
+        Rails.logger.info "[AnalyzeCodebaseJob] Analysis completed for project #{project.id}"
+      else
+        project.update!(analysis_status: "failed")
+        Rails.logger.error "[AnalyzeCodebaseJob] Analysis failed for project #{project.id}: #{result[:error]}"
+      end
+
+      # Broadcast update to the project page
+      broadcast_analysis_update(project)
+    rescue StandardError => e
+      project.update!(analysis_status: "failed")
+      Rails.logger.error "[AnalyzeCodebaseJob] Analysis error for project #{project.id}: #{e.message}"
+      raise e
+    end
+  end
+
+  private
+
+  def run_analysis(project, user)
+    # Create a temporary directory for output
+    output_dir = Rails.root.join("tmp", "analysis", "project_#{project.id}_#{Time.current.to_i}")
+    FileUtils.mkdir_p(output_dir)
+    # Make writable by container's non-root user
+    FileUtils.chmod(0777, output_dir)
+
+    begin
+      # Build the Docker image if needed (or assume it's pre-built)
+      docker_image = "shipshout/claude-analyzer:latest"
+
+      # Check if we need to build the image
+      build_docker_image_if_needed(docker_image)
+
+      # Run the Docker container
+      cmd = [
+        "docker", "run",
+        "--rm",
+        "-e", "GITHUB_REPO=#{project.github_repo}",
+        "-e", "GITHUB_TOKEN=#{user.github_token}",
+        "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
+        "-v", "#{output_dir}:/output",
+        "--network", "host",
+        docker_image
+      ]
+
+      Rails.logger.info "[AnalyzeCodebaseJob] Running Docker analysis for #{project.github_repo}"
+      Rails.logger.info "[AnalyzeCodebaseJob] Command: #{cmd.join(' ')}"
+
+      stdout, stderr, status = Timeout.timeout(ANALYSIS_TIMEOUT) do
+        Open3.capture3(*cmd)
+      end
+
+      Rails.logger.info "[AnalyzeCodebaseJob] Exit status: #{status.exitstatus}"
+      Rails.logger.info "[AnalyzeCodebaseJob] Stdout: #{stdout[0..500]}" if stdout.present?
+      Rails.logger.info "[AnalyzeCodebaseJob] Stderr: #{stderr[0..500]}" if stderr.present?
+
+      # Check what files were created
+      if Dir.exist?(output_dir)
+        files = Dir.entries(output_dir) - [".", ".."]
+        Rails.logger.info "[AnalyzeCodebaseJob] Output files: #{files.join(', ')}"
+      end
+
+      if status.success?
+        # Read the output files
+        summary = File.read(File.join(output_dir, "summary.md")).strip rescue nil
+        metadata_raw = File.read(File.join(output_dir, "metadata.json")).strip rescue nil
+        commit_sha = File.read(File.join(output_dir, "commit_sha.txt")).strip rescue nil
+        overview = File.read(File.join(output_dir, "overview.txt")).strip rescue nil
+
+        # Parse metadata JSON (strip markdown code fences if present)
+        metadata = begin
+          if metadata_raw.present?
+            # Remove ```json and ``` if Claude wrapped it in code fences
+            clean_json = metadata_raw
+              .gsub(/\A\s*```json\s*/i, "")
+              .gsub(/\s*```\s*\z/, "")
+              .strip
+            JSON.parse(clean_json)
+          end
+        rescue JSON::ParserError => e
+          Rails.logger.warn "[AnalyzeCodebaseJob] Failed to parse metadata JSON: #{e.message}"
+          Rails.logger.warn "[AnalyzeCodebaseJob] Raw metadata: #{metadata_raw[0..200]}"
+          nil
+        end
+
+        if summary.present?
+          {
+            success: true,
+            summary: summary,
+            metadata: metadata,
+            commit_sha: commit_sha,
+            overview: overview
+          }
+        else
+          { success: false, error: "No summary generated" }
+        end
+      else
+        { success: false, error: "Docker command failed: #{stderr}" }
+      end
+    ensure
+      # Cleanup temporary directory
+      FileUtils.rm_rf(output_dir)
+    end
+  end
+
+  def build_docker_image_if_needed(image_name)
+    # Check if image exists
+    stdout, _, status = Open3.capture3("docker", "images", "-q", image_name)
+
+    if stdout.strip.empty?
+      # Build the image
+      dockerfile_path = Rails.root.join("docker", "claude-analyzer")
+      Rails.logger.info "[AnalyzeCodebaseJob] Building Docker image #{image_name}"
+
+      _, stderr, status = Open3.capture3(
+        "docker", "build", "-t", image_name, dockerfile_path.to_s
+      )
+
+      unless status.success?
+        raise "Failed to build Docker image: #{stderr}"
+      end
+    end
+  end
+
+  def broadcast_analysis_update(project)
+    Turbo::StreamsChannel.broadcast_replace_to(
+      [ project, :analysis ],
+      target: ActionView::RecordIdentifier.dom_id(project, :analysis),
+      partial: "projects/analysis",
+      locals: { project: project }
+    )
+  end
+end
