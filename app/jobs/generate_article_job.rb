@@ -64,7 +64,7 @@ class GenerateArticleJob < ApplicationJob
     FileUtils.chmod(0777, output_dir)
 
     begin
-      docker_image = "shipshout/claude-analyzer:latest"
+      docker_image = "rtfm/claude-analyzer:latest"
       build_docker_image_if_needed(docker_image)
 
       # Write input files

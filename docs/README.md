@@ -1,4 +1,4 @@
-# Ship & Shout Documentation
+# RTFM Documentation
 
 ## Development Phases
 

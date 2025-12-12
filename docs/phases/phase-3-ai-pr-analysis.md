@@ -13,7 +13,7 @@ Added column to `updates` table:
 
 ### Docker Container Updates
 
-Extended the existing `shipshout/claude-analyzer:latest` image with:
+Extended the existing `rtfm/claude-analyzer:latest` image with:
 - New script `analyze_pr.sh` for PR analysis
 - Input directory `/input` for passing diff and context files
 
@@ -49,7 +49,7 @@ Rebuild the Docker image after Phase 3 deployment:
 
 ```bash
 cd docker/claude-analyzer
-docker build -t shipshout/claude-analyzer:latest .
+docker build -t rtfm/claude-analyzer:latest .
 ```
 
 ## How It Works
@@ -75,9 +75,9 @@ docker build -t shipshout/claude-analyzer:latest .
 
 ```json
 {
-  "project_name": "Ship Shout",
-  "project_overview": "Ship & Shout helps developers automatically...",
-  "analysis_summary": "# Ship Shout\n\n## Overview...",
+  "project_name": "RTFM",
+  "project_overview": "RTFM helps developers automatically...",
+  "analysis_summary": "# RTFM\n\n## Overview...",
   "tech_stack": ["ruby", "rails", "sqlite"],
   "key_patterns": ["MVC", "Service Objects"],
   "pr_number": 42,
@@ -114,7 +114,7 @@ To enable dark mode, navigate to Settings and click the "Dark Mode" toggle. Your
 
 Twitter/X optimized snippet (max 280 chars):
 ```
-New in Ship Shout: Dark mode is here! Switch between light and dark themes from your settings page for a more comfortable viewing experience.
+New in RTFM: Dark mode is here! Switch between light and dark themes from your settings page for a more comfortable viewing experience.
 ```
 
 ## Error Handling
@@ -132,7 +132,7 @@ New in Ship Shout: Dark mode is here! Switch between light and dark themes from 
 
 1. Ensure Docker image is built with new script:
    ```bash
-   docker build -t shipshout/claude-analyzer:latest docker/claude-analyzer/
+   docker build -t rtfm/claude-analyzer:latest docker/claude-analyzer/
    ```
 
 2. Create a test project with Phase 2.5 analysis completed

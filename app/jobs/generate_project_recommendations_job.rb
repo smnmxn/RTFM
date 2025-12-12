@@ -38,7 +38,7 @@ class GenerateProjectRecommendationsJob < ApplicationJob
     FileUtils.chmod(0777, output_dir)
 
     begin
-      docker_image = "shipshout/claude-analyzer:latest"
+      docker_image = "rtfm/claude-analyzer:latest"
       build_docker_image_if_needed(docker_image)
 
       # Write context file with project info and existing updates

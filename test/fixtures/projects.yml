@@ -1,8 +1,8 @@
 one:
   user: one
-  name: Ship Shout
-  slug: ship-shout
-  github_repo: alice/ship-shout
+  name: RTFM
+  slug: rtfm
+  github_repo: alice/rtfm
   webhook_secret: secret123
 
 two:

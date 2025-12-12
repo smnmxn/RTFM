@@ -17,7 +17,7 @@ Added columns to `projects` table:
 
 ### Docker Container
 
-Created a Docker image (`shipshout/claude-analyzer:latest`) that:
+Created a Docker image (`rtfm/claude-analyzer:latest`) that:
 1. Clones the repository using the user's GitHub token
 2. Runs Claude Code CLI to analyze the codebase
 3. Outputs a summary markdown file and structured JSON metadata
@@ -67,7 +67,7 @@ The Docker image is automatically built on first use. To manually build:
 
 ```bash
 cd docker/claude-analyzer
-docker build -t shipshout/claude-analyzer:latest .
+docker build -t rtfm/claude-analyzer:latest .
 ```
 
 ## How It Works

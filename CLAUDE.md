@@ -22,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Ship & Shout is a developer-first platform that automatically converts code changes into user-facing product communication. When a PR is merged on GitHub, the system analyzes the diff and generates changelog entries and social media snippets using AI.
+RTFM is a developer-first platform that automatically converts code changes into user-facing product communication. When a PR is merged on GitHub, the system analyzes the diff and generates changelog entries and social media snippets using AI.
 
 ## Tech Stack
 

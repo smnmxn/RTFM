@@ -5,7 +5,7 @@ draft_update:
   social_snippet: Dark mode is here!
   status: draft
   pull_request_number: 42
-  pull_request_url: https://github.com/alice/ship-shout/pull/42
+  pull_request_url: https://github.com/alice/rtfm/pull/42
 
 published_update:
   project: one
@@ -14,5 +14,5 @@ published_update:
   social_snippet: App is now 2x faster!
   status: published
   pull_request_number: 38
-  pull_request_url: https://github.com/alice/ship-shout/pull/38
+  pull_request_url: https://github.com/alice/rtfm/pull/38
   published_at: 2025-12-01 10:00:00

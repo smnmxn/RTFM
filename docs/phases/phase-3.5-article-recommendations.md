@@ -121,5 +121,5 @@ bin/rails test test/jobs/analyze_pull_request_job_test.rb
 - **Graceful Degradation**: If JSON parsing fails, `recommended_articles` is set to nil
 - **Docker Rebuild**: After deployment, rebuild the Docker image:
   ```bash
-  docker build -t shipshout/claude-analyzer:latest docker/claude-analyzer/
+  docker build -t rtfm/claude-analyzer:latest docker/claude-analyzer/
   ```

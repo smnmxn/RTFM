@@ -56,7 +56,7 @@ class AnalyzeCodebaseJob < ApplicationJob
 
     begin
       # Build the Docker image if needed (or assume it's pre-built)
-      docker_image = "shipshout/claude-analyzer:latest"
+      docker_image = "rtfm/claude-analyzer:latest"
 
       # Check if we need to build the image
       build_docker_image_if_needed(docker_image)

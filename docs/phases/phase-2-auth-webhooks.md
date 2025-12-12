@@ -27,7 +27,7 @@ Implemented GitHub OAuth authentication and webhook ingestion to receive PR merg
 1. Go to https://github.com/settings/developers
 2. Click **New OAuth App**
 3. Fill in:
-   - **Application name**: Ship & Shout (or your app name)
+   - **Application name**: RTFM (or your app name)
    - **Homepage URL**: `http://localhost:3000` (or your domain)
    - **Authorization callback URL**: `http://localhost:3000/auth/github/callback`
 4. Click **Register application**
