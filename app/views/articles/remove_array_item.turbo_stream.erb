@@ -1,0 +1,3 @@
+<%= turbo_stream.replace "article_#{@field}" do %>
+  <%= render "articles/editable/#{@field}", article: @article %>
+<% end %>

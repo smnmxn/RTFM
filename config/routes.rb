@@ -38,6 +38,22 @@ Rails.application.routes.draw do
     member do
       get :pull_requests
       post :analyze
+      post :generate_recommendations
+      post "pull_requests/:pr_number/analyze", to: "projects#analyze_pull_request", as: :analyze_pull_request
+    end
+    resources :recommendations, only: [] do
+      member do
+        post :reject
+        post :generate
+      end
+    end
+    resources :articles, only: [:show] do
+      member do
+        post :regenerate
+        patch :update_field
+        post :add_array_item
+        delete :remove_array_item
+      end
     end
   end
 

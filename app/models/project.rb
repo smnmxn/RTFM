@@ -3,6 +3,8 @@ class Project < ApplicationRecord
 
   belongs_to :user
   has_many :updates, dependent: :destroy
+  has_many :articles, dependent: :destroy
+  has_many :recommendations, dependent: :destroy
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true, format: { with: /\A[a-z0-9-]+\z/, message: "only allows lowercase letters, numbers, and hyphens" }

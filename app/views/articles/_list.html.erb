@@ -1,0 +1,24 @@
+<%= turbo_stream_from @project, :articles %>
+
+<div class="bg-white shadow rounded-lg mb-6">
+  <div class="px-6 py-4 border-b border-gray-200">
+    <h3 class="text-lg font-semibold text-gray-900">Generated Articles</h3>
+    <p class="mt-1 text-sm text-gray-500">
+      How-to guides generated from recommendations
+    </p>
+  </div>
+
+  <div id="articles-list">
+    <% if articles.any? %>
+      <div class="divide-y divide-gray-200">
+        <% articles.each do |article| %>
+          <%= render "articles/card", article: article %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="p-6 text-center text-gray-500">
+        No articles generated yet. Click "Generate" on a recommendation to create one.
+      </div>
+    <% end %>
+  </div>
+</div>

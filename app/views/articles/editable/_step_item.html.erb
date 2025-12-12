@@ -1,0 +1,64 @@
+<div class="border border-gray-200 rounded-lg p-4 group relative"
+     data-controller="array-edit"
+     data-array-edit-url-value="<%= project_article_path(article.project, article) %>"
+     data-array-edit-field-value="steps">
+
+  <div class="flex items-start gap-3">
+    <!-- Step Number Badge -->
+    <span class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-semibold text-sm">
+      <%= index + 1 %>
+    </span>
+
+    <div class="flex-1">
+      <!-- Step Title (editable) -->
+      <div data-controller="inline-edit"
+           data-inline-edit-url-value="<%= update_field_project_article_path(article.project, article) %>"
+           data-inline-edit-field-value="steps.<%= index %>.title"
+           class="mb-2">
+
+        <h4 data-inline-edit-target="display"
+            data-action="click->inline-edit#edit"
+            class="font-medium text-gray-900 cursor-pointer hover:bg-gray-50 rounded px-1 -mx-1 transition-colors">
+          <%= step["title"] %>
+        </h4>
+
+        <div data-inline-edit-target="form" class="hidden">
+          <input type="text"
+                 data-inline-edit-target="input"
+                 data-action="blur->inline-edit#save keydown->inline-edit#handleKeydown"
+                 value="<%= step["title"] %>"
+                 class="w-full font-medium border border-indigo-500 rounded px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+      </div>
+
+      <!-- Step Content (editable) -->
+      <div data-controller="inline-edit"
+           data-inline-edit-url-value="<%= update_field_project_article_path(article.project, article) %>"
+           data-inline-edit-field-value="steps.<%= index %>.content">
+
+        <p data-inline-edit-target="display"
+           data-action="click->inline-edit#edit"
+           class="text-gray-700 cursor-pointer hover:bg-gray-50 rounded px-1 -mx-1 transition-colors">
+          <%= step["content"] %>
+        </p>
+
+        <div data-inline-edit-target="form" class="hidden">
+          <textarea data-inline-edit-target="input"
+                    data-action="blur->inline-edit#save keydown->inline-edit#handleKeydown"
+                    rows="3"
+                    class="w-full text-gray-700 border border-indigo-500 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"><%= step["content"] %></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Step Button -->
+    <button type="button"
+            data-action="click->array-edit#remove"
+            data-array-edit-index-param="<%= index %>"
+            class="invisible group-hover:visible text-red-400 hover:text-red-600 p-1 absolute top-2 right-2 cursor-pointer">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+      </svg>
+    </button>
+  </div>
+</div>

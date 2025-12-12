@@ -5,7 +5,11 @@
         <p>No merged pull requests found.</p>
       </div>
     <% else %>
+      <% # Preload updates for efficiency %>
+      <% updates_by_pr = @project.updates.where(pull_request_number: @pull_requests.map { |pr| pr[:number] }).index_by(&:pull_request_number) %>
+
       <% @pull_requests.each do |pr| %>
+        <% existing_update = updates_by_pr[pr[:number]] %>
         <div class="p-4 hover:bg-gray-50">
           <div class="flex items-start gap-3">
             <img src="<%= pr[:user][:avatar_url] %>" alt="<%= pr[:user][:login] %>" class="w-8 h-8 rounded-full flex-shrink-0">
@@ -19,6 +23,12 @@
                 #<%= pr[:number] %> merged <%= time_ago_in_words(pr[:merged_at]) %> ago by <%= pr[:user][:login] %>
               </p>
             </div>
+            <%= render "updates/pr_row_actions",
+                update: existing_update,
+                project: @project,
+                pr_number: pr[:number],
+                pr_title: pr[:title],
+                pr_url: pr[:html_url] %>
           </div>
         </div>
       <% end %>

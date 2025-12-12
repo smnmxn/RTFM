@@ -1,0 +1,42 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+draft_article:
+  project: one
+  recommendation: pending_recommendation
+  title: How to enable dark mode
+  content: This is a guide about enabling dark mode.
+  status: draft
+  generation_status: completed
+  published_at:
+  structured_content:
+    introduction: "This guide will show you how to enable dark mode."
+    prerequisites:
+      - "A modern browser"
+      - "Access to settings"
+    steps:
+      - title: "Open Settings"
+        content: "Navigate to the settings panel."
+      - title: "Find Theme Options"
+        content: "Look for the theme or appearance section."
+    tips:
+      - "Dark mode is easier on the eyes at night."
+      - "Some apps have auto-switching based on time."
+    summary: "You've now learned how to enable dark mode!"
+
+published_article:
+  project: one
+  recommendation: rejected_recommendation
+  title: How to use the faster app
+  content: This is a guide about using performance improvements.
+  status: published
+  generation_status: completed
+  published_at: 2025-12-01 10:00:00
+
+failed_article:
+  project: one
+  recommendation: generated_recommendation
+  title: How to handle errors
+  content: Article generation failed. Please try again.
+  status: draft
+  generation_status: failed
+  published_at:

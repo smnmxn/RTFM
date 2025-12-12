@@ -1,5 +1,8 @@
 class Update < ApplicationRecord
+  include Turbo::Broadcastable
+
   belongs_to :project
+  has_many :recommendations, foreign_key: :source_update_id, dependent: :nullify
 
   enum :status, { draft: "draft", published: "published" }, default: :draft
 

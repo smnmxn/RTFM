@@ -10,7 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_10_134045) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_12_114732) do
+  create_table "articles", force: :cascade do |t|
+    t.text "content"
+    t.datetime "created_at", null: false
+    t.string "generation_status", default: "pending", null: false
+    t.integer "project_id", null: false
+    t.datetime "published_at"
+    t.integer "recommendation_id", null: false
+    t.string "status", default: "draft", null: false
+    t.json "structured_content"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id"], name: "index_articles_on_project_id"
+    t.index ["recommendation_id"], name: "index_articles_on_recommendation_id"
+  end
+
   create_table "projects", force: :cascade do |t|
     t.string "analysis_commit_sha"
     t.json "analysis_metadata"
@@ -30,13 +45,29 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_10_134045) do
     t.index ["user_id"], name: "index_projects_on_user_id"
   end
 
+  create_table "recommendations", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.text "justification"
+    t.integer "project_id", null: false
+    t.datetime "rejected_at"
+    t.integer "source_update_id"
+    t.string "status", default: "pending", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id"], name: "index_recommendations_on_project_id"
+    t.index ["source_update_id"], name: "index_recommendations_on_source_update_id"
+  end
+
   create_table "updates", force: :cascade do |t|
+    t.string "analysis_status"
     t.text "content"
     t.datetime "created_at", null: false
     t.integer "project_id", null: false
     t.datetime "published_at"
     t.integer "pull_request_number"
     t.string "pull_request_url"
+    t.json "recommended_articles"
     t.text "social_snippet"
     t.string "status", default: "draft", null: false
     t.string "title"
@@ -56,6 +87,10 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_10_134045) do
     t.index ["github_uid"], name: "index_users_on_github_uid", unique: true
   end
 
+  add_foreign_key "articles", "projects"
+  add_foreign_key "articles", "recommendations"
   add_foreign_key "projects", "users"
+  add_foreign_key "recommendations", "projects"
+  add_foreign_key "recommendations", "updates", column: "source_update_id"
   add_foreign_key "updates", "projects"
 end

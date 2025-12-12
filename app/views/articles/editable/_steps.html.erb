@@ -1,0 +1,25 @@
+<%= turbo_frame_tag "article_steps" do %>
+  <div data-controller="array-edit"
+       data-array-edit-url-value="<%= project_article_path(article.project, article) %>"
+       data-array-edit-field-value="steps"
+       class="mb-8">
+
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Steps</h3>
+
+    <div data-array-edit-target="list" class="space-y-4">
+      <% article.steps.each_with_index do |step, index| %>
+        <%= render "articles/editable/step_item", article: article, step: step, index: index %>
+      <% end %>
+    </div>
+
+    <!-- Add Step Button -->
+    <button type="button"
+            data-action="click->array-edit#add"
+            class="mt-4 inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800 cursor-pointer">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+      Add step
+    </button>
+  </div>
+<% end %>

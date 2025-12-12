@@ -38,6 +38,46 @@ class ProjectsController < ApplicationController
     redirect_to project_path(@project), notice: "Codebase analysis started. This may take a few minutes."
   end
 
+  def analyze_pull_request
+    @project = current_user.projects.find(params[:id])
+    pr_number = params[:pr_number].to_i
+
+    # Check if analysis is already running for this PR
+    existing_update = @project.updates.find_by(pull_request_number: pr_number)
+    if existing_update&.analysis_status == "running"
+      redirect_to project_path(@project), alert: "Analysis is already in progress for PR ##{pr_number}."
+      return
+    end
+
+    # Get PR details from form params (passed from the view)
+    pr_title = params[:pr_title].presence || "PR ##{pr_number}"
+    pr_url = params[:pr_url].presence || "https://github.com/#{@project.github_repo}/pull/#{pr_number}"
+
+    # Enqueue the analysis job
+    AnalyzePullRequestJob.perform_later(
+      project_id: @project.id,
+      pull_request_number: pr_number,
+      pull_request_url: pr_url,
+      pull_request_title: pr_title,
+      pull_request_body: params[:pr_body].to_s
+    )
+
+    redirect_to project_path(@project), notice: "Analysis started for PR ##{pr_number}. This may take a few minutes."
+  end
+
+  def generate_recommendations
+    @project = current_user.projects.find(params[:id])
+
+    unless @project.analysis_status == "completed"
+      redirect_to project_path(@project), alert: "Please run codebase analysis first."
+      return
+    end
+
+    GenerateProjectRecommendationsJob.perform_later(project_id: @project.id)
+
+    redirect_to project_path(@project), notice: "Generating article recommendations. This may take a few minutes."
+  end
+
   def repositories
     service = GithubRepositoriesService.new(current_user)
     page = (params[:page] || 1).to_i

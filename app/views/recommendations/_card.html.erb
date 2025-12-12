@@ -1,0 +1,20 @@
+<%= tag.div id: dom_id(recommendation), class: "p-4 flex items-start justify-between" do %>
+  <div class="flex-1">
+    <p class="font-medium text-gray-900"><%= recommendation.title %></p>
+    <p class="text-sm text-gray-600 mt-1"><%= recommendation.description %></p>
+    <p class="text-xs text-gray-400 mt-1">Why: <%= recommendation.justification %></p>
+    <% if recommendation.source_update.present? %>
+      <p class="text-xs text-gray-400 mt-1">
+        From <%= link_to "PR ##{recommendation.source_update.pull_request_number}", recommendation.source_update.pull_request_url, target: "_blank", class: "text-indigo-600 hover:text-indigo-800" %>
+      </p>
+    <% end %>
+  </div>
+  <div class="ml-4 flex gap-2">
+    <%= button_to "Generate", generate_project_recommendation_path(recommendation.project, recommendation),
+        method: :post,
+        class: "text-sm text-indigo-600 hover:text-indigo-800 font-medium cursor-pointer" %>
+    <%= button_to "Dismiss", reject_project_recommendation_path(recommendation.project, recommendation),
+        method: :post,
+        class: "text-sm text-gray-500 hover:text-red-600 cursor-pointer" %>
+  </div>
+<% end %>

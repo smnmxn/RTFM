@@ -1,0 +1,28 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+pending_recommendation:
+  project: one
+  source_update: draft_update
+  title: How to enable dark mode
+  description: A step-by-step guide to using dark mode
+  justification: This PR adds dark mode support that users need to learn about
+  status: pending
+  rejected_at:
+
+rejected_recommendation:
+  project: one
+  source_update: published_update
+  title: How to use the faster app
+  description: Tips for taking advantage of performance improvements
+  justification: Users may want to know about the performance changes
+  status: rejected
+  rejected_at: 2025-12-01 10:00:00
+
+generated_recommendation:
+  project: one
+  source_update: draft_update
+  title: How to handle errors
+  description: A guide about error handling in the app
+  justification: Users need to understand error scenarios
+  status: generated
+  rejected_at:

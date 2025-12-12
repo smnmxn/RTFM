@@ -162,4 +162,57 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :not_found
   end
+
+  # Analyze pull request tests
+  test "analyze_pull_request requires authentication" do
+    project = projects(:one)
+    post analyze_pull_request_project_path(project, pr_number: 123)
+    assert_redirected_to login_path
+  end
+
+  test "analyze_pull_request redirects with success notice" do
+    sign_in_as(@user)
+    project = projects(:one)
+
+    post analyze_pull_request_project_path(project, pr_number: 123),
+         params: { pr_title: "Test PR", pr_url: "https://github.com/test/repo/pull/123" }
+
+    assert_redirected_to project_path(project)
+    assert_match(/Analysis started for PR #123/i, flash[:notice])
+  end
+
+  test "analyze_pull_request does not proceed if already running" do
+    sign_in_as(@user)
+    project = projects(:one)
+    project.updates.create!(
+      title: "Existing",
+      pull_request_number: 123,
+      pull_request_url: "https://github.com/test/repo/pull/123",
+      analysis_status: "running"
+    )
+
+    post analyze_pull_request_project_path(project, pr_number: 123)
+
+    assert_redirected_to project_path(project)
+    assert_match(/already in progress/i, flash[:alert])
+  end
+
+  test "analyze_pull_request cannot trigger for other user's project" do
+    sign_in_as(@user)
+    other_project = projects(:two)
+
+    post analyze_pull_request_project_path(other_project, pr_number: 123)
+
+    assert_response :not_found
+  end
+
+  test "analyze_pull_request uses default values when params missing" do
+    sign_in_as(@user)
+    project = projects(:one)
+
+    post analyze_pull_request_project_path(project, pr_number: 456)
+
+    assert_redirected_to project_path(project)
+    assert_match(/Analysis started for PR #456/i, flash[:notice])
+  end
 end

@@ -8,7 +8,8 @@
 | [Phase 1](phases/phase-1-models.md) | Core Data Models (User, Project, Update) | Complete |
 | [Phase 2](phases/phase-2-auth-webhooks.md) | GitHub Auth & Webhook Ingest | Complete |
 | [Phase 2.5](phases/phase-2.5-codebase-understanding.md) | Codebase Understanding | Complete |
-| Phase 3 | AI Service Integration | Pending |
+| [Phase 3](phases/phase-3-ai-pr-analysis.md) | AI Service Integration | Complete |
+| [Phase 3.5](phases/phase-3.5-article-recommendations.md) | Support Article Recommendations | Complete |
 | Phase 4 | Editor Dashboard UI | Pending |
 | Phase 5 | Public Changelog Page | Pending |
 | Phase 6 | Polish & Deployment | Pending |
