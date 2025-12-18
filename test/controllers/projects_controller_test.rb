@@ -96,7 +96,7 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     get project_path(project)
 
     assert_response :success
-    assert_select "h2", project.name
+    assert_select "h1", project.name
   end
 
   test "show cannot view other user's project" do

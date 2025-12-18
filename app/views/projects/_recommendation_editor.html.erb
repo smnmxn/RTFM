@@ -1,0 +1,76 @@
+<%= turbo_frame_tag "inbox-editor", class: "h-full block" do %>
+  <div class="h-full flex flex-col bg-white">
+    <!-- Header with Actions -->
+    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <h3 class="text-lg font-medium text-gray-900"><%= recommendation.title %></h3>
+        <% if recommendation.section %>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+            <%= recommendation.section.name %>
+          </span>
+        <% end %>
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+          Suggestion
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <%= button_to "Reject",
+            reject_recommendation_project_path(recommendation.project, recommendation_id: recommendation.id),
+            method: :post,
+            form: { data: { turbo_stream: true } },
+            class: "px-3 py-1.5 text-sm border border-red-300 text-red-700 font-medium rounded-lg hover:bg-red-50 cursor-pointer" %>
+
+        <%= button_to "Accept & Generate",
+            accept_recommendation_project_path(recommendation.project, recommendation_id: recommendation.id),
+            method: :post,
+            form: { data: { turbo_stream: true } },
+            class: "px-4 py-1.5 text-sm bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 cursor-pointer" %>
+      </div>
+    </div>
+
+    <!-- Recommendation Content -->
+    <div class="flex-1 overflow-y-auto">
+      <div class="px-6 py-6 max-w-3xl">
+        <!-- Description -->
+        <div class="mb-6">
+          <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Description</h4>
+          <p class="text-gray-700"><%= recommendation.description %></p>
+        </div>
+
+        <!-- Justification -->
+        <div class="mb-6">
+          <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Why this article?</h4>
+          <p class="text-gray-600"><%= recommendation.justification %></p>
+        </div>
+
+        <!-- Source (if from PR) -->
+        <% if recommendation.source_update.present? %>
+          <div class="mb-6">
+            <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Source</h4>
+            <p class="text-gray-600">
+              Generated from
+              <%= link_to "PR ##{recommendation.source_update.pull_request_number}",
+                  recommendation.source_update.pull_request_url,
+                  target: "_blank",
+                  class: "text-indigo-600 hover:text-indigo-800 font-medium" %>
+            </p>
+          </div>
+        <% end %>
+
+        <!-- Info Box -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div class="flex">
+            <svg class="h-5 w-5 text-blue-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            <div class="text-sm text-blue-700">
+              <p class="font-medium">What happens when you accept?</p>
+              <p class="mt-1">An article will be generated based on this suggestion. You'll be able to review and edit it before publishing.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

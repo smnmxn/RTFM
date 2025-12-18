@@ -1,0 +1,33 @@
+<%= turbo_frame_tag "inbox-editor", class: "h-full block" do %>
+  <div class="h-full flex items-center justify-center bg-white">
+    <div class="text-center px-6 max-w-md">
+      <svg class="mx-auto h-20 w-20 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+
+      <h3 class="mt-6 text-2xl font-semibold text-gray-900">All done!</h3>
+
+      <p class="mt-4 text-gray-600">
+        You've reviewed all your articles. Approved articles have been published to your Help Centre.
+      </p>
+
+      <div class="mt-8">
+        <%= link_to help_centre_path(project_slug: project.slug),
+            target: "_blank",
+            class: "inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700" do %>
+          View Help Centre
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+          </svg>
+        <% end %>
+      </div>
+
+      <div class="mt-8 p-4 bg-gray-50 rounded-lg">
+        <p class="text-sm text-gray-500">
+          <strong class="text-gray-700">Share your Help Centre:</strong><br>
+          <code class="mt-1 block text-indigo-600 break-all"><%= help_centre_url(project_slug: project.slug) %></code>
+        </p>
+      </div>
+    </div>
+  </div>
+<% end %>

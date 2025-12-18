@@ -20,6 +20,8 @@ COPY --chmod=755 analyze.sh /analyze.sh
 COPY --chmod=755 analyze_pr.sh /analyze_pr.sh
 COPY --chmod=755 generate_article.sh /generate_article.sh
 COPY --chmod=755 generate_project_recommendations.sh /generate_project_recommendations.sh
+COPY --chmod=755 generate_section_recommendations.sh /generate_section_recommendations.sh
+COPY --chmod=755 suggest_sections.sh /suggest_sections.sh
 
 # Switch to non-root user
 USER analyzer

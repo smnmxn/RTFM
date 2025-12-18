@@ -1,0 +1,45 @@
+<%= tag.div id: dom_id(section), class: "p-4 flex items-center justify-between hover:bg-gray-50" do %>
+  <div class="flex items-center gap-4 flex-1">
+    <div class="flex-shrink-0 text-gray-400">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2">
+        <h4 class="font-medium text-gray-900"><%= section.name %></h4>
+        <% unless section.visible? %>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Hidden</span>
+        <% end %>
+        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium <%= section_type_badge_class(section) %>">
+          <%= section.section_type.humanize %>
+        </span>
+      </div>
+      <% if section.description.present? %>
+        <p class="text-sm text-gray-500 truncate"><%= section.description %></p>
+      <% end %>
+      <div class="text-xs text-gray-400 mt-1">
+        <%= section.articles.published.count %> published
+        <span class="mx-1">&middot;</span>
+        <%= section.articles.drafts.count %> drafts
+        <span class="mx-1">&middot;</span>
+        <%= section.recommendations.pending.count %> pending recommendations
+      </div>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-2 ml-4">
+    <% if project.analysis_status == "completed" %>
+      <%= button_to "Generate",
+          generate_recommendations_project_section_path(project, section),
+          method: :post,
+          class: "inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded text-green-700 bg-green-50 hover:bg-green-100" %>
+    <% end %>
+    <%= link_to "View",
+        project_section_path(project, section),
+        class: "inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded text-indigo-700 bg-indigo-50 hover:bg-indigo-100" %>
+    <%= link_to "Edit",
+        edit_project_section_path(project, section),
+        class: "inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded text-gray-700 bg-gray-50 hover:bg-gray-100" %>
+  </div>
+<% end %>

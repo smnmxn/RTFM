@@ -1,6 +1,7 @@
 class Recommendation < ApplicationRecord
   belongs_to :project
   belongs_to :source_update, class_name: "Update", optional: true
+  belongs_to :section, optional: true
   has_one :article
 
   enum :status, { pending: "pending", rejected: "rejected", generated: "generated" }, default: :pending

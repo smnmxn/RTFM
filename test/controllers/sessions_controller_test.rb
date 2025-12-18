@@ -30,15 +30,18 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to dashboard_path
   end
 
-  test "successful OAuth creates new user and redirects to dashboard" do
+  test "successful OAuth creates new user and redirects to onboarding" do
     assert_difference "User.count", 1 do
       post "/auth/github"
       follow_redirect!
     end
 
+    # New users are redirected to onboarding wizard
     assert_redirected_to dashboard_path
     follow_redirect!
-    assert_select "h2", text: /Your Projects/
+    assert_redirected_to new_onboarding_project_path
+    follow_redirect!
+    assert_select "h2", text: /Welcome to RTFM/
   end
 
   test "successful OAuth for existing user updates token" do

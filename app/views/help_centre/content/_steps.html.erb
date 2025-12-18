@@ -1,0 +1,20 @@
+<% if article.steps.any? %>
+  <div class="mb-8">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Steps</h2>
+    <div class="space-y-6">
+      <% article.steps.each_with_index do |step, index| %>
+        <div class="flex gap-4">
+          <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 text-indigo-800 rounded-full flex items-center justify-center font-semibold text-sm">
+            <%= index + 1 %>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-medium text-gray-900"><%= step["title"] %></h3>
+            <div class="mt-1 text-gray-700 prose prose-sm max-w-none">
+              <%= markdown(step["content"]) %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

@@ -28,10 +28,19 @@
         <% end %>
       </p>
     </div>
-    <div class="ml-4 flex gap-2">
+    <div class="ml-4 flex gap-2 items-center">
       <% if article.generation_completed? %>
-        <%= link_to "View Article", project_article_path(article.project, article),
+        <%= link_to "View", project_article_path(article.project, article),
             class: "text-sm text-indigo-600 hover:text-indigo-800 font-medium" %>
+        <% if article.published? %>
+          <%= button_to "Unpublish", unpublish_project_article_path(article.project, article),
+              method: :post,
+              class: "text-sm text-gray-600 hover:text-gray-800 font-medium cursor-pointer" %>
+        <% else %>
+          <%= button_to "Publish", publish_project_article_path(article.project, article),
+              method: :post,
+              class: "text-sm text-green-600 hover:text-green-800 font-medium cursor-pointer" %>
+        <% end %>
       <% end %>
       <% if article.generation_failed? %>
         <%= button_to "Regenerate", regenerate_project_article_path(article.project, article),

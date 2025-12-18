@@ -1,0 +1,26 @@
+<div class="min-h-screen bg-gray-50">
+  <header class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-900">RTFM</h1>
+      <div class="flex items-center gap-4">
+        <%= link_to "Back to Sections", project_sections_path(@project), class: "text-indigo-600 hover:text-indigo-800" %>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-2xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <div class="bg-white shadow rounded-lg p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-lg font-semibold text-gray-900">Edit Section</h2>
+        <% unless @section.template? %>
+          <%= button_to "Delete Section",
+              project_section_path(@project, @section),
+              method: :delete,
+              data: { turbo_confirm: "Are you sure? Articles in this section will become uncategorized." },
+              class: "text-sm text-red-600 hover:text-red-800" %>
+        <% end %>
+      </div>
+      <%= render "form", project: @project, section: @section %>
+    </div>
+  </main>
+</div>

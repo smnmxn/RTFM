@@ -1,0 +1,33 @@
+<% content_for(:title) { "#{@section.name} - #{@project.name} Help Centre" } %>
+
+<div class="space-y-6">
+  <!-- Breadcrumb -->
+  <nav class="text-sm">
+    <%= link_to "Help Centre",
+        help_centre_path(project_slug: @project.slug),
+        class: "text-indigo-600 hover:text-indigo-800" %>
+    <span class="mx-2 text-gray-400">/</span>
+    <span class="text-gray-600"><%= @section.name %></span>
+  </nav>
+
+  <!-- Section Header -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900"><%= @section.name %></h1>
+    <% if @section.description.present? %>
+      <p class="mt-1 text-gray-500"><%= @section.description %></p>
+    <% end %>
+  </div>
+
+  <!-- Articles List -->
+  <% if @articles.any? %>
+    <div class="grid gap-4">
+      <% @articles.each do |article| %>
+        <%= render "help_centre/article_card", article: article %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="text-center py-12 bg-white rounded-lg shadow-sm">
+      <p class="text-gray-500">No articles in this section yet.</p>
+    </div>
+  <% end %>
+</div>

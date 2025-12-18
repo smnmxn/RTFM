@@ -32,7 +32,14 @@
             <span class="ml-4 px-4 py-2 bg-gray-200 text-gray-500 text-sm rounded-lg cursor-not-allowed">
               Connected
             </span>
+          <% elsif @onboarding_project.present? %>
+            <%# Onboarding mode - connect to wizard flow %>
+            <%= button_to "Connect", connect_onboarding_project_path(@onboarding_project, github_repo: repo[:full_name]),
+                method: :post,
+                class: "ml-4 px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors",
+                data: { turbo_frame: "_top" } %>
           <% else %>
+            <%# Normal mode - connect via standard flow %>
             <%= button_to "Connect", projects_path(github_repo: repo[:full_name]),
                 method: :post,
                 class: "ml-4 px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors",
@@ -43,10 +50,17 @@
 
       <% if @has_more %>
         <div class="p-4 text-center">
-          <%= link_to "Load more repositories",
-              repositories_projects_path(page: @page + 1),
-              class: "text-indigo-600 hover:text-indigo-800",
-              data: { turbo_frame: "repository_list" } %>
+          <% if @onboarding_project.present? %>
+            <%= link_to "Load more repositories",
+                repositories_projects_path(page: @page + 1, onboarding_project_id: @onboarding_project.id),
+                class: "text-indigo-600 hover:text-indigo-800",
+                data: { turbo_frame: "repository_list" } %>
+          <% else %>
+            <%= link_to "Load more repositories",
+                repositories_projects_path(page: @page + 1),
+                class: "text-indigo-600 hover:text-indigo-800",
+                data: { turbo_frame: "repository_list" } %>
+          <% end %>
         </div>
       <% end %>
     <% end %>

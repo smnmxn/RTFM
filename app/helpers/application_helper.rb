@@ -18,4 +18,17 @@ module ApplicationHelper
 
     markdown.render(text).html_safe
   end
+
+  def section_type_badge_class(section)
+    case section.section_type
+    when "template"
+      "bg-blue-100 text-blue-800"
+    when "ai_generated"
+      "bg-purple-100 text-purple-800"
+    when "custom"
+      "bg-green-100 text-green-800"
+    else
+      "bg-gray-100 text-gray-800"
+    end
+  end
 end

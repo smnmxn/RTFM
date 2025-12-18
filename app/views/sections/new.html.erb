@@ -1,0 +1,17 @@
+<div class="min-h-screen bg-gray-50">
+  <header class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-900">RTFM</h1>
+      <div class="flex items-center gap-4">
+        <%= link_to "Back to Sections", project_sections_path(@project), class: "text-indigo-600 hover:text-indigo-800" %>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-2xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <div class="bg-white shadow rounded-lg p-6">
+      <h2 class="text-lg font-semibold text-gray-900 mb-6">New Section</h2>
+      <%= render "form", project: @project, section: @section %>
+    </div>
+  </main>
+</div>

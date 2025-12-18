@@ -1,0 +1,25 @@
+<%= tag.div id: dom_id(recommendation, :row),
+    data: { controller: "inbox-row" },
+    class: "group" do %>
+  <%= link_to select_recommendation_project_path(recommendation.project, recommendation_id: recommendation.id),
+      data: { turbo_frame: "inbox-editor", action: "click->inbox-row#select" },
+      class: class_names(
+        "block px-4 py-3 hover:bg-gray-50 transition-colors border-l-4",
+        "border-indigo-500 bg-indigo-50" => selected,
+        "border-transparent bg-white" => !selected
+      ) do %>
+    <div class="flex items-center justify-between">
+      <div class="min-w-0 flex-1">
+        <p class="text-sm font-medium text-gray-900 truncate"><%= recommendation.title %></p>
+        <% if recommendation.section %>
+          <p class="text-xs text-gray-500 truncate"><%= recommendation.section.name %></p>
+        <% end %>
+      </div>
+      <div class="ml-3 flex-shrink-0">
+        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+          Suggestion
+        </span>
+      </div>
+    </div>
+  <% end %>
+<% end %>

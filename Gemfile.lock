@@ -309,6 +309,8 @@ GEM
       psych (>= 4.0.0)
       tsort
     redcarpet (3.6.1)
+    redis (5.4.1)
+      redis-client (>= 0.22.0)
     redis-client (0.26.2)
       connection_pool
     regexp_parser (2.11.3)
@@ -467,6 +469,7 @@ DEPENDENCIES
   puma (>= 5.0)
   rails (~> 8.1.1)
   redcarpet
+  redis
   rubocop-rails-omakase
   selenium-webdriver
   sidekiq

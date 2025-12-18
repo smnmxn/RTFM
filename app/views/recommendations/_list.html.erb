@@ -1,26 +1,30 @@
 <div class="bg-white shadow rounded-lg mb-6">
-  <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-    <div>
-      <h3 class="text-lg font-semibold text-gray-900">Recommended Support Articles</h3>
-      <p class="mt-1 text-sm text-gray-500">
-        AI-suggested how-to guides
-      </p>
-    </div>
-    <% if local_assigns[:project]&.analysis_status == "completed" %>
-      <%= button_to "Generate Recommendations",
-          generate_recommendations_project_path(project),
-          method: :post,
-          class: "inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
-    <% end %>
+  <div class="px-6 py-4 border-b border-gray-200">
+    <h3 class="text-lg font-semibold text-gray-900">Recommended Support Articles</h3>
+    <p class="mt-1 text-sm text-gray-500">
+      AI-suggested how-to guides grouped by section
+    </p>
   </div>
 
   <div id="recommendations-list">
     <% if recommendations.any? %>
-      <div class="divide-y divide-gray-200">
-        <% recommendations.each do |recommendation| %>
-          <%= render "recommendations/card", recommendation: recommendation %>
-        <% end %>
-      </div>
+      <% recommendations.includes(:section).group_by(&:section).each do |section, section_recommendations| %>
+        <div class="border-b border-gray-200 last:border-b-0">
+          <div class="px-6 py-3 bg-gray-100 border-l-4 border-indigo-500">
+            <h4 class="font-medium text-gray-900">
+              <%= section&.name || "Uncategorized" %>
+            </h4>
+            <% if section&.description.present? %>
+              <p class="text-sm text-gray-500"><%= section.description %></p>
+            <% end %>
+          </div>
+          <div class="divide-y divide-gray-200 ml-6">
+            <% section_recommendations.each do |recommendation| %>
+              <%= render "recommendations/card", recommendation: recommendation %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
     <% else %>
       <div class="p-6 text-center text-gray-500">
         No pending article recommendations

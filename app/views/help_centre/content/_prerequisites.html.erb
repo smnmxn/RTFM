@@ -1,0 +1,10 @@
+<% if article.prerequisites.any? %>
+  <div class="mb-8">
+    <h2 class="text-lg font-semibold text-gray-900 mb-3">Prerequisites</h2>
+    <ul class="list-disc list-inside space-y-2 text-gray-700">
+      <% article.prerequisites.each do |prereq| %>
+        <li><%= prereq %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

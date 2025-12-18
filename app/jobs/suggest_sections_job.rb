@@ -1,0 +1,220 @@
+require "open3"
+require "fileutils"
+require "json"
+require "timeout"
+
+class SuggestSectionsJob < ApplicationJob
+  queue_as :analysis
+
+  GENERATION_TIMEOUT = 300 # 5 minutes
+
+  def perform(project_id:)
+    project = Project.find_by(id: project_id)
+    return unless project
+
+    # Mark as running and broadcast
+    project.update!(
+      sections_generation_status: "running",
+      sections_generation_started_at: Time.current
+    )
+    broadcast_sections_status(project)
+
+    begin
+      result = run_section_suggestion(project)
+
+      # Re-check that project still exists before creating sections
+      return unless Project.exists?(project_id)
+
+      if result[:success]
+        create_sections(project, result[:sections])
+        project.reload.update!(sections_generation_status: "completed")
+        broadcast_sections_list(project)
+        broadcast_analyze_status(project)
+        Rails.logger.info "[SuggestSectionsJob] Suggested #{result[:sections]&.size || 0} sections for project #{project.id}"
+      else
+        project.reload.update!(sections_generation_status: "failed")
+        broadcast_sections_status(project)
+        broadcast_analyze_status(project)
+        Rails.logger.warn "[SuggestSectionsJob] Suggestion failed for project #{project.id}: #{result[:error]}"
+      end
+    rescue ActiveRecord::RecordNotFound, ActiveRecord::InvalidForeignKey => e
+      # Project was deleted while job was running - this is expected, just log and exit
+      Rails.logger.info "[SuggestSectionsJob] Project deleted during job execution: #{e.message}"
+    rescue StandardError => e
+      begin
+        project.reload.update!(sections_generation_status: "failed")
+        broadcast_sections_status(project)
+        broadcast_analyze_status(project)
+      rescue ActiveRecord::RecordNotFound
+        # Project was deleted, nothing to update
+      end
+      Rails.logger.error "[SuggestSectionsJob] Error for project #{project_id}: #{e.message}"
+    end
+  end
+
+  private
+
+  def run_section_suggestion(project)
+    timestamp = Time.current.to_i
+    input_dir = Rails.root.join("tmp", "suggest_sections", "input_#{project.id}_#{timestamp}")
+    output_dir = Rails.root.join("tmp", "suggest_sections", "output_#{project.id}_#{timestamp}")
+
+    FileUtils.mkdir_p(input_dir)
+    FileUtils.mkdir_p(output_dir)
+    FileUtils.chmod(0777, output_dir)
+
+    begin
+      docker_image = "rtfm/claude-analyzer:latest"
+      build_docker_image_if_needed(docker_image)
+
+      File.write(File.join(input_dir, "context.json"), build_context_json(project))
+
+      cmd = [
+        "docker", "run",
+        "--rm",
+        "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
+        "-e", "GITHUB_TOKEN=#{project.user.github_token}",
+        "-e", "GITHUB_REPO=#{project.github_repo}",
+        "-v", "#{input_dir}:/input:ro",
+        "-v", "#{output_dir}:/output",
+        "--network", "host",
+        "--entrypoint", "/suggest_sections.sh",
+        docker_image
+      ]
+
+      Rails.logger.info "[SuggestSectionsJob] Running Docker for project #{project.id}"
+
+      stdout, stderr, status = Timeout.timeout(GENERATION_TIMEOUT) do
+        Open3.capture3(*cmd)
+      end
+
+      Rails.logger.info "[SuggestSectionsJob] Exit status: #{status.exitstatus}"
+      Rails.logger.debug "[SuggestSectionsJob] Stdout: #{stdout[0..500]}" if stdout.present?
+      Rails.logger.debug "[SuggestSectionsJob] Stderr: #{stderr[0..500]}" if stderr.present?
+
+      if status.success?
+        json_content = read_output_file(output_dir, "sections.json")
+        if json_content.present?
+          cleaned = extract_json(json_content)
+          parsed = JSON.parse(cleaned)
+          { success: true, sections: parsed["sections"] || [] }
+        else
+          { success: false, error: "No output generated" }
+        end
+      else
+        { success: false, error: "Docker command failed: #{stderr}" }
+      end
+    rescue Timeout::Error
+      { success: false, error: "Suggestion timed out after #{GENERATION_TIMEOUT} seconds" }
+    rescue JSON::ParserError => e
+      Rails.logger.warn "[SuggestSectionsJob] JSON parse error: #{e.message}"
+      { success: false, error: "Failed to parse sections JSON" }
+    ensure
+      FileUtils.rm_rf(input_dir)
+      FileUtils.rm_rf(output_dir)
+    end
+  end
+
+  def build_context_json(project)
+    existing_section_slugs = project.sections.pluck(:slug)
+
+    {
+      project_name: project.name,
+      project_overview: project.project_overview,
+      analysis_summary: project.analysis_summary,
+      tech_stack: project.analysis_metadata&.dig("tech_stack") || [],
+      key_patterns: project.analysis_metadata&.dig("key_patterns") || [],
+      components: project.analysis_metadata&.dig("components") || [],
+      target_users: project.analysis_metadata&.dig("target_users") || [],
+      existing_section_slugs: existing_section_slugs
+    }.to_json
+  end
+
+  def create_sections(project, sections)
+    return if sections.blank?
+
+    max_position = project.sections.maximum(:position).to_i
+
+    sections.each_with_index do |sec, index|
+      slug = sec["slug"] || sec["name"].to_s.parameterize
+      next if project.sections.exists?(slug: slug)
+
+      project.sections.create!(
+        name: sec["name"],
+        slug: slug,
+        description: sec["description"],
+        justification: sec["justification"],
+        position: max_position + index + 1,
+        section_type: :ai_generated,
+        status: :pending
+      )
+    end
+  end
+
+  def read_output_file(output_dir, filename)
+    path = File.join(output_dir, filename)
+    return nil unless File.exist?(path)
+    File.read(path).strip.presence
+  end
+
+  def extract_json(raw_content)
+    content = raw_content.strip
+
+    # Remove markdown code fences if present
+    if content.start_with?("```")
+      content = content.sub(/\A```(?:json)?\s*\n?/, "")
+      content = content.sub(/\n?```\s*\z/, "")
+    end
+
+    # Try to find JSON object in content
+    if (match = content.match(/\{[\s\S]*\}/))
+      match[0]
+    else
+      content
+    end
+  end
+
+  def build_docker_image_if_needed(image_name)
+    stdout, _, status = Open3.capture3("docker", "images", "-q", image_name)
+
+    if stdout.strip.empty?
+      dockerfile_path = Rails.root.join("docker", "claude-analyzer")
+      Rails.logger.info "[SuggestSectionsJob] Building Docker image #{image_name}"
+
+      _, stderr, status = Open3.capture3(
+        "docker", "build", "-t", image_name, dockerfile_path.to_s
+      )
+
+      unless status.success?
+        raise "Failed to build Docker image: #{stderr}"
+      end
+    end
+  end
+
+  def broadcast_sections_status(project)
+    Turbo::StreamsChannel.broadcast_replace_to(
+      [ project, :onboarding ],
+      target: "onboarding-sections-status",
+      partial: "onboarding/projects/sections_status",
+      locals: { project: project }
+    )
+  end
+
+  def broadcast_sections_list(project)
+    Turbo::StreamsChannel.broadcast_replace_to(
+      [ project, :onboarding ],
+      target: "pending-sections-list",
+      partial: "onboarding/projects/sections_list",
+      locals: { project: project, sections: project.sections.pending.ordered }
+    )
+  end
+
+  def broadcast_analyze_status(project)
+    Turbo::StreamsChannel.broadcast_replace_to(
+      [ project, :onboarding ],
+      target: ActionView::RecordIdentifier.dom_id(project, :onboarding_analyze),
+      partial: "onboarding/projects/analyze_status",
+      locals: { project: project }
+    )
+  end
+end

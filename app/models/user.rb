@@ -4,6 +4,19 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: true
   validates :github_uid, uniqueness: true, allow_nil: true
 
+  # Onboarding helpers
+  def needs_onboarding?
+    projects.empty?
+  end
+
+  def onboarding_in_progress?
+    projects.onboarding_incomplete.exists?
+  end
+
+  def current_onboarding_project
+    projects.onboarding_incomplete.first
+  end
+
   def self.find_or_create_from_omniauth(auth)
     user = find_by(github_uid: auth.uid)
 

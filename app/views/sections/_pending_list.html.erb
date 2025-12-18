@@ -1,0 +1,24 @@
+<div class="bg-white shadow rounded-lg mb-6">
+  <div class="px-6 py-4 border-b border-gray-200">
+    <div>
+      <h3 class="text-lg font-semibold text-gray-900">Recommended Sections</h3>
+      <p class="mt-1 text-sm text-gray-500">
+        AI-suggested help centre sections based on your codebase
+      </p>
+    </div>
+  </div>
+
+  <div id="pending-sections-list">
+    <% if sections.any? %>
+      <div class="divide-y divide-gray-200">
+        <% sections.each do |section| %>
+          <%= render "sections/pending_card", section: section %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="p-6 text-center text-gray-500">
+        No pending section recommendations
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,47 @@
+<% content_for(:title) { "#{@project.name} Help Centre" } %>
+
+<div class="space-y-8">
+  <% @sections.each do |section| %>
+    <% published_articles = section.articles.published %>
+    <% next unless published_articles.any? %>
+
+    <section>
+      <div class="flex justify-between items-baseline mb-4">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-900"><%= section.name %></h2>
+          <% if section.description.present? %>
+            <p class="text-sm text-gray-500"><%= section.description %></p>
+          <% end %>
+        </div>
+        <% if published_articles.count > 3 %>
+          <%= link_to "View all",
+              help_centre_section_path(project_slug: @project.slug, section_slug: section.slug),
+              class: "text-sm text-indigo-600 hover:text-indigo-800" %>
+        <% end %>
+      </div>
+
+      <div class="grid gap-4">
+        <% published_articles.limit(3).each do |article| %>
+          <%= render "help_centre/article_card", article: article %>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
+  <% if @uncategorized_articles.any? %>
+    <section>
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Other Articles</h2>
+      <div class="grid gap-4">
+        <% @uncategorized_articles.each do |article| %>
+          <%= render "help_centre/article_card", article: article %>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
+  <% if @sections.none? { |s| s.articles.published.any? } && @uncategorized_articles.empty? %>
+    <div class="text-center py-12 bg-white rounded-lg shadow-sm">
+      <p class="text-gray-500">No articles published yet.</p>
+    </div>
+  <% end %>
+</div>

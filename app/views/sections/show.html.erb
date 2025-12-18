@@ -1,0 +1,84 @@
+<div class="min-h-screen bg-gray-50">
+  <header class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-900">RTFM</h1>
+      <div class="flex items-center gap-4">
+        <%= link_to "Back to Sections", project_sections_path(@project), class: "text-indigo-600 hover:text-indigo-800" %>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+    <!-- Section Header -->
+    <div class="bg-white shadow rounded-lg p-6">
+      <div class="flex justify-between items-start">
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-2xl font-semibold text-gray-900"><%= @section.name %></h2>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium <%= section_type_badge_class(@section) %>">
+              <%= @section.section_type.humanize %>
+            </span>
+          </div>
+          <% if @section.description.present? %>
+            <p class="mt-1 text-gray-500"><%= @section.description %></p>
+          <% end %>
+        </div>
+        <div class="flex gap-2">
+          <% if @project.analysis_status == "completed" %>
+            <%= button_to "Generate Recommendations",
+                generate_recommendations_project_section_path(@project, @section),
+                method: :post,
+                class: "inline-flex items-center px-3 py-1.5 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700" %>
+          <% end %>
+          <%= link_to "Edit",
+              edit_project_section_path(@project, @section),
+              class: "inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Recommendations -->
+    <% if @pending_recommendations.any? %>
+      <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">Pending Recommendations</h3>
+          <p class="mt-1 text-sm text-gray-500">
+            AI-suggested articles for this section
+          </p>
+        </div>
+        <div class="divide-y divide-gray-200">
+          <% @pending_recommendations.each do |recommendation| %>
+            <%= render "recommendations/card", recommendation: recommendation %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Articles in Section -->
+    <div class="bg-white shadow rounded-lg">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Articles</h3>
+        <p class="mt-1 text-sm text-gray-500">
+          <%= @articles.count %> article<%= @articles.count == 1 ? "" : "s" %> in this section
+        </p>
+      </div>
+
+      <% if @articles.any? %>
+        <div class="divide-y divide-gray-200">
+          <% @articles.each do |article| %>
+            <%= render "articles/card", article: article %>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="p-6 text-center text-gray-500">
+          No articles in this section yet.
+          <% if @project.analysis_status == "completed" %>
+            Generate recommendations to get started.
+          <% else %>
+            Run codebase analysis first, then generate recommendations.
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </main>
+</div>

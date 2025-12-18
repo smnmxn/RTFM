@@ -1,0 +1,15 @@
+<%= turbo_stream_from @project, :onboarding %>
+<%= turbo_stream_from @project, :analysis %>
+
+<div class="bg-white shadow rounded-lg">
+  <div class="px-6 py-4 border-b border-gray-200">
+    <h2 class="text-xl font-semibold text-gray-900">Analyzing Your Codebase</h2>
+    <p class="mt-1 text-sm text-gray-500">
+      We're scanning your repository to understand its structure and suggest documentation.
+    </p>
+  </div>
+
+  <div class="p-6" id="<%= dom_id(@project, :onboarding_analyze) %>">
+    <%= render "onboarding/projects/analyze_status", project: @project %>
+  </div>
+</div>

@@ -1,0 +1,10 @@
+<%= link_to help_centre_article_path(project_slug: article.project.slug, id: article.id),
+    class: "block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6" do %>
+  <h3 class="text-lg font-semibold text-gray-900 mb-2"><%= article.title %></h3>
+  <% if article.introduction.present? %>
+    <p class="text-gray-600 line-clamp-2"><%= article.introduction %></p>
+  <% end %>
+  <% if article.steps.any? %>
+    <p class="text-sm text-gray-500 mt-3"><%= pluralize(article.steps.count, "step") %></p>
+  <% end %>
+<% end %>

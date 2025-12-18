@@ -50,6 +50,7 @@ class GenerateArticleJob < ApplicationJob
 
     # Broadcast update via Turbo
     broadcast_article_change(article)
+    broadcast_inbox_article_update(article)
   end
 
   private
@@ -275,6 +276,15 @@ class GenerateArticleJob < ApplicationJob
       target: ActionView::RecordIdentifier.dom_id(article),
       partial: "articles/card",
       locals: { article: article }
+    )
+  end
+
+  def broadcast_inbox_article_update(article)
+    Turbo::StreamsChannel.broadcast_replace_to(
+      [ article.project, :inbox ],
+      target: ActionView::RecordIdentifier.dom_id(article, :row),
+      partial: "projects/article_row",
+      locals: { article: article, selected: false }
     )
   end
 end

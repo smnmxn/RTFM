@@ -1,0 +1,75 @@
+<%# Update recommendations section (update count, or render empty wrapper if no recommendations) %>
+<% if @pending_recommendations.empty? %>
+  <%= turbo_stream.replace "recommendations-section" do %>
+    <div id="recommendations-section"></div>
+  <% end %>
+<% else %>
+  <%= turbo_stream.replace "recommendations-section" do %>
+    <div id="recommendations-section">
+      <div class="px-4 py-2 bg-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wide sticky top-0">
+        Suggestions (<%= @pending_recommendations.count %>)
+      </div>
+      <div id="recommendations-list" class="divide-y divide-gray-200">
+        <% @pending_recommendations.each do |recommendation| %>
+          <%= render "projects/recommendation_row",
+              recommendation: recommendation,
+              selected: @next_item == recommendation %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<%# Update editor to show next item %>
+<% if @inbox_empty %>
+  <%= turbo_stream.replace "inbox-editor" do %>
+    <%= render "projects/all_reviewed", project: @project %>
+  <% end %>
+<% elsif @next_item.is_a?(Recommendation) %>
+  <%= turbo_stream.replace "inbox-editor" do %>
+    <%= render "projects/recommendation_editor", recommendation: @next_item %>
+  <% end %>
+<% elsif @next_item.is_a?(Article) && @next_item.generation_completed? %>
+  <%= turbo_stream.replace "inbox-editor" do %>
+    <%= render "projects/article_editor", article: @next_item %>
+  <% end %>
+<% else %>
+  <%# No selectable item, show placeholder %>
+  <%= turbo_stream.replace "inbox-editor" do %>
+    <%= turbo_frame_tag "inbox-editor", class: "h-full block" do %>
+      <div class="h-full flex items-center justify-center bg-white">
+        <div class="text-center px-6">
+          <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <h3 class="mt-4 text-lg font-medium text-gray-900">Select an item</h3>
+          <p class="mt-2 text-sm text-gray-500">
+            Choose an item from the list to review.
+          </p>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%# Update progress %>
+<%= turbo_stream.replace "inbox-progress" do %>
+  <% total = @project.articles.where(generation_status: :generation_completed).count %>
+  <% approved = @project.articles.approved.count %>
+  <% pending_recs = @pending_recommendations.count %>
+  <% pending_articles = @inbox_articles.where(generation_status: :generation_completed).count %>
+  <span class="text-sm text-gray-600">
+    <% if pending_recs > 0 || pending_articles > 0 %>
+      <%= pending_recs + pending_articles %> pending
+    <% elsif total > 0 %>
+      <%= approved %>/<%= total %> approved
+    <% else %>
+      No items
+    <% end %>
+  </span>
+  <% if total > 0 %>
+    <div class="w-24 bg-gray-200 rounded-full h-2">
+      <div class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width: <%= (approved * 100 / total) %>%"></div>
+    </div>
+  <% end %>
+<% end %>

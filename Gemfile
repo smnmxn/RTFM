@@ -30,6 +30,9 @@ gem "solid_cable"
 # Background job processing
 gem "sidekiq"
 
+# Redis for ActionCable in development (Sidekiq already uses Redis)
+gem "redis"
+
 # Authentication
 gem "omniauth"
 gem "omniauth-github"

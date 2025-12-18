@@ -1,0 +1,43 @@
+<nav aria-label="Progress">
+  <ol class="flex items-center">
+    <% steps = [
+      { num: 1, name: "Connect" },
+      { num: 2, name: "Analyze" },
+      { num: 3, name: "Sections" },
+      { num: 4, name: "Articles" }
+    ] %>
+    <% steps.each_with_index do |step, index| %>
+      <li class="relative <%= 'flex-1' unless index == steps.length - 1 %>">
+        <div class="flex items-center">
+          <% if step[:num] < current_step %>
+            <!-- Completed step -->
+            <span class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600">
+              <svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+            </span>
+          <% elsif step[:num] == current_step %>
+            <!-- Current step -->
+            <span class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-indigo-600 bg-white">
+              <span class="text-indigo-600 font-semibold"><%= step[:num] %></span>
+            </span>
+          <% else %>
+            <!-- Upcoming step -->
+            <span class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-gray-300 bg-white">
+              <span class="text-gray-500"><%= step[:num] %></span>
+            </span>
+          <% end %>
+
+          <span class="ml-3 text-sm font-medium <%= step[:num] <= current_step ? 'text-indigo-600' : 'text-gray-500' %>">
+            <%= step[:name] %>
+          </span>
+        </div>
+
+        <% unless index == steps.length - 1 %>
+          <!-- Connector line -->
+          <div class="hidden sm:block absolute top-5 left-full w-full h-0.5 <%= step[:num] < current_step ? 'bg-indigo-600' : 'bg-gray-300' %>" style="width: calc(100% - 2.5rem); margin-left: 0.5rem;"></div>
+        <% end %>
+      </li>
+    <% end %>
+  </ol>
+</nav>

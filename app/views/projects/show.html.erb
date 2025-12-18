@@ -1,77 +1,126 @@
+<%= turbo_stream_from @project, :articles %>
+<%= turbo_stream_from @project, :recommendations %>
+<%= turbo_stream_from @project, :inbox %>
+
 <div class="min-h-screen bg-gray-50">
   <!-- Header -->
   <header class="bg-white shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-gray-900">RTFM</h1>
-      <div class="flex items-center gap-4">
-        <%= link_to "Back to Dashboard", dashboard_path, class: "text-indigo-600 hover:text-indigo-800" %>
+    <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-4">
+          <h1 class="text-2xl font-bold text-gray-900"><%= @project.name %></h1>
+          <%= link_to @project.github_repo, "https://github.com/#{@project.github_repo}", target: "_blank", class: "text-sm text-gray-500 hover:text-indigo-600" %>
+        </div>
+        <div class="flex items-center gap-4">
+          <%= link_to help_centre_path(project_slug: @project.slug), target: "_blank", class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-indigo-600 hover:text-indigo-800 font-medium" do %>
+            View Help Centre
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+            </svg>
+          <% end %>
+          <%= link_to "Dashboard", dashboard_path, class: "text-sm text-gray-500 hover:text-gray-700" %>
+        </div>
       </div>
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-    <!-- Project Header -->
-    <div class="bg-white shadow rounded-lg p-6 mb-6">
-      <div class="flex justify-between items-start">
-        <div>
-          <h2 class="text-2xl font-semibold text-gray-900"><%= @project.name %></h2>
-          <p class="mt-1 text-gray-500">
-            <%= link_to @project.github_repo, "https://github.com/#{@project.github_repo}", target: "_blank", class: "hover:text-indigo-600" %>
-          </p>
-        </div>
-        <div class="text-right">
-          <span class="text-sm text-gray-500">
-            <%= @project.updates.count %> changelog updates
-          </span>
+  <main class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+    <div class="bg-white shadow rounded-lg overflow-hidden flex flex-col" style="height: calc(100vh - 160px); min-height: 500px;">
+      <!-- Inbox Header -->
+      <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-semibold text-gray-900">Inbox</h2>
+            <p class="mt-1 text-sm text-gray-500">
+              Review suggestions and articles for your Help Centre.
+            </p>
+          </div>
+          <div id="inbox-progress" class="flex items-center gap-3">
+            <% total = @project.articles.where(generation_status: :generation_completed).count %>
+            <% approved = @project.articles.approved.count %>
+            <% pending_recs = @pending_recommendations.count %>
+            <% pending_articles = @inbox_articles.where(generation_status: :generation_completed).count %>
+            <span class="text-sm text-gray-600">
+              <% if pending_recs > 0 || pending_articles > 0 %>
+                <%= pending_recs + pending_articles %> pending
+              <% elsif total > 0 %>
+                <%= approved %>/<%= total %> approved
+              <% else %>
+                No items
+              <% end %>
+            </span>
+            <% if total > 0 %>
+              <div class="w-24 bg-gray-200 rounded-full h-2">
+                <div class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width: <%= (approved * 100 / total) %>%"></div>
+              </div>
+            <% end %>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Subscribe to analysis updates -->
-    <%= turbo_stream_from @project, :analysis %>
-    <%= turbo_stream_from @project, :updates %>
+      <!-- Split View -->
+      <div class="flex-1 flex overflow-hidden">
+        <!-- Left Panel: Inbox List -->
+        <div class="w-80 flex-shrink-0 border-r border-gray-200 flex flex-col bg-gray-50">
+          <div id="inbox-list" class="flex-1 overflow-y-auto">
+            <% if @inbox_empty %>
+              <div class="p-6 text-center text-gray-500">
+                <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <p class="mt-2 text-sm font-medium text-gray-900">All done!</p>
+                <p class="mt-1 text-xs text-gray-400">No pending items to review.</p>
+              </div>
+            <% else %>
+              <!-- Articles Section (higher priority, always render wrapper for turbo stream updates) -->
+              <div id="articles-section">
+                <% if @inbox_articles.any? %>
+                  <div class="px-4 py-2 bg-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wide sticky top-0">
+                    Articles (<%= @inbox_articles.count %>)
+                  </div>
+                  <div id="articles-list" class="divide-y divide-gray-200">
+                    <% @inbox_articles.each do |article| %>
+                      <%= render "projects/article_row",
+                          article: article,
+                          selected: @selected_article&.id == article.id %>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
 
-    <!-- Codebase Analysis -->
-    <%= render "projects/analysis", project: @project %>
-
-    <!-- Recommended Support Articles -->
-    <%= render "recommendations/list", recommendations: @project.recommendations.pending, project: @project %>
-
-    <!-- Generated Articles -->
-    <%= render "articles/list", articles: @project.articles.order(created_at: :desc) %>
-
-    <!-- Updates / Changelogs -->
-    <% if @project.updates.any? %>
-      <div class="bg-white shadow rounded-lg mb-6">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900">Changelog Updates</h3>
-          <p class="mt-1 text-sm text-gray-500">
-            AI-generated changelogs from merged pull requests
-          </p>
+              <!-- Suggestions Section -->
+              <%= render "projects/recommendations_section",
+                  pending_recommendations: @pending_recommendations,
+                  selected_recommendation_id: (@selected_recommendation&.id if @selected_article.nil?) %>
+            <% end %>
+          </div>
         </div>
-        <div class="divide-y divide-gray-200">
-          <% @project.updates.order(created_at: :desc).each do |update| %>
-            <%= render "updates/card", update: update %>
+
+        <!-- Right Panel: Editor -->
+        <div class="flex-1 flex flex-col overflow-hidden bg-gray-50">
+          <% if @inbox_empty %>
+            <%= render "projects/all_reviewed", project: @project %>
+          <% elsif @selected_article %>
+            <%= render "projects/article_editor", article: @selected_article %>
+          <% elsif @selected_recommendation %>
+            <%= render "projects/recommendation_editor", recommendation: @selected_recommendation %>
+          <% else %>
+            <%= turbo_frame_tag "inbox-editor", class: "h-full block" do %>
+              <div class="h-full flex items-center justify-center bg-white">
+                <div class="text-center px-6">
+                  <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                  <h3 class="mt-4 text-lg font-medium text-gray-900">Select an item</h3>
+                  <p class="mt-2 text-sm text-gray-500">
+                    Choose an item from the list to review.
+                  </p>
+                </div>
+              </div>
+            <% end %>
           <% end %>
         </div>
       </div>
-    <% end %>
-
-    <!-- Pull Requests -->
-    <div class="bg-white shadow rounded-lg">
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">Merged Pull Requests</h3>
-        <p class="mt-1 text-sm text-gray-500">
-          Recent merged PRs from this repository
-        </p>
-      </div>
-
-      <%= turbo_frame_tag "pull_request_list", src: pull_requests_project_path(@project), loading: :lazy do %>
-        <div class="p-6 text-center">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-          <p class="mt-2 text-sm text-gray-500">Loading pull requests...</p>
-        </div>
-      <% end %>
     </div>
   </main>
 </div>

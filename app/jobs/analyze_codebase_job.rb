@@ -31,6 +31,14 @@ class AnalyzeCodebaseJob < ApplicationJob
           project_overview: result[:overview]
         )
         Rails.logger.info "[AnalyzeCodebaseJob] Analysis completed for project #{project.id}"
+
+        # Trigger section suggestions after successful analysis
+        SuggestSectionsJob.perform_later(project_id: project.id)
+
+        # Auto-advance onboarding if in wizard
+        if project.in_onboarding? && project.onboarding_step == "analyze"
+          project.advance_onboarding!("sections")
+        end
       else
         project.update!(analysis_status: "failed")
         Rails.logger.error "[AnalyzeCodebaseJob] Analysis failed for project #{project.id}: #{result[:error]}"
@@ -38,6 +46,9 @@ class AnalyzeCodebaseJob < ApplicationJob
 
       # Broadcast update to the project page
       broadcast_analysis_update(project)
+
+      # Broadcast to onboarding view if in wizard
+      broadcast_onboarding_update(project) if project.in_onboarding? || project.onboarding_step == "sections"
     rescue StandardError => e
       project.update!(analysis_status: "failed")
       Rails.logger.error "[AnalyzeCodebaseJob] Analysis error for project #{project.id}: #{e.message}"
@@ -96,6 +107,7 @@ class AnalyzeCodebaseJob < ApplicationJob
         metadata_raw = File.read(File.join(output_dir, "metadata.json")).strip rescue nil
         commit_sha = File.read(File.join(output_dir, "commit_sha.txt")).strip rescue nil
         overview = File.read(File.join(output_dir, "overview.txt")).strip rescue nil
+        target_users_raw = File.read(File.join(output_dir, "target_users.json")).strip rescue nil
 
         # Parse metadata JSON (strip markdown code fences if present)
         metadata = begin
@@ -111,6 +123,19 @@ class AnalyzeCodebaseJob < ApplicationJob
           Rails.logger.warn "[AnalyzeCodebaseJob] Failed to parse metadata JSON: #{e.message}"
           Rails.logger.warn "[AnalyzeCodebaseJob] Raw metadata: #{metadata_raw[0..200]}"
           nil
+        end
+
+        # Parse target users JSON and add to metadata
+        if target_users_raw.present? && metadata
+          begin
+            clean_json = target_users_raw
+              .gsub(/\A\s*```json\s*/i, "")
+              .gsub(/\s*```\s*\z/, "")
+              .strip
+            metadata["target_users"] = JSON.parse(clean_json)
+          rescue JSON::ParserError => e
+            Rails.logger.warn "[AnalyzeCodebaseJob] Failed to parse target_users JSON: #{e.message}"
+          end
         end
 
         if summary.present?
@@ -157,6 +182,15 @@ class AnalyzeCodebaseJob < ApplicationJob
       [ project, :analysis ],
       target: ActionView::RecordIdentifier.dom_id(project, :analysis),
       partial: "projects/analysis",
+      locals: { project: project }
+    )
+  end
+
+  def broadcast_onboarding_update(project)
+    Turbo::StreamsChannel.broadcast_replace_to(
+      [ project, :onboarding ],
+      target: ActionView::RecordIdentifier.dom_id(project, :onboarding_analyze),
+      partial: "onboarding/projects/analyze_status",
       locals: { project: project }
     )
   end

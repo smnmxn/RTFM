@@ -1,0 +1,212 @@
+require "open3"
+require "fileutils"
+require "json"
+require "timeout"
+
+class GenerateSectionRecommendationsJob < ApplicationJob
+  queue_as :analysis
+
+  GENERATION_TIMEOUT = 300 # 5 minutes
+
+  def perform(project_id:, section_id:)
+    project = Project.find_by(id: project_id)
+    section = Section.find_by(id: section_id)
+    return unless project && section
+
+    # Mark section as generating (if not already set by controller)
+    if section.recommendations_status.nil?
+      section.update!(
+        recommendations_status: "running",
+        recommendations_started_at: Time.current
+      )
+    end
+
+    begin
+      result = run_recommendations_generation(project, section)
+
+      # Re-check that project/section still exist before creating recommendations
+      return unless Project.exists?(project_id) && Section.exists?(section_id)
+
+      if result[:success]
+        create_recommendations(project, section, result[:recommendations])
+        section.reload.update!(recommendations_status: "completed")
+        broadcast_inbox_update(project)
+        Rails.logger.info "[GenerateSectionRecommendationsJob] Generated #{result[:recommendations]&.size || 0} recommendations for section #{section.id}"
+      else
+        section.reload.update!(recommendations_status: "failed")
+        Rails.logger.warn "[GenerateSectionRecommendationsJob] Generation failed for section #{section.id}: #{result[:error]}"
+      end
+    rescue ActiveRecord::RecordNotFound, ActiveRecord::InvalidForeignKey => e
+      # Project or section was deleted while job was running - this is expected, just log and exit
+      Rails.logger.info "[GenerateSectionRecommendationsJob] Project or section deleted during job execution: #{e.message}"
+    rescue StandardError => e
+      begin
+        section.reload.update!(recommendations_status: "failed")
+      rescue ActiveRecord::RecordNotFound
+        # Section was deleted, nothing to update
+      end
+      Rails.logger.error "[GenerateSectionRecommendationsJob] Error for section #{section_id}: #{e.message}"
+    end
+  end
+
+  private
+
+  def run_recommendations_generation(project, section)
+    timestamp = Time.current.to_i
+    input_dir = Rails.root.join("tmp", "section_recommendations", "input_#{section.id}_#{timestamp}")
+    output_dir = Rails.root.join("tmp", "section_recommendations", "output_#{section.id}_#{timestamp}")
+
+    FileUtils.mkdir_p(input_dir)
+    FileUtils.mkdir_p(output_dir)
+    FileUtils.chmod(0777, output_dir)
+
+    begin
+      docker_image = "rtfm/claude-analyzer:latest"
+      build_docker_image_if_needed(docker_image)
+
+      File.write(File.join(input_dir, "context.json"), build_context_json(project, section))
+
+      cmd = [
+        "docker", "run",
+        "--rm",
+        "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
+        "-e", "GITHUB_TOKEN=#{project.user.github_token}",
+        "-e", "GITHUB_REPO=#{project.github_repo}",
+        "-v", "#{input_dir}:/input:ro",
+        "-v", "#{output_dir}:/output",
+        "--network", "host",
+        "--entrypoint", "/generate_section_recommendations.sh",
+        docker_image
+      ]
+
+      Rails.logger.info "[GenerateSectionRecommendationsJob] Running Docker for section #{section.id} (#{section.name})"
+
+      stdout, stderr, status = Timeout.timeout(GENERATION_TIMEOUT) do
+        Open3.capture3(*cmd)
+      end
+
+      Rails.logger.info "[GenerateSectionRecommendationsJob] Exit status: #{status.exitstatus}"
+      Rails.logger.debug "[GenerateSectionRecommendationsJob] Stdout: #{stdout[0..500]}" if stdout.present?
+      Rails.logger.debug "[GenerateSectionRecommendationsJob] Stderr: #{stderr[0..500]}" if stderr.present?
+
+      if status.success?
+        json_content = read_output_file(output_dir, "recommendations.json")
+        if json_content.present?
+          cleaned = extract_json(json_content)
+          parsed = JSON.parse(cleaned)
+          { success: true, recommendations: parsed["articles"] || [] }
+        else
+          { success: false, error: "No output generated" }
+        end
+      else
+        { success: false, error: "Docker command failed: #{stderr}" }
+      end
+    rescue Timeout::Error
+      { success: false, error: "Generation timed out after #{GENERATION_TIMEOUT} seconds" }
+    rescue JSON::ParserError => e
+      Rails.logger.warn "[GenerateSectionRecommendationsJob] JSON parse error: #{e.message}"
+      { success: false, error: "Failed to parse recommendations JSON" }
+    ensure
+      FileUtils.rm_rf(input_dir)
+      FileUtils.rm_rf(output_dir)
+    end
+  end
+
+  def build_context_json(project, section)
+    # Get ALL existing article titles across ALL sections to avoid duplicates
+    all_existing_articles = project.articles.pluck(:title)
+    all_existing_recommendations = project.recommendations
+      .where(status: [ :pending, :generated ])
+      .pluck(:title)
+
+    {
+      project_name: project.name,
+      project_overview: project.project_overview,
+      analysis_summary: project.analysis_summary,
+      tech_stack: project.analysis_metadata&.dig("tech_stack") || [],
+      key_patterns: project.analysis_metadata&.dig("key_patterns") || [],
+      components: project.analysis_metadata&.dig("components") || [],
+      target_users: project.analysis_metadata&.dig("target_users") || [],
+      all_sections: project.sections.accepted.ordered.map { |s|
+        { name: s.name, slug: s.slug, description: s.description }
+      },
+      section_name: section.name,
+      section_slug: section.slug,
+      section_description: section.description,
+      existing_article_titles: all_existing_articles,
+      existing_recommendation_titles: all_existing_recommendations
+    }.to_json
+  end
+
+  def create_recommendations(project, section, recommendations)
+    return if recommendations.blank?
+
+    recommendations.each do |rec|
+      Recommendation.create!(
+        project: project,
+        section: section,
+        source_update: nil,
+        title: rec["title"],
+        description: rec["description"],
+        justification: rec["justification"],
+        status: :pending
+      )
+    end
+  end
+
+  def read_output_file(output_dir, filename)
+    path = File.join(output_dir, filename)
+    return nil unless File.exist?(path)
+    File.read(path).strip.presence
+  end
+
+  def extract_json(raw_content)
+    content = raw_content.strip
+
+    # Remove markdown code fences if present
+    if content.start_with?("```")
+      content = content.sub(/\A```(?:json)?\s*\n?/, "")
+      content = content.sub(/\n?```\s*\z/, "")
+    end
+
+    # Try to find JSON object in content
+    if (match = content.match(/\{[\s\S]*\}/))
+      match[0]
+    else
+      content
+    end
+  end
+
+  def build_docker_image_if_needed(image_name)
+    stdout, _, status = Open3.capture3("docker", "images", "-q", image_name)
+
+    if stdout.strip.empty?
+      dockerfile_path = Rails.root.join("docker", "claude-analyzer")
+      Rails.logger.info "[GenerateSectionRecommendationsJob] Building Docker image #{image_name}"
+
+      _, stderr, status = Open3.capture3(
+        "docker", "build", "-t", image_name, dockerfile_path.to_s
+      )
+
+      unless status.success?
+        raise "Failed to build Docker image: #{stderr}"
+      end
+    end
+  end
+
+  def broadcast_inbox_update(project)
+    pending_recommendations = project.recommendations.pending
+      .includes(:section)
+      .order(created_at: :asc)
+
+    Turbo::StreamsChannel.broadcast_replace_to(
+      [ project, :inbox ],
+      target: "recommendations-section",
+      partial: "projects/recommendations_section",
+      locals: {
+        pending_recommendations: pending_recommendations,
+        selected_recommendation_id: nil
+      }
+    )
+  end
+end

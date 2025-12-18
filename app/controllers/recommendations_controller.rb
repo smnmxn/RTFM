@@ -16,6 +16,7 @@ class RecommendationsController < ApplicationController
     @article = Article.create!(
       project: @recommendation.project,
       recommendation: @recommendation,
+      section: @recommendation.section,
       title: @recommendation.title,
       content: "Generating article...",
       generation_status: :generation_running

@@ -92,6 +92,26 @@ class ArticlesController < ApplicationController
     end
   end
 
+  def publish
+    if @article.generation_completed?
+      @article.publish!
+      respond_to do |format|
+        format.turbo_stream
+        format.html { redirect_to project_article_path(@article.project, @article), notice: "Article published." }
+      end
+    else
+      redirect_to project_article_path(@article.project, @article), alert: "Cannot publish incomplete article."
+    end
+  end
+
+  def unpublish
+    @article.unpublish!
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to project_article_path(@article.project, @article), notice: "Article unpublished." }
+    end
+  end
+
   private
 
   def set_article

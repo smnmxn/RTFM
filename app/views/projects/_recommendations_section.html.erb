@@ -1,0 +1,14 @@
+<div id="recommendations-section">
+  <% if pending_recommendations.any? %>
+    <div class="px-4 py-2 bg-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wide sticky top-0">
+      Suggestions (<%= pending_recommendations.count %>)
+    </div>
+    <div id="recommendations-list" class="divide-y divide-gray-200">
+      <% pending_recommendations.each_with_index do |recommendation, index| %>
+        <%= render "projects/recommendation_row",
+            recommendation: recommendation,
+            selected: selected_recommendation_id == recommendation.id %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

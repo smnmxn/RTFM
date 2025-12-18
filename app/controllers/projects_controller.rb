@@ -1,14 +1,126 @@
 class ProjectsController < ApplicationController
+  before_action :set_project, except: [ :new, :create, :repositories ]
+
   def new
     @repositories = []
   end
 
   def show
-    @project = current_user.projects.find(params[:id])
+    @pending_recommendations = @project.recommendations.pending
+      .includes(:section)
+      .order(created_at: :asc)
+
+    @inbox_articles = @project.articles
+      .where(review_status: :unreviewed)
+      .where(generation_status: [ :generation_running, :generation_completed ])
+      .includes(:section)
+      .order(created_at: :asc)
+
+    # Select first completed article (higher priority), or first recommendation
+    @selected_article = @inbox_articles.where(generation_status: :generation_completed).first
+    @selected_recommendation = @selected_article.nil? ? @pending_recommendations.first : nil
+
+    @inbox_empty = @pending_recommendations.empty? && @inbox_articles.empty?
+  end
+
+  def select_article
+    @article = @project.articles.find(params[:article_id])
+
+    render partial: "projects/article_editor", locals: { article: @article }
+  end
+
+  def approve_article
+    @article = @project.articles.find(params[:article_id])
+    article_created_at = @article.created_at
+    @article.approve!
+    @article.publish!
+
+    load_inbox_items
+    @next_item = find_next_item_after_article(article_created_at)
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to project_path(@project) }
+    end
+  end
+
+  def reject_article
+    @article = @project.articles.find(params[:article_id])
+    article_created_at = @article.created_at
+    @article.reject!
+
+    load_inbox_items
+    @next_item = find_next_item_after_article(article_created_at)
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to project_path(@project) }
+    end
+  end
+
+  def undo_reject_article
+    @article = @project.articles.find(params[:article_id])
+    @article.update!(review_status: :unreviewed, reviewed_at: nil)
+
+    load_inbox_items
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to project_path(@project) }
+    end
+  end
+
+  # Recommendation inbox actions
+  def select_recommendation
+    @recommendation = @project.recommendations.find(params[:recommendation_id])
+
+    render partial: "projects/recommendation_editor", locals: { recommendation: @recommendation }
+  end
+
+  def accept_recommendation
+    @recommendation = @project.recommendations.find(params[:recommendation_id])
+    recommendation_created_at = @recommendation.created_at
+
+    # Create article with generating status
+    @article = @project.articles.create!(
+      recommendation: @recommendation,
+      section: @recommendation.section,
+      title: @recommendation.title,
+      content: "Generating article...",
+      generation_status: :generation_running,
+      review_status: :unreviewed
+    )
+
+    # Mark recommendation as generated
+    @recommendation.update!(status: :generated)
+
+    # Enqueue article generation job
+    GenerateArticleJob.perform_later(article_id: @article.id)
+
+    load_inbox_items
+    @next_item = find_next_item_after_recommendation(recommendation_created_at)
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to project_path(@project) }
+    end
+  end
+
+  def reject_recommendation
+    @recommendation = @project.recommendations.find(params[:recommendation_id])
+    recommendation_created_at = @recommendation.created_at
+    @recommendation.update!(status: :rejected, rejected_at: Time.current)
+
+    load_inbox_items
+    @next_item = find_next_item_after_recommendation(recommendation_created_at)
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to project_path(@project) }
+    end
   end
 
   def pull_requests
-    @project = current_user.projects.find(params[:id])
     service = GithubPullRequestsService.new(current_user)
     page = (params[:page] || 1).to_i
     result = service.call(@project.github_repo, page: page)
@@ -25,8 +137,6 @@ class ProjectsController < ApplicationController
   end
 
   def analyze
-    @project = current_user.projects.find(params[:id])
-
     if @project.analysis_status == "running"
       redirect_to project_path(@project), alert: "Analysis is already in progress."
       return
@@ -39,7 +149,6 @@ class ProjectsController < ApplicationController
   end
 
   def analyze_pull_request
-    @project = current_user.projects.find(params[:id])
     pr_number = params[:pr_number].to_i
 
     # Check if analysis is already running for this PR
@@ -66,8 +175,6 @@ class ProjectsController < ApplicationController
   end
 
   def generate_recommendations
-    @project = current_user.projects.find(params[:id])
-
     unless @project.analysis_status == "completed"
       redirect_to project_path(@project), alert: "Please run codebase analysis first."
       return
@@ -90,6 +197,9 @@ class ProjectsController < ApplicationController
       @page = page
       @has_more = result.repositories.size == 30
       @connected_repos = current_user.projects.pluck(:github_repo)
+
+      # Pass through onboarding project if in wizard
+      @onboarding_project = current_user.projects.find_by(id: params[:onboarding_project_id]) if params[:onboarding_project_id].present?
 
       render partial: "projects/repository_list"
     else
@@ -139,8 +249,6 @@ class ProjectsController < ApplicationController
   end
 
   def destroy
-    @project = current_user.projects.find(params[:id])
-
     # Remove webhook from GitHub if we have its ID
     if @project.github_webhook_id.present?
       webhook_service = GithubWebhookService.new(current_user)
@@ -155,6 +263,49 @@ class ProjectsController < ApplicationController
   end
 
   private
+
+  def set_project
+    @project = current_user.projects.find(params[:id])
+  end
+
+  def load_inbox_items
+    @pending_recommendations = @project.recommendations.pending
+      .includes(:section)
+      .order(created_at: :asc)
+
+    @inbox_articles = @project.articles
+      .where(review_status: :unreviewed)
+      .where(generation_status: [ :generation_running, :generation_completed ])
+      .includes(:section)
+      .order(created_at: :asc)
+
+    @inbox_empty = @pending_recommendations.empty? && @inbox_articles.empty?
+  end
+
+  # Find the next inbox item after an article (by created_at order)
+  # Articles appear above recommendations, so after an article we check:
+  # 1. Next completed article (created after this one)
+  # 2. First recommendation (if no more articles)
+  def find_next_item_after_article(article_created_at)
+    next_article = @inbox_articles
+      .where(generation_status: :generation_completed)
+      .where("created_at > ?", article_created_at)
+      .first
+
+    return next_article if next_article
+
+    # No more articles after this one, get first recommendation
+    @pending_recommendations.first
+  end
+
+  # Find the next inbox item after a recommendation (by created_at order)
+  # Recommendations appear below articles, so after a recommendation we only check:
+  # 1. Next recommendation (created after this one)
+  def find_next_item_after_recommendation(recommendation_created_at)
+    @pending_recommendations
+      .where("created_at > ?", recommendation_created_at)
+      .first
+  end
 
   def handle_webhook_error(error, repo_full_name)
     case error
