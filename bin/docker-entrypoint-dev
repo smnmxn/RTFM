@@ -1,0 +1,35 @@
+#!/bin/bash
+set -e
+
+# Development Docker entrypoint for RTFM
+# Handles database setup and cleanup before starting services
+
+echo "==> Starting RTFM development container..."
+
+# Remove stale PID file if it exists (common after unclean shutdown)
+if [ -f tmp/pids/server.pid ]; then
+  echo "==> Removing stale PID file..."
+  rm tmp/pids/server.pid
+fi
+
+# Ensure storage directory exists
+mkdir -p storage
+
+# Wait for Redis to be available
+if [ -n "$REDIS_URL" ]; then
+  echo "==> Waiting for Redis..."
+  until nc -z redis 6379 2>/dev/null; do
+    sleep 1
+  done
+  echo "==> Redis is available"
+fi
+
+# Run database migrations (only for web service)
+if [ "$1" = "bin/rails" ] && [ "$2" = "server" ]; then
+  echo "==> Running database migrations..."
+  bin/rails db:prepare
+fi
+
+# Execute the main command
+echo "==> Executing: $@"
+exec "$@"

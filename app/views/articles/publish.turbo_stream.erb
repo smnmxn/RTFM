@@ -1,2 +1,20 @@
 <%= turbo_stream.replace dom_id(@article), partial: "articles/card", locals: { article: @article } %>
 <%= turbo_stream.replace "article_header", partial: "articles/header", locals: { article: @article } %>
+
+<%# Also update the Articles tab editor if viewing from there %>
+<%= turbo_stream.replace "articles-editor-frame" do %>
+  <%= render "projects/articles_editor",
+      article: @article,
+      project: @article.project,
+      sections: @article.project.sections.visible.ordered %>
+<% end %>
+
+<%# Update article row in the articles list %>
+<%= turbo_stream.replace dom_id(@article, :articles_row) do %>
+  <%= render "projects/articles_article_row",
+      article: @article,
+      project: @article.project,
+      selected: true,
+      index: 0,
+      total: 1 %>
+<% end %>

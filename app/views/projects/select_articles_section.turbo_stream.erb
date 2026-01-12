@@ -1,0 +1,23 @@
+<%# Update articles list with new section's articles %>
+<%= turbo_stream.replace "articles-list-frame" do %>
+  <%= turbo_frame_tag "articles-list-frame" do %>
+    <%= render "projects/articles_list",
+        articles: @articles,
+        section: @section_id == "uncategorized" ? nil : @project.sections.find_by(id: @section_id),
+        project: @project %>
+  <% end %>
+<% end %>
+
+<%# Update editor with first article or empty state %>
+<% if @selected_article %>
+  <%= turbo_stream.replace "articles-editor-frame" do %>
+    <%= render "projects/articles_editor",
+        article: @selected_article,
+        project: @project,
+        sections: @project.sections.visible.ordered %>
+  <% end %>
+<% else %>
+  <%= turbo_stream.replace "articles-editor-frame" do %>
+    <%= render "projects/articles_empty_state" %>
+  <% end %>
+<% end %>

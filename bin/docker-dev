@@ -1,0 +1,110 @@
+#!/bin/bash
+set -e
+
+# Helper script for common Docker development tasks
+# Usage: bin/docker-dev [command]
+
+case "$1" in
+  setup)
+    echo "==> Building development containers..."
+    docker compose build
+    echo "==> Creating .env.docker from example..."
+    if [ ! -f .env.docker ]; then
+      cp .env.docker.example .env.docker
+      echo "    Created .env.docker - please edit with your credentials"
+    else
+      echo "    .env.docker already exists, skipping"
+    fi
+    echo "==> Setup complete! Run 'bin/docker-dev up' to start"
+    ;;
+
+  up)
+    echo "==> Starting all services..."
+    docker compose up
+    ;;
+
+  upd)
+    echo "==> Starting all services in background..."
+    docker compose up -d
+    echo "==> Services started. Use 'bin/docker-dev logs' to view logs"
+    ;;
+
+  down)
+    echo "==> Stopping all services..."
+    docker compose down
+    ;;
+
+  restart)
+    echo "==> Restarting all services..."
+    docker compose restart
+    ;;
+
+  rebuild)
+    echo "==> Rebuilding containers..."
+    docker compose build --no-cache
+    docker compose up -d
+    ;;
+
+  console|c)
+    echo "==> Opening Rails console..."
+    docker compose exec web bin/rails console
+    ;;
+
+  bash|sh)
+    echo "==> Opening bash shell in web container..."
+    docker compose exec web bash
+    ;;
+
+  logs)
+    docker compose logs -f "${@:2}"
+    ;;
+
+  test|t)
+    echo "==> Running tests..."
+    docker compose exec web bin/rails test "${@:2}"
+    ;;
+
+  migrate)
+    echo "==> Running database migrations..."
+    docker compose exec web bin/rails db:migrate
+    ;;
+
+  bundle)
+    echo "==> Running bundle install..."
+    docker compose exec web bundle install
+    ;;
+
+  reset)
+    echo "==> Full reset: removing containers and volumes..."
+    docker compose down -v
+    echo "==> Rebuilding..."
+    docker compose build
+    echo "==> Reset complete. Run 'bin/docker-dev up' to start fresh"
+    ;;
+
+  status)
+    docker compose ps
+    ;;
+
+  *)
+    echo "RTFM Docker Development Helper"
+    echo ""
+    echo "Usage: bin/docker-dev [command]"
+    echo ""
+    echo "Commands:"
+    echo "  setup      Initial setup (build + create .env.docker)"
+    echo "  up         Start all services (foreground)"
+    echo "  upd        Start all services (detached/background)"
+    echo "  down       Stop all services"
+    echo "  restart    Restart all services"
+    echo "  rebuild    Rebuild containers without cache"
+    echo "  console    Open Rails console"
+    echo "  bash       Open bash shell in web container"
+    echo "  logs       Follow logs (optionally: logs web|worker|css|redis)"
+    echo "  test       Run tests (optionally: test path/to/test.rb)"
+    echo "  migrate    Run database migrations"
+    echo "  bundle     Run bundle install"
+    echo "  reset      Full reset (removes volumes, rebuilds)"
+    echo "  status     Show container status"
+    ;;
+esac

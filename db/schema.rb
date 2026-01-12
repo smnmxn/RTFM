@@ -10,11 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_18_090553) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_18_134938) do
   create_table "articles", force: :cascade do |t|
     t.text "content"
     t.datetime "created_at", null: false
     t.string "generation_status", default: "pending", null: false
+    t.integer "position", default: 0
     t.integer "project_id", null: false
     t.datetime "published_at"
     t.integer "recommendation_id", null: false
@@ -28,6 +29,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_18_090553) do
     t.index ["project_id"], name: "index_articles_on_project_id"
     t.index ["recommendation_id"], name: "index_articles_on_recommendation_id"
     t.index ["review_status"], name: "index_articles_on_review_status"
+    t.index ["section_id", "position"], name: "index_articles_on_section_id_and_position"
     t.index ["section_id"], name: "index_articles_on_section_id"
   end
 
@@ -92,6 +94,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_18_090553) do
 
   create_table "updates", force: :cascade do |t|
     t.string "analysis_status"
+    t.string "commit_sha"
+    t.string "commit_url"
     t.text "content"
     t.datetime "created_at", null: false
     t.integer "project_id", null: false
@@ -100,9 +104,12 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_18_090553) do
     t.string "pull_request_url"
     t.json "recommended_articles"
     t.text "social_snippet"
+    t.string "source_type", default: "pull_request"
     t.string "status", default: "draft", null: false
     t.string "title"
     t.datetime "updated_at", null: false
+    t.index ["commit_sha"], name: "index_updates_on_commit_sha"
+    t.index ["project_id", "source_type"], name: "index_updates_on_project_id_and_source_type"
     t.index ["project_id"], name: "index_updates_on_project_id"
   end
 

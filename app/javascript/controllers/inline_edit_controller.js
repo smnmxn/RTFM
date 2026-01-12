@@ -50,19 +50,18 @@ export default class extends Controller {
       if (response.ok) {
         const html = await response.text()
         Turbo.renderStreamMessage(html)
-        this.originalValue = newValue
+        // Turbo replaces the DOM with fresh server content - no need to call cancel()
       } else {
         this.showError()
-        this.inputTarget.value = this.originalValue
+        this.cancel()
       }
     } catch (error) {
       console.error("Save failed:", error)
       this.showError()
-      this.inputTarget.value = this.originalValue
+      this.cancel()
     } finally {
       this.savingValue = false
       this.hideSavingIndicator()
-      this.cancel()
     }
   }
 

@@ -21,6 +21,11 @@ class ProjectsController < ApplicationController
     @selected_recommendation = @selected_article.nil? ? @pending_recommendations.first : nil
 
     @inbox_empty = @pending_recommendations.empty? && @inbox_articles.empty?
+
+    # Articles tab data
+    @articles_sections = @project.sections.visible.ordered
+    @uncategorized_articles_count = @project.articles.for_help_centre.where(section: nil).count
+    @total_published_articles = @project.articles.for_help_centre.count
   end
 
   def select_article
@@ -120,6 +125,37 @@ class ProjectsController < ApplicationController
     end
   end
 
+  # Articles tab actions
+  def select_articles_section
+    @section_id = params[:section_id]
+
+    @articles = if @section_id == "uncategorized"
+      @project.articles.for_help_centre.where(section: nil).ordered
+    elsif @section_id.present?
+      @project.sections.find(@section_id).articles.for_help_centre.ordered
+    else
+      []
+    end
+
+    @selected_article = @articles.first
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to project_path(@project, anchor: "articles") }
+    end
+  end
+
+  def select_articles_article
+    @article = @project.articles.for_help_centre.find(params[:article_id])
+    @sections = @project.sections.visible.ordered
+
+    render partial: "projects/articles_editor", locals: {
+      article: @article,
+      project: @project,
+      sections: @sections
+    }
+  end
+
   def pull_requests
     service = GithubPullRequestsService.new(current_user)
     page = (params[:page] || 1).to_i
@@ -134,6 +170,72 @@ class ProjectsController < ApplicationController
     else
       render partial: "projects/pull_request_error", locals: { error: result.error }
     end
+  end
+
+  def code_history
+    @view_type = params[:view].presence || "prs"
+    page = (params[:page] || 1).to_i
+
+    if @view_type == "commits"
+      service = GithubCommitsService.new(current_user)
+      result = service.call(@project.github_repo, page: page)
+
+      if result.success?
+        @commits = result.commits
+        @updates_by_commit = @project.updates
+          .from_commits
+          .where(commit_sha: @commits.map { |c| c[:sha] })
+          .index_by(&:commit_sha)
+        @page = page
+        @has_more = result.commits.size == 30
+
+        render partial: "projects/code_history_commits", locals: { project: @project }
+      else
+        render partial: "projects/pull_request_error", locals: { error: result.error }
+      end
+    else
+      service = GithubPullRequestsService.new(current_user)
+      result = service.call(@project.github_repo, page: page)
+
+      if result.success?
+        @pull_requests = result.pull_requests
+        @updates_by_pr = @project.updates
+          .from_pull_requests
+          .where(pull_request_number: @pull_requests.map { |pr| pr[:number] })
+          .index_by(&:pull_request_number)
+        @page = page
+        @has_more = result.pull_requests.size == 30
+
+        render partial: "projects/code_history_timeline", locals: { project: @project }
+      else
+        render partial: "projects/pull_request_error", locals: { error: result.error }
+      end
+    end
+  end
+
+  def analyze_commit
+    commit_sha = params[:commit_sha]
+
+    # Check if analysis is already running for this commit
+    existing_update = @project.updates.find_by(commit_sha: commit_sha, source_type: :commit)
+    if existing_update&.analysis_status == "running"
+      redirect_to project_path(@project, anchor: "code-history"), alert: "Analysis is already in progress for commit #{commit_sha[0..6]}."
+      return
+    end
+
+    # Get commit details from form params
+    commit_title = params[:commit_title].presence || "Commit #{commit_sha[0..6]}"
+    commit_url = params[:commit_url].presence || "https://github.com/#{@project.github_repo}/commit/#{commit_sha}"
+
+    AnalyzeCommitJob.perform_later(
+      project_id: @project.id,
+      commit_sha: commit_sha,
+      commit_url: commit_url,
+      commit_title: commit_title,
+      commit_message: params[:commit_message].to_s
+    )
+
+    redirect_to project_path(@project, anchor: "code-history"), notice: "Analysis started for commit #{commit_sha[0..6]}. This may take a few minutes."
   end
 
   def analyze

@@ -18,6 +18,7 @@ RUN mkdir -p /output /repo /input && chown -R analyzer:analyzer /output /repo /i
 # Copy analysis scripts and make executable by all
 COPY --chmod=755 analyze.sh /analyze.sh
 COPY --chmod=755 analyze_pr.sh /analyze_pr.sh
+COPY --chmod=755 analyze_commit.sh /analyze_commit.sh
 COPY --chmod=755 generate_article.sh /generate_article.sh
 COPY --chmod=755 generate_project_recommendations.sh /generate_project_recommendations.sh
 COPY --chmod=755 generate_section_recommendations.sh /generate_section_recommendations.sh

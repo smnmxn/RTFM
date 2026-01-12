@@ -51,9 +51,11 @@ Rails.application.routes.draw do
     end
     member do
       get :pull_requests
+      get :code_history
       post :analyze
       post :generate_recommendations
       post "pull_requests/:pr_number/analyze", to: "projects#analyze_pull_request", as: :analyze_pull_request
+      post "commits/:commit_sha/analyze", to: "projects#analyze_commit", as: :analyze_commit
       # Inbox actions (article review)
       get :select_article
       post :approve_article
@@ -63,6 +65,9 @@ Rails.application.routes.draw do
       get :select_recommendation
       post :accept_recommendation
       post :reject_recommendation
+      # Articles tab actions
+      post :select_articles_section
+      get :select_articles_article
     end
     resources :recommendations, only: [] do
       member do
@@ -70,7 +75,7 @@ Rails.application.routes.draw do
         post :generate
       end
     end
-    resources :articles, only: [ :show ] do
+    resources :articles, only: [ :show, :destroy ] do
       member do
         post :regenerate
         patch :update_field
@@ -78,6 +83,9 @@ Rails.application.routes.draw do
         delete :remove_array_item
         post :publish
         post :unpublish
+        patch :move_to_section
+        patch :reorder
+        post :duplicate
       end
     end
     resources :sections do

@@ -1,0 +1,77 @@
+<!-- Articles Header -->
+<div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+  <div class="flex items-center justify-between">
+    <div>
+      <h2 class="text-xl font-semibold text-gray-900">Articles</h2>
+      <p class="mt-1 text-sm text-gray-500">
+        Manage published articles in your Help Centre.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Three Column Layout -->
+<div class="flex-1 flex overflow-hidden">
+  <!-- Left: Sections Sidebar -->
+  <div class="w-56 flex-shrink-0 border-r border-gray-200 flex flex-col bg-gray-50">
+    <div class="px-4 py-3 border-b border-gray-200 bg-gray-100">
+      <h3 class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Sections</h3>
+    </div>
+    <div id="articles-sections-list" class="flex-1 overflow-y-auto">
+      <% first_section = sections.find { |s| s.articles.for_help_centre.any? } %>
+      <% sections.each do |section| %>
+        <% article_count = section.articles.for_help_centre.count %>
+        <%= render "projects/articles_section_row",
+            section: section,
+            article_count: article_count,
+            selected: first_section&.id == section.id,
+            project: project %>
+      <% end %>
+
+      <% if uncategorized_count > 0 %>
+        <div class="border-t border-gray-200 mt-2 pt-2">
+          <%= render "projects/articles_section_row",
+              section: nil,
+              article_count: uncategorized_count,
+              selected: first_section.nil?,
+              project: project %>
+        </div>
+      <% end %>
+
+      <% if sections.empty? && uncategorized_count == 0 %>
+        <div class="p-4 text-center text-gray-500 text-sm">
+          No sections yet
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Middle: Articles List -->
+  <div class="w-72 flex-shrink-0 border-r border-gray-200 flex flex-col bg-white">
+    <% first_section_with_articles = sections.find { |s| s.articles.for_help_centre.any? } %>
+    <% initial_articles = first_section_with_articles&.articles&.for_help_centre&.ordered ||
+                          (uncategorized_count > 0 ? project.articles.for_help_centre.where(section: nil).ordered : []) %>
+
+    <%= turbo_frame_tag "articles-list-frame" do %>
+      <%= render "projects/articles_list",
+          articles: initial_articles,
+          section: first_section_with_articles,
+          project: project %>
+    <% end %>
+  </div>
+
+  <!-- Right: Article Editor -->
+  <div class="flex-1 flex flex-col overflow-hidden bg-gray-50">
+    <%= turbo_frame_tag "articles-editor-frame", class: "h-full" do %>
+      <% first_article = initial_articles.first %>
+      <% if first_article %>
+        <%= render "projects/articles_editor",
+            article: first_article,
+            project: project,
+            sections: sections %>
+      <% else %>
+        <%= render "projects/articles_empty_state" %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

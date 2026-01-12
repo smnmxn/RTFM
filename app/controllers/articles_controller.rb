@@ -112,6 +112,67 @@ class ArticlesController < ApplicationController
     end
   end
 
+  def move_to_section
+    new_section_id = params[:section_id]
+    new_section = new_section_id.present? ? @article.project.sections.find(new_section_id) : nil
+    old_section = @article.section
+
+    @article.move_to_section!(new_section)
+
+    @old_section_id = old_section&.id || "uncategorized"
+    @new_section_id = new_section&.id || "uncategorized"
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to project_path(@article.project, anchor: "articles"), notice: "Article moved." }
+    end
+  end
+
+  def reorder
+    direction = params[:direction]
+    articles_scope = @article.section ? @article.section.articles.for_help_centre.ordered : @article.project.articles.for_help_centre.where(section: nil).ordered
+    articles = articles_scope.to_a
+    current_index = articles.index(@article)
+
+    new_index = direction == "up" ? current_index - 1 : current_index + 1
+    return head :unprocessable_entity if new_index < 0 || new_index >= articles.length
+
+    # Swap positions
+    other_article = articles[new_index]
+    @article.position, other_article.position = other_article.position, @article.position
+    @article.save!
+    other_article.save!
+
+    @articles = articles_scope.reload
+    @section_id = @article.section_id || "uncategorized"
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to project_path(@article.project, anchor: "articles") }
+    end
+  end
+
+  def duplicate
+    @new_article = @article.duplicate!
+    @section_id = @new_article.section_id || "uncategorized"
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to project_path(@article.project, anchor: "articles"), notice: "Article duplicated." }
+    end
+  end
+
+  def destroy
+    section_id = @article.section_id || "uncategorized"
+    project = @article.project
+    @article.destroy!
+
+    respond_to do |format|
+      format.turbo_stream { redirect_to project_path(project, anchor: "articles"), notice: "Article deleted." }
+      format.html { redirect_to project_path(project, anchor: "articles"), notice: "Article deleted." }
+    end
+  end
+
   private
 
   def set_article

@@ -1,0 +1,31 @@
+<%= tag.div id: dom_id(article, :articles_row),
+    data: { controller: "articles-row" },
+    class: "group border-b border-gray-100 last:border-b-0" do %>
+  <%= link_to select_articles_article_project_path(project, article_id: article.id),
+      data: { turbo_frame: "articles-editor-frame", action: "click->articles-row#select" },
+      class: class_names(
+        "block px-4 py-3 hover:bg-gray-50 transition-colors",
+        "bg-indigo-50 border-l-4 border-indigo-500" => selected,
+        "border-l-4 border-transparent" => !selected
+      ) do %>
+    <div class="flex items-start justify-between gap-2">
+      <div class="min-w-0 flex-1">
+        <p class="text-sm font-medium text-gray-900 truncate"><%= article.title %></p>
+        <p class="text-xs text-gray-500 mt-0.5">
+          Updated <%= time_ago_in_words(article.updated_at) %> ago
+        </p>
+      </div>
+      <div class="flex items-center gap-1 flex-shrink-0">
+        <% if article.published? %>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+            Published
+          </span>
+        <% else %>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+            Draft
+          </span>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+<% end %>

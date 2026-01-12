@@ -1,0 +1,9 @@
+<%# Update article list with new order %>
+<%= turbo_stream.replace "articles-list-frame" do %>
+  <%= turbo_frame_tag "articles-list-frame" do %>
+    <%= render "projects/articles_list",
+        articles: @articles,
+        section: @article.section,
+        project: @article.project %>
+  <% end %>
+<% end %>

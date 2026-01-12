@@ -1,0 +1,98 @@
+<%= turbo_frame_tag "code-history-timeline" do %>
+  <div class="space-y-4">
+    <% if @pull_requests.empty? %>
+      <div class="text-center py-12 text-gray-500">
+        <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <p class="mt-2 text-sm font-medium">No merged pull requests found.</p>
+      </div>
+    <% else %>
+      <% @pull_requests.each do |pr| %>
+        <% update = @updates_by_pr[pr[:number]] %>
+        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
+             id="<%= "code-history-pr-#{pr[:number]}" %>">
+          <div class="flex items-start gap-4">
+            <!-- PR Author Avatar -->
+            <img src="<%= pr[:user][:avatar_url] %>"
+                 alt="<%= pr[:user][:login] %>"
+                 class="w-10 h-10 rounded-full flex-shrink-0">
+
+            <div class="flex-1 min-w-0">
+              <!-- PR Title & Link -->
+              <div class="flex items-center gap-2">
+                <%= link_to pr[:html_url], target: "_blank",
+                    class: "font-medium text-gray-900 hover:text-indigo-600 truncate" do %>
+                  <%= pr[:title] %>
+                <% end %>
+              </div>
+
+              <!-- PR Metadata -->
+              <p class="text-sm text-gray-500 mt-1">
+                #<%= pr[:number] %> merged <%= time_ago_in_words(pr[:merged_at]) %> ago
+                by <%= pr[:user][:login] %>
+              </p>
+
+              <!-- Analysis Status / Content Preview -->
+              <% if update %>
+                <div class="mt-3 p-3 bg-gray-50 rounded-md">
+                  <% if update.analysis_status == "running" %>
+                    <div class="flex items-center gap-2 text-indigo-600 text-sm">
+                      <svg class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                      </svg>
+                      <span>Analyzing pull request...</span>
+                    </div>
+                  <% elsif update.analysis_status == "completed" %>
+                    <% if update.content.present? %>
+                      <p class="text-sm text-gray-700 line-clamp-2"><%= truncate(update.content, length: 150) %></p>
+                    <% end %>
+                    <div class="mt-2 flex items-center gap-2">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                        Analyzed
+                      </span>
+                      <% if update.recommendations.any? %>
+                        <span class="text-xs text-gray-500">
+                          <%= update.recommendations.count %> article suggestion<%= update.recommendations.count == 1 ? '' : 's' %>
+                        </span>
+                      <% end %>
+                    </div>
+                  <% elsif update.analysis_status == "failed" %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                      Analysis failed
+                    </span>
+                  <% else %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                      <%= update.analysis_status&.humanize || "Pending" %>
+                    </span>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex-shrink-0">
+              <%= render "updates/pr_row_actions",
+                  update: update,
+                  project: project,
+                  pr_number: pr[:number],
+                  pr_title: pr[:title],
+                  pr_url: pr[:html_url] %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <% if @has_more %>
+        <div class="text-center py-4">
+          <%= link_to "Load more pull requests",
+              code_history_project_path(project, page: @page + 1),
+              class: "text-indigo-600 hover:text-indigo-800 text-sm font-medium",
+              data: { turbo_frame: "code-history-timeline" } %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

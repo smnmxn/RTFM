@@ -1,0 +1,26 @@
+<div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+  <h3 class="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+    <%= section&.name || "Uncategorized" %>
+  </h3>
+  <p class="text-xs text-gray-500 mt-0.5">
+    <%= pluralize(articles.count, "article") %>
+  </p>
+</div>
+
+<div id="articles-article-list" class="flex-1 overflow-y-auto">
+  <% if articles.any? %>
+    <% first_article = articles.first %>
+    <% articles.each_with_index do |article, index| %>
+      <%= render "projects/articles_article_row",
+          article: article,
+          project: project,
+          selected: article == first_article,
+          index: index,
+          total: articles.count %>
+    <% end %>
+  <% else %>
+    <div class="p-4 text-center text-gray-500 text-sm">
+      No articles in this section
+    </div>
+  <% end %>
+</div>
