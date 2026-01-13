@@ -2,7 +2,7 @@
 service: supportpages
 
 # Name of the container image (use your-user/app-name on external registries).
-image: supportpages
+image: togetherlyhub/supportpages
 
 # Deploy to these servers.
 servers:
@@ -43,10 +43,10 @@ env:
     - GITHUB_CLIENT_SECRET
   clear:
     # Database connection via PostgreSQL accessory
-    DATABASE_URL: postgresql://rtfm:${POSTGRES_PASSWORD}@rtfm-db:5432/rtfm_production
+    DATABASE_URL: postgresql://supportpages:${POSTGRES_PASSWORD}@supportpages-db:5432/supportpages_production
 
     # Redis for Sidekiq
-    REDIS_URL: redis://rtfm-redis:6379/1
+    REDIS_URL: redis://supportpages-redis:6379/1
 
     # Webhook callback URL (set to your production domain)
     # HOST_URL: https://your-production-domain.com
@@ -78,7 +78,7 @@ asset_path: /rails/public/assets
 
 # Configure the image builder.
 builder:
-  arch: amd64
+  arch: arm64
 
   # # Build image via remote server (useful for faster amd64 builds on arm64 computers)
   # remote: ssh://docker@docker-builder-server
@@ -102,8 +102,8 @@ accessories:
     port: "127.0.0.1:5432:5432"
     env:
       clear:
-        POSTGRES_USER: rtfm
-        POSTGRES_DB: rtfm_production
+        POSTGRES_USER: supportpages
+        POSTGRES_DB: supportpages_production
       secret:
         - POSTGRES_PASSWORD
     directories:
