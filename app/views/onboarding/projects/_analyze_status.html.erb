@@ -33,10 +33,9 @@
       <div class="py-8 text-center text-slate-500">Almost there...</div>
     <% end %>
   <% elsif project.sections.pending.any? || project.sections.accepted.any? %>
-    <script>
-      window.location.href = "<%= sections_onboarding_project_path(project) %>";
-    </script>
-    <div class="text-center py-8">
+    <div class="text-center py-8"
+         data-controller="redirect"
+         data-redirect-url-value="<%= sections_onboarding_project_path(project) %>">
       <p class="text-slate-600">Redirecting...</p>
     </div>
   <% elsif project.sections_generation_status == "failed" %>
