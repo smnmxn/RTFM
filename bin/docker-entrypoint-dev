@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-# Development Docker entrypoint for RTFM
+# Development Docker entrypoint for supportpages.io
 # Handles database setup and cleanup before starting services
 
-echo "==> Starting RTFM development container..."
+echo "==> Starting supportpages.io development container..."
 
 # Remove stale PID file if it exists (common after unclean shutdown)
 if [ -f tmp/pids/server.pid ]; then

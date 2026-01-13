@@ -1,4 +1,4 @@
-# RTFM Documentation
+# supportpages.io Documentation
 
 ## Development Phases
 

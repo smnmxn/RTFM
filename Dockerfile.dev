@@ -1,4 +1,4 @@
-# Development Dockerfile for RTFM
+# Development Dockerfile for supportpages.io
 # Includes Docker CLI for spawning sibling containers (claude-analyzer)
 
 ARG RUBY_VERSION=3.3.6

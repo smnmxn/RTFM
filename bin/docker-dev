@@ -96,7 +96,7 @@ case "$1" in
     ;;
 
   *)
-    echo "RTFM Docker Development Helper"
+    echo "supportpages.io Docker Development Helper"
     echo ""
     echo "Usage: bin/docker-dev [command]"
     echo ""
