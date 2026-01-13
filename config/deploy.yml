@@ -51,6 +51,9 @@ env:
     # Redis for Sidekiq
     REDIS_URL: redis://supportpages-redis:6379/1
 
+    # Enable BuildKit for docker build commands in Sidekiq jobs
+    DOCKER_BUILDKIT: "1"
+
     # Webhook callback URL (set to your production domain)
     # HOST_URL: https://your-production-domain.com
 
