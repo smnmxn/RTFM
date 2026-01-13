@@ -27,6 +27,9 @@ gem "tzinfo-data", platforms: %i[ windows jruby ]
 
 # Note: Using Redis for caching and Action Cable (configured in production.rb and cable.yml)
 
+# Pin to 2.x due to Rails 8.1.1 incompatibility with 3.x
+gem "connection_pool", "~> 2.4"
+
 # Background job processing
 gem "sidekiq"
 
