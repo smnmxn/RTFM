@@ -86,13 +86,8 @@ class AnalyzeCommitJob < ApplicationJob
   end
 
   def run_commit_analysis(project, update, diff, commit_title, commit_message)
-    timestamp = Time.current.to_i
-    input_dir = Rails.root.join("tmp", "commit_analysis", "input_#{update.id}_#{timestamp}")
-    output_dir = Rails.root.join("tmp", "commit_analysis", "output_#{update.id}_#{timestamp}")
-
-    FileUtils.mkdir_p(input_dir)
-    FileUtils.mkdir_p(output_dir)
-    FileUtils.chmod(0777, output_dir)
+    input_dir = create_analysis_input_dir("commit_input_#{update.id}")
+    output_dir = create_analysis_output_dir("commit_output_#{update.id}")
 
     begin
       docker_image = "rtfm/claude-analyzer:latest"

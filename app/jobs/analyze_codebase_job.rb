@@ -68,11 +68,8 @@ class AnalyzeCodebaseJob < ApplicationJob
   private
 
   def run_analysis(project, user)
-    # Create a temporary directory for output
-    output_dir = Rails.root.join("tmp", "analysis", "project_#{project.id}_#{Time.current.to_i}")
-    FileUtils.mkdir_p(output_dir)
-    # Make writable by container's non-root user
-    FileUtils.chmod(0777, output_dir)
+    # Create a temporary directory for output (uses shared host path in production)
+    output_dir = create_analysis_output_dir("project_#{project.id}")
 
     begin
       # Build the Docker image if needed (or assume it's pre-built)

@@ -87,13 +87,8 @@ class AnalyzePullRequestJob < ApplicationJob
   end
 
   def run_pr_analysis(project, update, diff, pr_title, pr_body)
-    timestamp = Time.current.to_i
-    input_dir = Rails.root.join("tmp", "pr_analysis", "input_#{update.id}_#{timestamp}")
-    output_dir = Rails.root.join("tmp", "pr_analysis", "output_#{update.id}_#{timestamp}")
-
-    FileUtils.mkdir_p(input_dir)
-    FileUtils.mkdir_p(output_dir)
-    FileUtils.chmod(0777, output_dir)
+    input_dir = create_analysis_input_dir("pr_input_#{update.id}")
+    output_dir = create_analysis_output_dir("pr_output_#{update.id}")
 
     begin
       docker_image = "rtfm/claude-analyzer:latest"

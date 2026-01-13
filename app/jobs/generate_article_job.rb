@@ -58,13 +58,8 @@ class GenerateArticleJob < ApplicationJob
   private
 
   def run_article_generation(project, recommendation, source_update)
-    timestamp = Time.current.to_i
-    input_dir = Rails.root.join("tmp", "article_generation", "input_#{recommendation.id}_#{timestamp}")
-    output_dir = Rails.root.join("tmp", "article_generation", "output_#{recommendation.id}_#{timestamp}")
-
-    FileUtils.mkdir_p(input_dir)
-    FileUtils.mkdir_p(output_dir)
-    FileUtils.chmod(0777, output_dir)
+    input_dir = create_analysis_input_dir("article_input_#{recommendation.id}")
+    output_dir = create_analysis_output_dir("article_output_#{recommendation.id}")
 
     begin
       docker_image = "rtfm/claude-analyzer:latest"

@@ -16,6 +16,7 @@ servers:
       volume:
         - /var/run/docker.sock:/var/run/docker.sock
         - /usr/libexec/docker/cli-plugins:/usr/libexec/docker/cli-plugins:ro
+        - /var/supportpages/analysis:/var/supportpages/analysis
       group-add:
         - "988"  # Docker group GID on host
 

@@ -59,13 +59,8 @@ class SuggestSectionsJob < ApplicationJob
   private
 
   def run_section_suggestion(project)
-    timestamp = Time.current.to_i
-    input_dir = Rails.root.join("tmp", "suggest_sections", "input_#{project.id}_#{timestamp}")
-    output_dir = Rails.root.join("tmp", "suggest_sections", "output_#{project.id}_#{timestamp}")
-
-    FileUtils.mkdir_p(input_dir)
-    FileUtils.mkdir_p(output_dir)
-    FileUtils.chmod(0777, output_dir)
+    input_dir = create_analysis_input_dir("suggest_sections_input_#{project.id}")
+    output_dir = create_analysis_output_dir("suggest_sections_output_#{project.id}")
 
     begin
       docker_image = "rtfm/claude-analyzer:latest"

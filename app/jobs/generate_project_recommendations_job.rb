@@ -31,13 +31,8 @@ class GenerateProjectRecommendationsJob < ApplicationJob
   private
 
   def run_recommendations_generation(project)
-    timestamp = Time.current.to_i
-    input_dir = Rails.root.join("tmp", "project_recommendations", "input_#{project.id}_#{timestamp}")
-    output_dir = Rails.root.join("tmp", "project_recommendations", "output_#{project.id}_#{timestamp}")
-
-    FileUtils.mkdir_p(input_dir)
-    FileUtils.mkdir_p(output_dir)
-    FileUtils.chmod(0777, output_dir)
+    input_dir = create_analysis_input_dir("project_recs_input_#{project.id}")
+    output_dir = create_analysis_output_dir("project_recs_output_#{project.id}")
 
     begin
       docker_image = "rtfm/claude-analyzer:latest"
