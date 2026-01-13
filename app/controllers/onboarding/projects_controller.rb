@@ -17,7 +17,13 @@ module Onboarding
       # If there's already an onboarding in progress, resume it
       if current_user.onboarding_in_progress?
         project = current_user.current_onboarding_project
-        redirect_to send("#{project.onboarding_step}_onboarding_project_path", project)
+        if Project::ONBOARDING_STEPS.include?(project.onboarding_step)
+          redirect_to send("#{project.onboarding_step}_onboarding_project_path", project)
+        else
+          # Invalid step - complete onboarding and go to project
+          project.complete_onboarding!
+          redirect_to project_path(project)
+        end
         return
       end
 
@@ -154,6 +160,13 @@ module Onboarding
 
       current_action = action_name.to_s
       expected_step = @project.onboarding_step
+
+      # Handle invalid steps
+      unless Project::ONBOARDING_STEPS.include?(expected_step)
+        @project.complete_onboarding!
+        redirect_to project_path(@project)
+        return
+      end
 
       # Map action names to step names
       action_to_step = {
