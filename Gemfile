@@ -25,9 +25,9 @@ gem "tailwindcss-rails"
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
-# Use the database-backed adapters for Rails.cache and Action Cable
+# Use the database-backed adapter for Rails.cache
 gem "solid_cache"
-gem "solid_cable"
+# Note: Action Cable uses Redis (configured in cable.yml)
 
 # Background job processing
 gem "sidekiq"
