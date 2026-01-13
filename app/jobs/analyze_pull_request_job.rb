@@ -42,9 +42,6 @@ class AnalyzePullRequestJob < ApplicationJob
     )
     update.save!
 
-    # Broadcast initial "running" state
-    broadcast_update_change(update, pull_request_title, pull_request_url)
-
     begin
       result = run_pr_analysis(project, update, diff, pull_request_title, pull_request_body)
 
@@ -75,9 +72,6 @@ class AnalyzePullRequestJob < ApplicationJob
       )
       Rails.logger.error "[AnalyzePullRequestJob] Error during AI analysis for PR ##{pull_request_number}: #{e.message}"
     end
-
-    # Broadcast final state (completed or failed)
-    broadcast_update_change(update, pull_request_title, pull_request_url)
   end
 
   private
@@ -244,31 +238,5 @@ class AnalyzePullRequestJob < ApplicationJob
 
       _AI analysis was unavailable. This is a placeholder summary._
     CONTENT
-  end
-
-  def broadcast_update_change(update, pr_title, pr_url)
-    project = update.project
-
-    # Update the changelog card
-    Turbo::StreamsChannel.broadcast_replace_to(
-      [ project, :updates ],
-      target: ActionView::RecordIdentifier.dom_id(update),
-      partial: "updates/card",
-      locals: { update: update }
-    )
-
-    # Update the PR list row actions
-    Turbo::StreamsChannel.broadcast_replace_to(
-      [ project, :updates ],
-      target: "pr-actions-#{update.pull_request_number}",
-      partial: "updates/pr_row_actions",
-      locals: {
-        update: update,
-        project: project,
-        pr_number: update.pull_request_number,
-        pr_title: pr_title,
-        pr_url: pr_url
-      }
-    )
   end
 end

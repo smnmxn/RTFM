@@ -41,9 +41,6 @@ class AnalyzeCommitJob < ApplicationJob
     )
     update.save!
 
-    # Broadcast initial "running" state
-    broadcast_update_change(update, commit_title, commit_url)
-
     begin
       result = run_commit_analysis(project, update, diff, commit_title, commit_message)
 
@@ -74,9 +71,6 @@ class AnalyzeCommitJob < ApplicationJob
       )
       Rails.logger.error "[AnalyzeCommitJob] Error during AI analysis for commit #{commit_sha[0..6]}: #{e.message}"
     end
-
-    # Broadcast final state (completed or failed)
-    broadcast_update_change(update, commit_title, commit_url)
   end
 
   private
@@ -243,36 +237,5 @@ class AnalyzeCommitJob < ApplicationJob
 
       _AI analysis was unavailable. This is a placeholder summary._
     CONTENT
-  end
-
-  def broadcast_update_change(update, commit_title, commit_url)
-    project = update.project
-    short_sha = update.commit_sha[0..6]
-
-    # Update the changelog card
-    Turbo::StreamsChannel.broadcast_replace_to(
-      [ project, :updates ],
-      target: ActionView::RecordIdentifier.dom_id(update),
-      partial: "updates/card",
-      locals: { update: update }
-    )
-
-    # Update the commit list row actions
-    Turbo::StreamsChannel.broadcast_replace_to(
-      [ project, :updates ],
-      target: "commit-actions-#{short_sha}",
-      partial: "updates/commit_row_actions",
-      locals: {
-        update: update,
-        project: project,
-        commit: {
-          sha: update.commit_sha,
-          short_sha: short_sha,
-          title: commit_title,
-          html_url: commit_url,
-          message: commit_title
-        }
-      }
-    )
   end
 end

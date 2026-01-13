@@ -5,6 +5,9 @@ class Article < ApplicationRecord
   belongs_to :recommendation
   belongs_to :section, optional: true
 
+  # Turbo refresh broadcasts
+  after_update_commit :broadcast_refreshes
+
   enum :status, { draft: "draft", published: "published" }, default: :draft
   enum :generation_status, {
     generation_pending: "pending",
@@ -107,5 +110,12 @@ class Article < ApplicationRecord
     end
 
     update!(position: new_position)
+  end
+
+  private
+
+  def broadcast_refreshes
+    Turbo::StreamsChannel.broadcast_refresh_to([project, :articles])
+    Turbo::StreamsChannel.broadcast_refresh_to([project, :inbox])
   end
 end

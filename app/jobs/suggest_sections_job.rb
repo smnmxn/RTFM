@@ -14,12 +14,11 @@ class SuggestSectionsJob < ApplicationJob
     project = Project.find_by(id: project_id)
     return unless project
 
-    # Mark as running and broadcast
+    # Mark as running
     project.update!(
       sections_generation_status: "running",
       sections_generation_started_at: Time.current
     )
-    broadcast_sections_status(project)
 
     begin
       result = run_section_suggestion(project)
@@ -30,15 +29,9 @@ class SuggestSectionsJob < ApplicationJob
       if result[:success]
         create_sections(project, result[:sections])
         project.reload.update!(sections_generation_status: "completed")
-        # Reload again to ensure sections association is fresh for broadcast
-        project.reload
-        broadcast_sections_list(project)
-        broadcast_analyze_status(project)
         Rails.logger.info "[SuggestSectionsJob] Suggested #{result[:sections]&.size || 0} sections for project #{project.id}"
       else
         project.reload.update!(sections_generation_status: "failed")
-        broadcast_sections_status(project)
-        broadcast_analyze_status(project)
         Rails.logger.warn "[SuggestSectionsJob] Suggestion failed for project #{project.id}: #{result[:error]}"
       end
     rescue ActiveRecord::RecordNotFound, ActiveRecord::InvalidForeignKey => e
@@ -47,8 +40,6 @@ class SuggestSectionsJob < ApplicationJob
     rescue StandardError => e
       begin
         project.reload.update!(sections_generation_status: "failed")
-        broadcast_sections_status(project)
-        broadcast_analyze_status(project)
       rescue ActiveRecord::RecordNotFound
         # Project was deleted, nothing to update
       end
@@ -196,36 +187,5 @@ class SuggestSectionsJob < ApplicationJob
         raise "Failed to build Docker image: #{stderr}"
       end
     end
-  end
-
-  def broadcast_sections_status(project)
-    Turbo::StreamsChannel.broadcast_replace_to(
-      [ project, :onboarding ],
-      target: "onboarding-sections-status",
-      partial: "onboarding/projects/sections_status",
-      locals: { project: project }
-    )
-  end
-
-  def broadcast_sections_list(project)
-    Turbo::StreamsChannel.broadcast_replace_to(
-      [ project, :onboarding ],
-      target: "pending-sections-list",
-      partial: "onboarding/projects/sections_list",
-      locals: { project: project, sections: project.sections.pending.ordered }
-    )
-  end
-
-  def broadcast_analyze_status(project)
-    target_id = ActionView::RecordIdentifier.dom_id(project, :onboarding_analyze)
-    Rails.logger.info "[SuggestSectionsJob] Broadcasting analyze status to target: #{target_id}"
-    Rails.logger.info "[SuggestSectionsJob] Project status: analysis=#{project.analysis_status}, sections_gen=#{project.sections_generation_status}, sections_count=#{project.sections.count}"
-
-    Turbo::StreamsChannel.broadcast_replace_to(
-      [ project, :onboarding ],
-      target: target_id,
-      partial: "onboarding/projects/analyze_status",
-      locals: { project: project }
-    )
   end
 end

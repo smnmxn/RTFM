@@ -3,6 +3,9 @@ class Section < ApplicationRecord
   has_many :articles, dependent: :nullify
   has_many :recommendations, dependent: :nullify
 
+  # Turbo refresh broadcasts
+  after_commit :broadcast_refreshes, on: [ :create, :update, :destroy ]
+
   enum :section_type, {
     template: "template",
     ai_generated: "ai_generated",
@@ -87,5 +90,9 @@ class Section < ApplicationRecord
   def generate_slug
     return if slug.present? || name.blank?
     self.slug = name.parameterize
+  end
+
+  def broadcast_refreshes
+    Turbo::StreamsChannel.broadcast_refresh_to([project, :onboarding])
   end
 end

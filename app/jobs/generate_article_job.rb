@@ -49,10 +49,6 @@ class GenerateArticleJob < ApplicationJob
       )
       Rails.logger.error "[GenerateArticleJob] Error generating article #{article.id}: #{e.message}"
     end
-
-    # Broadcast update via Turbo
-    broadcast_article_change(article)
-    broadcast_inbox_article_update(article)
   end
 
   private
@@ -265,23 +261,5 @@ class GenerateArticleJob < ApplicationJob
     end
 
     markdown.join("\n")
-  end
-
-  def broadcast_article_change(article)
-    Turbo::StreamsChannel.broadcast_replace_to(
-      [ article.project, :articles ],
-      target: ActionView::RecordIdentifier.dom_id(article),
-      partial: "articles/card",
-      locals: { article: article }
-    )
-  end
-
-  def broadcast_inbox_article_update(article)
-    Turbo::StreamsChannel.broadcast_replace_to(
-      [ article.project, :inbox ],
-      target: ActionView::RecordIdentifier.dom_id(article, :row),
-      partial: "projects/article_row",
-      locals: { article: article, selected: false }
-    )
   end
 end

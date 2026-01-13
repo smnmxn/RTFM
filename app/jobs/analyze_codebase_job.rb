@@ -52,12 +52,6 @@ class AnalyzeCodebaseJob < ApplicationJob
 
       # Reload to ensure we have the latest data (including contextual_questions)
       project.reload
-
-      # Broadcast update to the project page
-      broadcast_analysis_update(project)
-
-      # Broadcast to onboarding view if in wizard
-      broadcast_onboarding_update(project) if project.in_onboarding? || project.onboarding_step == "sections"
     rescue StandardError => e
       project.update!(analysis_status: "failed")
       Rails.logger.error "[AnalyzeCodebaseJob] Analysis error for project #{project.id}: #{e.message}"
@@ -207,23 +201,4 @@ class AnalyzeCodebaseJob < ApplicationJob
       end
     end
   end
-
-  def broadcast_analysis_update(project)
-    Turbo::StreamsChannel.broadcast_replace_to(
-      [ project, :analysis ],
-      target: ActionView::RecordIdentifier.dom_id(project, :analysis),
-      partial: "projects/analysis",
-      locals: { project: project }
-    )
-  end
-
-  def broadcast_onboarding_update(project)
-    Turbo::StreamsChannel.broadcast_replace_to(
-      [ project, :onboarding ],
-      target: ActionView::RecordIdentifier.dom_id(project, :onboarding_analyze),
-      partial: "onboarding/projects/analyze_status",
-      locals: { project: project }
-    )
-  end
-
 end

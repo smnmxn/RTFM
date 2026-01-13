@@ -2,6 +2,9 @@ class Project < ApplicationRecord
   include Turbo::Broadcastable
 
   belongs_to :user
+
+  # Turbo refresh broadcasts - auto-refresh all subscribed streams on any update
+  after_update_commit :broadcast_refreshes
   has_many :updates, dependent: :destroy
   has_many :articles, dependent: :destroy
   has_many :recommendations, dependent: :destroy
@@ -119,5 +122,12 @@ class Project < ApplicationRecord
 
   def generate_webhook_secret
     self.webhook_secret ||= SecureRandom.hex(32)
+  end
+
+  def broadcast_refreshes
+    Turbo::StreamsChannel.broadcast_refresh_to([self, :onboarding])
+    Turbo::StreamsChannel.broadcast_refresh_to([self, :analysis])
+    Turbo::StreamsChannel.broadcast_refresh_to([self, :updates])
+    Turbo::StreamsChannel.broadcast_refresh_to([self, :inbox])
   end
 end

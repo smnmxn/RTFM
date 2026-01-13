@@ -32,7 +32,6 @@ class GenerateSectionRecommendationsJob < ApplicationJob
       if result[:success]
         create_recommendations(project, section, result[:recommendations])
         section.reload.update!(recommendations_status: "completed")
-        broadcast_inbox_update(project)
         Rails.logger.info "[GenerateSectionRecommendationsJob] Generated #{result[:recommendations]&.size || 0} recommendations for section #{section.id}"
       else
         section.reload.update!(recommendations_status: "failed")
@@ -199,21 +198,5 @@ class GenerateSectionRecommendationsJob < ApplicationJob
         raise "Failed to build Docker image: #{stderr}"
       end
     end
-  end
-
-  def broadcast_inbox_update(project)
-    pending_recommendations = project.recommendations.pending
-      .includes(:section)
-      .order(created_at: :asc)
-
-    Turbo::StreamsChannel.broadcast_replace_to(
-      [ project, :inbox ],
-      target: "recommendations-section",
-      partial: "projects/recommendations_section",
-      locals: {
-        pending_recommendations: pending_recommendations,
-        selected_recommendation_id: nil
-      }
-    )
   end
 end

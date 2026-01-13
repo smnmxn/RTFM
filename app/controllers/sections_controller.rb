@@ -157,15 +157,5 @@ class SectionsController < ApplicationController
 
     # All sections reviewed - advance to articles step
     @project.advance_onboarding!("articles")
-    broadcast_onboarding_can_advance
-  end
-
-  def broadcast_onboarding_can_advance
-    Turbo::StreamsChannel.broadcast_replace_to(
-      [ @project, :onboarding ],
-      target: "onboarding-sections-navigation",
-      partial: "onboarding/projects/sections_navigation",
-      locals: { project: @project, can_continue: true }
-    )
   end
 end
