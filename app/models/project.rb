@@ -125,9 +125,17 @@ class Project < ApplicationRecord
   end
 
   def broadcast_refreshes
+    return unless status_fields_changed?
+
     Turbo::StreamsChannel.broadcast_refresh_to([self, :onboarding])
     Turbo::StreamsChannel.broadcast_refresh_to([self, :analysis])
     Turbo::StreamsChannel.broadcast_refresh_to([self, :updates])
     Turbo::StreamsChannel.broadcast_refresh_to([self, :inbox])
+  end
+
+  def status_fields_changed?
+    saved_change_to_analysis_status? ||
+      saved_change_to_onboarding_step? ||
+      saved_change_to_sections_generation_status?
   end
 end
