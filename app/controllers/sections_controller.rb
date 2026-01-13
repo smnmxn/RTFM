@@ -152,10 +152,7 @@ class SectionsController < ApplicationController
   end
 
   def check_sections_complete_for_onboarding
-    return unless @project.in_onboarding? && @project.onboarding_step == "sections"
-    return if @project.sections.pending.any? # Still have sections to review
-
-    # All sections reviewed - advance to articles step
-    @project.advance_onboarding!("articles")
+    # No-op: User must click "Complete" to finish onboarding
+    # This method is kept for potential future use (e.g., enabling the complete button)
   end
 end
