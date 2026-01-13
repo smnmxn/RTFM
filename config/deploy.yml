@@ -38,13 +38,11 @@ env:
   secret:
     - RAILS_MASTER_KEY
     - POSTGRES_PASSWORD
+    - DATABASE_URL
     - ANTHROPIC_API_KEY
     - GITHUB_CLIENT_ID
     - GITHUB_CLIENT_SECRET
   clear:
-    # Database connection via PostgreSQL accessory
-    DATABASE_URL: postgresql://supportpages:${POSTGRES_PASSWORD}@supportpages-db:5432/supportpages_production
-
     # Redis for Sidekiq
     REDIS_URL: redis://supportpages-redis:6379/1
 
