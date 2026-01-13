@@ -1,0 +1,158 @@
+<div data-controller="onboarding-questions"
+     data-onboarding-questions-save-url-value="<%= save_context_onboarding_project_path(project) %>">
+
+  <div class="relative overflow-hidden" style="min-height: 340px;">
+    <!-- Card 1: Target Audience -->
+    <div data-onboarding-questions-target="card"
+         data-question="target_audience"
+         class="question-card absolute inset-0 transition-transform duration-300 ease-in-out">
+      <h3 class="text-lg font-medium text-slate-900 mb-4">Who's reading these docs?</h3>
+      <div class="space-y-2">
+        <% [
+          ["developers", "Developers / Engineers"],
+          ["product_managers", "Product Managers / Business Users"],
+          ["end_users", "End Users / Customers"],
+          ["internal", "Internal Team Members"]
+        ].each do |value, label| %>
+          <label class="flex items-center p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 hover:border-slate-300 transition-smooth"
+                 data-action="click->onboarding-questions#selectOption">
+            <input type="radio" name="target_audience" value="<%= value %>"
+                   class="h-4 w-4 text-violet-600 border-slate-300 focus:ring-violet-500"
+                   data-onboarding-questions-target="input">
+            <span class="ml-3 text-slate-700"><%= label %></span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Card 2: Industry -->
+    <div data-onboarding-questions-target="card"
+         data-question="industry"
+         class="question-card absolute inset-0 transition-transform duration-300 ease-in-out translate-x-full">
+      <h3 class="text-lg font-medium text-slate-900 mb-4">What kind of product is this?</h3>
+      <div class="space-y-2">
+        <% [
+          ["devtools", "Developer Tools / Infrastructure"],
+          ["saas", "SaaS / Business Software"],
+          ["ecommerce", "E-commerce / Marketplace"],
+          ["fintech", "Fintech / Payments"],
+          ["healthcare", "Healthcare / Life Sciences"],
+          ["other", "Other"]
+        ].each do |value, label| %>
+          <label class="flex items-center p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 hover:border-slate-300 transition-smooth"
+                 data-action="click->onboarding-questions#selectOption">
+            <input type="radio" name="industry" value="<%= value %>"
+                   class="h-4 w-4 text-violet-600 border-slate-300 focus:ring-violet-500"
+                   data-onboarding-questions-target="input">
+            <span class="ml-3 text-slate-700"><%= label %></span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Card 3: Documentation Goals (multi-select) -->
+    <div data-onboarding-questions-target="card"
+         data-question="documentation_goals"
+         class="question-card absolute inset-0 transition-transform duration-300 ease-in-out translate-x-full">
+      <h3 class="text-lg font-medium text-slate-900 mb-4">What should the docs help with?</h3>
+      <div class="space-y-2">
+        <% [
+          ["onboarding", "Onboarding new users"],
+          ["support", "Reducing support tickets"],
+          ["api_reference", "API / Technical reference"],
+          ["features", "Feature explanations"],
+          ["compliance", "Compliance / Security"]
+        ].each do |value, label| %>
+          <label class="flex items-center p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 hover:border-slate-300 transition-smooth"
+                 data-action="click->onboarding-questions#toggleCheckbox">
+            <input type="checkbox" name="documentation_goals[]" value="<%= value %>"
+                   class="h-4 w-4 text-violet-600 border-slate-300 rounded focus:ring-violet-500"
+                   data-onboarding-questions-target="checkbox">
+            <span class="ml-3 text-slate-700"><%= label %></span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Card 4: Tone Preference -->
+    <div data-onboarding-questions-target="card"
+         data-question="tone_preference"
+         class="question-card absolute inset-0 transition-transform duration-300 ease-in-out translate-x-full">
+      <h3 class="text-lg font-medium text-slate-900 mb-4">What tone feels right?</h3>
+      <div class="space-y-2">
+        <% [
+          ["technical", "Technical & precise"],
+          ["friendly", "Friendly & conversational"],
+          ["minimal", "Minimal & scannable"],
+          ["formal", "Formal & professional"]
+        ].each do |value, label| %>
+          <label class="flex items-center p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 hover:border-slate-300 transition-smooth"
+                 data-action="click->onboarding-questions#selectOption">
+            <input type="radio" name="tone_preference" value="<%= value %>"
+                   class="h-4 w-4 text-violet-600 border-slate-300 focus:ring-violet-500"
+                   data-onboarding-questions-target="input">
+            <span class="ml-3 text-slate-700"><%= label %></span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Card 5: Product Stage -->
+    <div data-onboarding-questions-target="card"
+         data-question="product_stage"
+         class="question-card absolute inset-0 transition-transform duration-300 ease-in-out translate-x-full">
+      <h3 class="text-lg font-medium text-slate-900 mb-4">Where's the product at?</h3>
+      <div class="space-y-2">
+        <% [
+          ["early", "Early stage / MVP"],
+          ["growing", "Growing / Scaling"],
+          ["mature", "Mature / Enterprise"],
+          ["internal", "Internal tool"]
+        ].each do |value, label| %>
+          <label class="flex items-center p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 hover:border-slate-300 transition-smooth"
+                 data-action="click->onboarding-questions#selectOption">
+            <input type="radio" name="product_stage" value="<%= value %>"
+                   class="h-4 w-4 text-violet-600 border-slate-300 focus:ring-violet-500"
+                   data-onboarding-questions-target="input">
+            <span class="ml-3 text-slate-700"><%= label %></span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Completion Card -->
+    <div data-onboarding-questions-target="completionCard"
+         class="absolute inset-0 transition-transform duration-300 ease-in-out translate-x-full flex flex-col items-center justify-center text-center">
+      <svg class="animate-spin h-8 w-8 text-violet-600 mb-3" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <p class="text-slate-600">Just a moment...</p>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="mt-5 flex items-center justify-between">
+    <button type="button"
+            data-action="click->onboarding-questions#skip"
+            data-onboarding-questions-target="skipButton"
+            class="text-sm text-slate-500 hover:text-slate-700 transition-smooth">
+      Skip
+    </button>
+
+    <div class="flex space-x-2" data-onboarding-questions-target="dots">
+      <% 5.times do |i| %>
+        <span class="h-1.5 w-1.5 rounded-full transition-smooth <%= i == 0 ? 'bg-violet-600' : 'bg-slate-300' %>"
+              data-onboarding-questions-target="dot"></span>
+      <% end %>
+    </div>
+
+    <button type="button"
+            data-action="click->onboarding-questions#next"
+            data-onboarding-questions-target="nextButton"
+            class="px-4 py-2 text-sm font-medium text-white bg-gradient-brand rounded-lg hover:opacity-90 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled>
+      Next
+    </button>
+  </div>
+</div>

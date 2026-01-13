@@ -7,6 +7,15 @@ class Project < ApplicationRecord
   has_many :recommendations, dependent: :destroy
   has_many :sections, dependent: :destroy
 
+  # User-provided context (collected during onboarding)
+  store :user_context, accessors: [
+    :target_audience,
+    :industry,
+    :documentation_goals,  # Array
+    :tone_preference,
+    :product_stage
+  ], coder: JSON
+
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true, format: { with: /\A[a-z0-9-]+\z/, message: "only allows lowercase letters, numbers, and hyphens" }
   validates :github_repo, presence: true,

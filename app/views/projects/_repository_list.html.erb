@@ -1,48 +1,48 @@
 <%= turbo_frame_tag "repository_list" do %>
-  <div class="divide-y divide-gray-200">
+  <div class="divide-y divide-slate-100">
     <% if @repositories.empty? %>
-      <div class="p-6 text-center text-gray-500">
+      <div class="p-6 text-center text-slate-500">
         <p>No repositories available.</p>
         <p class="text-sm mt-1">You need admin access to a repository to connect it.</p>
       </div>
     <% else %>
       <% @repositories.each do |repo| %>
         <% connected = @connected_repos.include?(repo[:full_name]) %>
-        <div class="p-4 <%= 'bg-gray-50' if connected %> <%= 'hover:bg-gray-50' unless connected %> flex justify-between items-center">
+        <div class="p-4 <%= 'bg-slate-50' if connected %> <%= 'hover:bg-slate-50 transition-smooth' unless connected %> flex justify-between items-center">
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
-              <span class="font-medium <%= connected ? 'text-gray-500' : 'text-gray-900' %> truncate"><%= repo[:full_name] %></span>
+              <span class="font-medium <%= connected ? 'text-slate-500' : 'text-slate-900' %> truncate"><%= repo[:full_name] %></span>
               <% if repo[:private] %>
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600">
                   Private
                 </span>
               <% end %>
               <% if connected %>
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700">
                   Connected
                 </span>
               <% end %>
             </div>
             <% if repo[:description].present? %>
-              <p class="text-sm text-gray-500 truncate"><%= repo[:description] %></p>
+              <p class="text-sm text-slate-500 truncate"><%= repo[:description] %></p>
             <% end %>
           </div>
 
           <% if connected %>
-            <span class="ml-4 px-4 py-2 bg-gray-200 text-gray-500 text-sm rounded-lg cursor-not-allowed">
+            <span class="ml-4 px-4 py-2 bg-slate-200 text-slate-500 text-sm rounded-lg cursor-not-allowed">
               Connected
             </span>
           <% elsif @onboarding_project.present? %>
             <%# Onboarding mode - connect to wizard flow %>
             <%= button_to "Connect", connect_onboarding_project_path(@onboarding_project, github_repo: repo[:full_name]),
                 method: :post,
-                class: "ml-4 px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors",
+                class: "ml-4 px-4 py-2 bg-gradient-brand text-white text-sm rounded-lg hover:opacity-90 transition-smooth",
                 data: { turbo_frame: "_top" } %>
           <% else %>
             <%# Normal mode - connect via standard flow %>
             <%= button_to "Connect", projects_path(github_repo: repo[:full_name]),
                 method: :post,
-                class: "ml-4 px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors",
+                class: "ml-4 px-4 py-2 bg-gradient-brand text-white text-sm rounded-lg hover:opacity-90 transition-smooth",
                 data: { turbo_frame: "_top", turbo_confirm: "Connect #{repo[:full_name]}? This will create a webhook on the repository." } %>
           <% end %>
         </div>
@@ -53,12 +53,12 @@
           <% if @onboarding_project.present? %>
             <%= link_to "Load more repositories",
                 repositories_projects_path(page: @page + 1, onboarding_project_id: @onboarding_project.id),
-                class: "text-indigo-600 hover:text-indigo-800",
+                class: "text-violet-600 hover:text-violet-800 transition-smooth",
                 data: { turbo_frame: "repository_list" } %>
           <% else %>
             <%= link_to "Load more repositories",
                 repositories_projects_path(page: @page + 1),
-                class: "text-indigo-600 hover:text-indigo-800",
+                class: "text-violet-600 hover:text-violet-800 transition-smooth",
                 data: { turbo_frame: "repository_list" } %>
           <% end %>
         </div>

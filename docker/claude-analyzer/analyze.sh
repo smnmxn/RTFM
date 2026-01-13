@@ -74,6 +74,44 @@ Format (valid JSON only, no markdown):
 
 Identify 1-3 distinct user personas. If this appears to be a developer tool (CLI, library, framework), the end users are still the DEVELOPERS WHO USE IT, not contributors to the project.
 
+8. THEN, output the delimiter: ---CONTEXTUAL_QUESTIONS---
+
+9. Based on your analysis, generate 2-3 contextual questions to ask the user about their documentation needs. These questions should:
+   - Reference specific components, features, or technologies you found in the codebase
+   - Help prioritize which areas to document first
+   - Identify user pain points that code analysis can't reveal
+
+Output valid JSON only (no markdown):
+{
+  "questions": [
+    {
+      "id": "q1",
+      "type": "prioritization",
+      "question": "We found [specific components] - which do your users interact with most?",
+      "context": "Brief explanation of why we're asking (10-15 words)",
+      "options": [
+        {"value": "key1", "label": "Component/feature name"}
+      ],
+      "multi_select": true
+    },
+    {
+      "id": "q2",
+      "type": "gap_filling",
+      "question": "What aspects of [feature] confuse users most?",
+      "context": "Help us focus documentation on pain points",
+      "options": [
+        {"value": "setup", "label": "Initial setup"},
+        {"value": "advanced", "label": "Advanced features"},
+        {"value": "integration", "label": "Integrations"}
+      ],
+      "multi_select": true
+    }
+  ]
+}
+
+Types: "prioritization" (which to focus on) or "gap_filling" (what's confusing/missing)
+Make questions SPECIFIC to this codebase - reference actual components, APIs, or features you found.
+
 Be thorough but concise. Focus on what would help someone understand this codebase quickly.
 PROMPT
 
@@ -89,8 +127,11 @@ sed -n '/---JSON_METADATA---/,/---PROJECT_OVERVIEW---/p' /output/analysis_raw.tx
 # Extract project overview (between ---PROJECT_OVERVIEW--- and ---TARGET_USERS---)
 sed -n '/---PROJECT_OVERVIEW---/,/---TARGET_USERS---/p' /output/analysis_raw.txt | sed '1d;$d' > /output/overview.txt
 
-# Extract target users (everything after ---TARGET_USERS---)
-sed -n '/---TARGET_USERS---/,$p' /output/analysis_raw.txt | tail -n +2 > /output/target_users.json
+# Extract target users (between ---TARGET_USERS--- and ---CONTEXTUAL_QUESTIONS---)
+sed -n '/---TARGET_USERS---/,/---CONTEXTUAL_QUESTIONS---/p' /output/analysis_raw.txt | sed '1d;$d' > /output/target_users.json
+
+# Extract contextual questions (everything after ---CONTEXTUAL_QUESTIONS---)
+sed -n '/---CONTEXTUAL_QUESTIONS---/,$p' /output/analysis_raw.txt | tail -n +2 > /output/contextual_questions.json
 
 echo "Analysis complete!"
 echo "Output files:"

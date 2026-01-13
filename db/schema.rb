@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_18_134938) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_13_110623) do
   create_table "articles", force: :cascade do |t|
     t.text "content"
     t.datetime "created_at", null: false
@@ -39,6 +39,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_18_134938) do
     t.string "analysis_status"
     t.text "analysis_summary"
     t.datetime "analyzed_at"
+    t.json "contextual_questions"
     t.datetime "created_at", null: false
     t.string "github_repo"
     t.integer "github_webhook_id"
@@ -50,6 +51,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_18_134938) do
     t.string "sections_generation_status"
     t.string "slug"
     t.datetime "updated_at", null: false
+    t.json "user_context"
     t.integer "user_id", null: false
     t.string "webhook_secret"
     t.index ["onboarding_step"], name: "index_projects_on_onboarding_step"
@@ -76,6 +78,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_18_134938) do
   create_table "sections", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "description"
+    t.string "icon"
     t.text "justification"
     t.string "name", null: false
     t.integer "position", default: 0, null: false

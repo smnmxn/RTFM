@@ -28,6 +28,8 @@ class SuggestSectionsJob < ApplicationJob
       if result[:success]
         create_sections(project, result[:sections])
         project.reload.update!(sections_generation_status: "completed")
+        # Reload again to ensure sections association is fresh for broadcast
+        project.reload
         broadcast_sections_list(project)
         broadcast_analyze_status(project)
         Rails.logger.info "[SuggestSectionsJob] Suggested #{result[:sections]&.size || 0} sections for project #{project.id}"
@@ -117,6 +119,7 @@ class SuggestSectionsJob < ApplicationJob
 
   def build_context_json(project)
     existing_section_slugs = project.sections.pluck(:slug)
+    user_context = project.user_context || {}
 
     {
       project_name: project.name,
@@ -126,7 +129,14 @@ class SuggestSectionsJob < ApplicationJob
       key_patterns: project.analysis_metadata&.dig("key_patterns") || [],
       components: project.analysis_metadata&.dig("components") || [],
       target_users: project.analysis_metadata&.dig("target_users") || [],
-      existing_section_slugs: existing_section_slugs
+      existing_section_slugs: existing_section_slugs,
+      # User-provided context from onboarding questions
+      user_context: user_context,
+      target_audience: user_context["target_audience"],
+      industry: user_context["industry"],
+      documentation_goals: user_context["documentation_goals"] || [],
+      tone_preference: user_context["tone_preference"],
+      product_stage: user_context["product_stage"]
     }.to_json
   end
 
@@ -210,9 +220,13 @@ class SuggestSectionsJob < ApplicationJob
   end
 
   def broadcast_analyze_status(project)
+    target_id = ActionView::RecordIdentifier.dom_id(project, :onboarding_analyze)
+    Rails.logger.info "[SuggestSectionsJob] Broadcasting analyze status to target: #{target_id}"
+    Rails.logger.info "[SuggestSectionsJob] Project status: analysis=#{project.analysis_status}, sections_gen=#{project.sections_generation_status}, sections_count=#{project.sections.count}"
+
     Turbo::StreamsChannel.broadcast_replace_to(
       [ project, :onboarding ],
-      target: ActionView::RecordIdentifier.dom_id(project, :onboarding_analyze),
+      target: target_id,
       partial: "onboarding/projects/analyze_status",
       locals: { project: project }
     )

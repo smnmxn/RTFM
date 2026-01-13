@@ -1,37 +1,42 @@
 <% content_for(:title) { "#{@project.name} Help Centre" } %>
 
-<div class="space-y-8">
-  <% @sections.each do |section| %>
-    <% published_articles = section.articles.published %>
-    <% next unless published_articles.any? %>
+<% content_for :hero do %>
+  <%= render "help_centre/hero" %>
+<% end %>
 
+<div class="space-y-12">
+  <!-- Section Cards Grid -->
+  <% sections_with_articles = @sections.select { |s| s.articles.published.any? } %>
+  <% if sections_with_articles.any? %>
     <section>
-      <div class="flex justify-between items-baseline mb-4">
-        <div>
-          <h2 class="text-xl font-semibold text-gray-900"><%= section.name %></h2>
-          <% if section.description.present? %>
-            <p class="text-sm text-gray-500"><%= section.description %></p>
-          <% end %>
-        </div>
-        <% if published_articles.count > 3 %>
-          <%= link_to "View all",
-              help_centre_section_path(project_slug: @project.slug, section_slug: section.slug),
-              class: "text-sm text-indigo-600 hover:text-indigo-800" %>
+      <h2 class="text-xl font-semibold text-gray-900 mb-6">Browse by category</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% sections_with_articles.each do |section| %>
+          <%= render "help_centre/section_card",
+                     section: section,
+                     article_count: section.articles.published.count %>
         <% end %>
       </div>
+    </section>
+  <% end %>
 
-      <div class="grid gap-4">
-        <% published_articles.limit(3).each do |article| %>
+  <!-- Popular Articles -->
+  <% if @popular_articles.any? %>
+    <section>
+      <h2 class="text-xl font-semibold text-gray-900 mb-6">Popular articles</h2>
+      <div class="grid gap-4 md:grid-cols-2">
+        <% @popular_articles.each do |article| %>
           <%= render "help_centre/article_card", article: article %>
         <% end %>
       </div>
     </section>
   <% end %>
 
+  <!-- Uncategorized Articles -->
   <% if @uncategorized_articles.any? %>
     <section>
-      <h2 class="text-xl font-semibold text-gray-900 mb-4">Other Articles</h2>
-      <div class="grid gap-4">
+      <h2 class="text-xl font-semibold text-gray-900 mb-6">Other articles</h2>
+      <div class="grid gap-4 md:grid-cols-2">
         <% @uncategorized_articles.each do |article| %>
           <%= render "help_centre/article_card", article: article %>
         <% end %>
@@ -39,9 +44,14 @@
     </section>
   <% end %>
 
-  <% if @sections.none? { |s| s.articles.published.any? } && @uncategorized_articles.empty? %>
-    <div class="text-center py-12 bg-white rounded-lg shadow-sm">
-      <p class="text-gray-500">No articles published yet.</p>
+  <!-- Empty State -->
+  <% if sections_with_articles.empty? && @uncategorized_articles.empty? %>
+    <div class="text-center py-16 bg-white rounded-xl shadow-sm">
+      <svg class="mx-auto w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
+      </svg>
+      <p class="text-gray-500 text-lg">No articles published yet.</p>
+      <p class="text-gray-400 text-sm mt-1">Check back soon for helpful guides and tutorials.</p>
     </div>
   <% end %>
 </div>

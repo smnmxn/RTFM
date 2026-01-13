@@ -13,6 +13,22 @@ class HelpCentreController < ApplicationController
 
     # Articles without a section
     @uncategorized_articles = @project.articles.published.where(section: nil)
+
+    # Popular/recent articles for the homepage
+    @popular_articles = @project.articles.published.order(published_at: :desc).limit(6)
+  end
+
+  def search
+    @query = params[:q].to_s.strip
+
+    if @query.present?
+      @articles = @project.articles
+        .published
+        .where("title LIKE :q OR content LIKE :q OR structured_content LIKE :q", q: "%#{@query}%")
+        .limit(20)
+    else
+      @articles = []
+    end
   end
 
   def show

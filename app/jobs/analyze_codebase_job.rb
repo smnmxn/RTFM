@@ -28,9 +28,13 @@ class AnalyzeCodebaseJob < ApplicationJob
           analysis_status: "completed",
           analyzed_at: Time.current,
           analysis_commit_sha: result[:commit_sha],
-          project_overview: result[:overview]
+          project_overview: result[:overview],
+          contextual_questions: result[:contextual_questions]
         )
         Rails.logger.info "[AnalyzeCodebaseJob] Analysis completed for project #{project.id}"
+        if result[:contextual_questions].present?
+          Rails.logger.info "[AnalyzeCodebaseJob] Generated #{result[:contextual_questions].size} contextual questions"
+        end
 
         # Trigger section suggestions after successful analysis
         SuggestSectionsJob.perform_later(project_id: project.id)
@@ -43,6 +47,9 @@ class AnalyzeCodebaseJob < ApplicationJob
         project.update!(analysis_status: "failed")
         Rails.logger.error "[AnalyzeCodebaseJob] Analysis failed for project #{project.id}: #{result[:error]}"
       end
+
+      # Reload to ensure we have the latest data (including contextual_questions)
+      project.reload
 
       # Broadcast update to the project page
       broadcast_analysis_update(project)
@@ -101,56 +108,81 @@ class AnalyzeCodebaseJob < ApplicationJob
         Rails.logger.info "[AnalyzeCodebaseJob] Output files: #{files.join(', ')}"
       end
 
-      if status.success?
-        # Read the output files
-        summary = File.read(File.join(output_dir, "summary.md")).strip rescue nil
-        metadata_raw = File.read(File.join(output_dir, "metadata.json")).strip rescue nil
-        commit_sha = File.read(File.join(output_dir, "commit_sha.txt")).strip rescue nil
-        overview = File.read(File.join(output_dir, "overview.txt")).strip rescue nil
-        target_users_raw = File.read(File.join(output_dir, "target_users.json")).strip rescue nil
+      unless status.success?
+        Rails.logger.error "[AnalyzeCodebaseJob] Docker command failed with exit status #{status.exitstatus}"
+        Rails.logger.error "[AnalyzeCodebaseJob] STDOUT:\n#{stdout}" if stdout.present?
+        Rails.logger.error "[AnalyzeCodebaseJob] STDERR:\n#{stderr}" if stderr.present?
 
-        # Parse metadata JSON (strip markdown code fences if present)
-        metadata = begin
-          if metadata_raw.present?
-            # Remove ```json and ``` if Claude wrapped it in code fences
-            clean_json = metadata_raw
-              .gsub(/\A\s*```json\s*/i, "")
-              .gsub(/\s*```\s*\z/, "")
-              .strip
-            JSON.parse(clean_json)
-          end
+        error_details = []
+        error_details << "exit #{status.exitstatus}"
+        error_details << "stdout: #{stdout[0..1000]}" if stdout.present?
+        error_details << "stderr: #{stderr[0..1000]}" if stderr.present?
+        return { success: false, error: "Docker command failed: #{error_details.join('; ')}" }
+      end
+
+      # Read the output files
+      summary = File.read(File.join(output_dir, "summary.md")).strip rescue nil
+      metadata_raw = File.read(File.join(output_dir, "metadata.json")).strip rescue nil
+      commit_sha = File.read(File.join(output_dir, "commit_sha.txt")).strip rescue nil
+      overview = File.read(File.join(output_dir, "overview.txt")).strip rescue nil
+      target_users_raw = File.read(File.join(output_dir, "target_users.json")).strip rescue nil
+      contextual_questions_raw = File.read(File.join(output_dir, "contextual_questions.json")).strip rescue nil
+
+      # Parse metadata JSON (strip markdown code fences if present)
+      metadata = begin
+        if metadata_raw.present?
+          # Remove ```json and ``` if Claude wrapped it in code fences
+          clean_json = metadata_raw
+            .gsub(/\A\s*```json\s*/i, "")
+            .gsub(/\s*```\s*\z/, "")
+            .strip
+          JSON.parse(clean_json)
+        end
+      rescue JSON::ParserError => e
+        Rails.logger.warn "[AnalyzeCodebaseJob] Failed to parse metadata JSON: #{e.message}"
+        Rails.logger.warn "[AnalyzeCodebaseJob] Raw metadata: #{metadata_raw[0..200]}"
+        nil
+      end
+
+      # Parse target users JSON and add to metadata
+      if target_users_raw.present? && metadata
+        begin
+          clean_json = target_users_raw
+            .gsub(/\A\s*```json\s*/i, "")
+            .gsub(/\s*```\s*\z/, "")
+            .strip
+          metadata["target_users"] = JSON.parse(clean_json)
         rescue JSON::ParserError => e
-          Rails.logger.warn "[AnalyzeCodebaseJob] Failed to parse metadata JSON: #{e.message}"
-          Rails.logger.warn "[AnalyzeCodebaseJob] Raw metadata: #{metadata_raw[0..200]}"
-          nil
+          Rails.logger.warn "[AnalyzeCodebaseJob] Failed to parse target_users JSON: #{e.message}"
         end
+      end
 
-        # Parse target users JSON and add to metadata
-        if target_users_raw.present? && metadata
-          begin
-            clean_json = target_users_raw
-              .gsub(/\A\s*```json\s*/i, "")
-              .gsub(/\s*```\s*\z/, "")
-              .strip
-            metadata["target_users"] = JSON.parse(clean_json)
-          rescue JSON::ParserError => e
-            Rails.logger.warn "[AnalyzeCodebaseJob] Failed to parse target_users JSON: #{e.message}"
-          end
+      # Parse contextual questions JSON
+      contextual_questions = nil
+      if contextual_questions_raw.present?
+        begin
+          clean_json = contextual_questions_raw
+            .gsub(/\A\s*```json\s*/i, "")
+            .gsub(/\s*```\s*\z/, "")
+            .strip
+          parsed = JSON.parse(clean_json)
+          contextual_questions = parsed["questions"] || parsed
+        rescue JSON::ParserError => e
+          Rails.logger.warn "[AnalyzeCodebaseJob] Failed to parse contextual_questions JSON: #{e.message}"
         end
+      end
 
-        if summary.present?
-          {
-            success: true,
-            summary: summary,
-            metadata: metadata,
-            commit_sha: commit_sha,
-            overview: overview
-          }
-        else
-          { success: false, error: "No summary generated" }
-        end
+      if summary.present?
+        {
+          success: true,
+          summary: summary,
+          metadata: metadata,
+          commit_sha: commit_sha,
+          overview: overview,
+          contextual_questions: contextual_questions
+        }
       else
-        { success: false, error: "Docker command failed: #{stderr}" }
+        { success: false, error: "No summary generated" }
       end
     ensure
       # Cleanup temporary directory
@@ -194,4 +226,5 @@ class AnalyzeCodebaseJob < ApplicationJob
       locals: { project: project }
     )
   end
+
 end

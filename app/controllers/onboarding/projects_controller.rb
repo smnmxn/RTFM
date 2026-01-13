@@ -6,7 +6,7 @@ module Onboarding
     before_action :ensure_onboarding_active, except: [ :new, :create ]
     before_action :ensure_correct_step, except: [ :new, :create ]
 
-    # Step 0: Start onboarding
+    # Step 0: Start onboarding - auto-creates project and goes to repository selection
     def new
       # If user already has projects, they don't need onboarding for first project
       unless current_user.needs_onboarding? || current_user.onboarding_in_progress?
@@ -21,25 +21,12 @@ module Onboarding
         return
       end
 
-      @project = current_user.projects.build
+      # Auto-create project and start onboarding immediately
+      create_and_start_onboarding
     end
 
     def create
-      @project = current_user.projects.build(
-        name: "New Project",
-        onboarding_step: "repository",
-        onboarding_started_at: Time.current
-      )
-      # Generate temporary values that will be replaced in step 1
-      @project.slug = "project-#{SecureRandom.hex(4)}"
-      @project.github_repo = "placeholder/placeholder"
-
-      # Skip validations for the placeholder values
-      if @project.save(validate: false)
-        redirect_to repository_onboarding_project_path(@project)
-      else
-        redirect_to dashboard_path, alert: "Could not start onboarding"
-      end
+      create_and_start_onboarding
     end
 
     # Step 1: Connect Repository
@@ -95,6 +82,12 @@ module Onboarding
       redirect_to analyze_onboarding_project_path(@project)
     end
 
+    def save_context
+      current_context = @project.user_context || {}
+      @project.update!(user_context: current_context.merge(context_params.to_h))
+      head :ok
+    end
+
     # Step 3: Review Sections
     def sections
       @pending_sections = @project.sections.pending.ordered
@@ -130,6 +123,24 @@ module Onboarding
 
     def set_project
       @project = current_user.projects.find(params[:id])
+    end
+
+    def create_and_start_onboarding
+      @project = current_user.projects.build(
+        name: "New Project",
+        onboarding_step: "repository",
+        onboarding_started_at: Time.current
+      )
+      # Generate temporary values that will be replaced in step 1
+      @project.slug = "project-#{SecureRandom.hex(4)}"
+      @project.github_repo = "placeholder/placeholder"
+
+      # Skip validations for the placeholder values
+      if @project.save(validate: false)
+        redirect_to repository_onboarding_project_path(@project)
+      else
+        redirect_to dashboard_path, alert: "Could not start onboarding"
+      end
     end
 
     def ensure_onboarding_active
@@ -175,6 +186,24 @@ module Onboarding
       else
         "Failed to connect repository: #{error}"
       end
+    end
+
+    def context_params
+      permitted = params.require(:context).permit(
+        :target_audience,
+        :industry,
+        :tone_preference,
+        :product_stage,
+        documentation_goals: [],
+        contextual_answers: {}
+      )
+
+      # Convert contextual_answers to a proper hash if present
+      if params[:context][:contextual_answers].present?
+        permitted[:contextual_answers] = params[:context][:contextual_answers].to_unsafe_h
+      end
+
+      permitted
     end
   end
 end

@@ -38,6 +38,7 @@ Rails.application.routes.draw do
         post :connect
         get :analyze
         post :start_analysis
+        patch :save_context
         get :sections
         post :complete_sections
       end
@@ -104,6 +105,7 @@ Rails.application.routes.draw do
   # Public Help Centre (unauthenticated)
   scope "/:project_slug" do
     get "help", to: "help_centre#index", as: :help_centre
+    get "help/search", to: "help_centre#search", as: :help_centre_search
     get "help/section/:section_slug", to: "help_centre#section", as: :help_centre_section
     get "help/:id", to: "help_centre#show", as: :help_centre_article
   end

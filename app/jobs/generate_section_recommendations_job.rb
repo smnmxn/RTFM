@@ -118,6 +118,7 @@ class GenerateSectionRecommendationsJob < ApplicationJob
     all_existing_recommendations = project.recommendations
       .where(status: [ :pending, :generated ])
       .pluck(:title)
+    user_context = project.user_context || {}
 
     {
       project_name: project.name,
@@ -134,7 +135,16 @@ class GenerateSectionRecommendationsJob < ApplicationJob
       section_slug: section.slug,
       section_description: section.description,
       existing_article_titles: all_existing_articles,
-      existing_recommendation_titles: all_existing_recommendations
+      existing_recommendation_titles: all_existing_recommendations,
+      # User-provided context from onboarding questions
+      user_context: user_context,
+      target_audience: user_context["target_audience"],
+      industry: user_context["industry"],
+      documentation_goals: user_context["documentation_goals"] || [],
+      tone_preference: user_context["tone_preference"],
+      product_stage: user_context["product_stage"],
+      # Contextual answers from sections step
+      contextual_answers: user_context["contextual_answers"] || {}
     }.to_json
   end
 

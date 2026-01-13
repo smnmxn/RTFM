@@ -26,38 +26,52 @@ class Section < ApplicationRecord
   scope :with_published_articles, -> { joins(:articles).where(articles: { status: :published }).distinct }
 
   # Template section definitions based on "Jobs to be Done" categorization
+  # Icons use Heroicons names (https://heroicons.com)
   TEMPLATES = [
     {
       slug: "getting-started",
       name: "Getting Started",
-      description: "Set up and configure the basics to get up and running"
+      description: "Set up and configure the basics to get up and running",
+      icon: "rocket-launch"
     },
     {
       slug: "daily-tasks",
       name: "Daily Tasks",
-      description: "Common everyday workflows and regular operations"
+      description: "Common everyday workflows and regular operations",
+      icon: "clipboard-document-list"
     },
     {
       slug: "advanced-usage",
       name: "Advanced Usage",
-      description: "Power user features, customization, and integrations"
+      description: "Power user features, customization, and integrations",
+      icon: "cog-6-tooth"
     },
     {
       slug: "troubleshooting",
       name: "Troubleshooting",
-      description: "Solve common problems and find answers to FAQs"
+      description: "Solve common problems and find answers to FAQs",
+      icon: "wrench-screwdriver"
     }
   ].freeze
+
+  # Default icon for custom sections
+  DEFAULT_ICON = "document-text".freeze
 
   def self.create_templates_for(project)
     TEMPLATES.each_with_index do |template, index|
       project.sections.find_or_create_by!(slug: template[:slug]) do |section|
         section.name = template[:name]
         section.description = template[:description]
+        section.icon = template[:icon]
         section.position = index
         section.section_type = :template
       end
     end
+  end
+
+  # Returns the icon name, falling back to default if not set
+  def icon_name
+    icon.presence || DEFAULT_ICON
   end
 
   def published_articles

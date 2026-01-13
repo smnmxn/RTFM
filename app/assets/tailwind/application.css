@@ -1,1 +1,52 @@
 @import "tailwindcss";
+
+/* Brand gradient utilities */
+.bg-gradient-brand {
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+}
+
+.text-gradient-brand {
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Subtle glow for active/focused elements */
+.ring-glow {
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+.ring-glow-strong {
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.25);
+}
+
+/* Smooth transitions */
+.transition-smooth {
+  transition: all 0.2s ease-out;
+}
+
+/* Card lift on hover */
+.hover-lift {
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Pulse animation for loading states */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Progress connector gradient */
+.bg-gradient-connector {
+  background: linear-gradient(90deg, #7c3aed 0%, #a855f7 100%);
+}

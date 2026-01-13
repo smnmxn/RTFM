@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html class="scroll-smooth">
   <head>
     <title><%= content_for(:title) || "#{@project.name} Help Centre" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -15,21 +15,43 @@
   </head>
 
   <body class="min-h-screen bg-gray-50 flex flex-col">
-    <header class="bg-white shadow-sm">
-      <div class="max-w-4xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-        <h1 class="text-2xl font-bold text-gray-900">
-          <%= link_to @project.name, help_centre_path(project_slug: @project.slug), class: "hover:text-indigo-600" %>
-        </h1>
-        <p class="text-sm text-gray-500 mt-1">Help Centre</p>
+    <header class="bg-white/95 backdrop-blur-sm shadow-sm sticky top-0 z-50">
+      <div class="max-w-6xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
+        <div>
+          <h1 class="text-xl font-bold text-gray-900">
+            <%= link_to @project.name, help_centre_path(project_slug: @project.slug), class: "hover:text-indigo-600 transition-colors" %>
+          </h1>
+          <p class="text-sm text-gray-500">Help Centre</p>
+        </div>
+
+        <% unless content_for?(:hero) %>
+          <!-- Mini search on non-index pages -->
+          <%= form_with url: help_centre_search_path(project_slug: @project.slug),
+                        method: :get,
+                        class: "hidden sm:block" do %>
+            <div class="relative">
+              <input type="text"
+                     name="q"
+                     placeholder="Search..."
+                     class="w-48 lg:w-64 px-4 py-2 pl-10 text-sm border border-gray-300 rounded-lg
+                            focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </div>
+          <% end %>
+        <% end %>
       </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 flex-1 w-full">
+    <%= yield :hero %>
+
+    <main class="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8 flex-1 w-full">
       <%= yield %>
     </main>
 
     <footer class="bg-gray-100 mt-auto">
-      <div class="max-w-4xl mx-auto px-4 py-6 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
+      <div class="max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
         Powered by <a href="/" class="text-indigo-600 hover:text-indigo-800">RTFM</a>
       </div>
     </footer>

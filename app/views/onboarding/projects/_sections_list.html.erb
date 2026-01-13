@@ -1,39 +1,29 @@
-<% if project.sections_being_generated? %>
-  <div class="p-6 text-center">
-    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto"></div>
-    <p class="mt-4 text-gray-600">Generating section suggestions...</p>
-    <p class="mt-1 text-sm text-gray-500">This usually takes about a minute.</p>
-  </div>
-<% elsif sections.any? %>
-  <div class="divide-y divide-gray-200">
-    <% sections.each do |section| %>
-      <%= render "sections/pending_card", section: section %>
-    <% end %>
-  </div>
-<% else %>
-  <div class="p-6 text-center">
-    <div class="flex items-center justify-center mb-4">
-      <div class="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
-        <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-        </svg>
-      </div>
+<div class="p-6" id="pending-sections-list">
+  <% if project.sections_being_generated? %>
+    <div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center -mt-6 -mx-6 mb-6">
+      <svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      Generating suggestions...
     </div>
-    <% accepted_count = project.sections.accepted.count %>
-    <% if accepted_count > 0 %>
-      <p class="text-lg font-medium text-gray-900 mb-2">Sections selected!</p>
-      <p class="text-sm text-gray-500 mb-4">
-        We're generating article suggestions for your <%= pluralize(accepted_count, "section") %>.
-        They'll appear in your inbox as they're ready.
-      </p>
+    <% if project.contextual_questions.present? %>
+      <%= render "onboarding/projects/contextual_questions", project: project %>
     <% else %>
-      <p class="text-lg font-medium text-gray-900 mb-2">All sections reviewed!</p>
-      <p class="text-sm text-gray-500 mb-4">
-        No sections accepted. You can add sections manually later.
-      </p>
+      <div class="py-8 text-center text-slate-500">Almost there...</div>
     <% end %>
-    <%= link_to "View my Inbox",
-        project_path(project),
-        class: "inline-flex items-center px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700" %>
-  </div>
-<% end %>
+  <% elsif sections.any? %>
+    <div class="divide-y divide-slate-100 -mx-6 -mb-6">
+      <% sections.each do |section| %>
+        <%= render "sections/pending_card", section: section %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="py-2 text-center">
+      <p class="text-slate-600 mb-6">All done!</p>
+      <%= link_to "View inbox",
+          project_path(project),
+          class: "px-6 py-3 bg-gradient-brand text-white font-medium rounded-lg hover:opacity-90 transition-smooth" %>
+    </div>
+  <% end %>
+</div>
