@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -e
+
+# Build all Docker images for development
+
+echo "Building development image..."
+docker compose build
+
+echo "Building claude-analyzer image..."
+docker build -t rtfm/claude-analyzer:latest docker/claude-analyzer/
+
+echo ""
+echo "Done! Run 'bin/docker-dev' to start the development environment."

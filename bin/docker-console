@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Open a Rails console in the running web container
+
+docker compose exec web bin/rails console

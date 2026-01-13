@@ -5,6 +5,8 @@ require "json"
 require "timeout"
 
 class AnalyzeCommitJob < ApplicationJob
+  include DockerVolumeHelper
+
   queue_as :analysis
 
   retry_on Octokit::Error, wait: :polynomially_longer, attempts: 3
@@ -107,8 +109,8 @@ class AnalyzeCommitJob < ApplicationJob
         "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
         "-e", "GITHUB_TOKEN=#{project.user.github_token}",
         "-e", "GITHUB_REPO=#{project.github_repo}",
-        "-v", "#{input_dir}:/input:ro",
-        "-v", "#{output_dir}:/output",
+        "-v", "#{host_volume_path(input_dir)}:/input:ro",
+        "-v", "#{host_volume_path(output_dir)}:/output",
         "--network", "host",
         "--entrypoint", "/analyze_commit.sh",
         docker_image

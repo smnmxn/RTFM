@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Run migrations in the running web container
+
+docker compose exec web bin/rails db:migrate

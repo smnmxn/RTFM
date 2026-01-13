@@ -1,28 +1,52 @@
-# SQLite. Versions 3.8.0 and up are supported.
-#   gem install sqlite3
-#
-default: &default
+# Database configuration
+# - Local development: Uses SQLite (default)
+# - Docker development: Uses PostgreSQL via DATABASE_URL
+# - Production: Uses SQLite or configure DATABASE_URL
+
+# SQLite defaults for local development
+sqlite: &sqlite
   adapter: sqlite3
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   timeout: 5000
 
+# PostgreSQL defaults for Docker development
+postgres: &postgres
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
 development:
-  <<: *default
+  <% if ENV['DATABASE_URL'].present? %>
+  <<: *postgres
+  url: <%= ENV['DATABASE_URL'] %>
+  <% else %>
+  <<: *sqlite
   database: storage/development.sqlite3
+  <% end %>
 
 test:
-  <<: *default
+  <% if ENV['DATABASE_URL'].present? %>
+  <<: *postgres
+  url: <%= ENV['DATABASE_URL'].sub('_development', '_test') %>
+  <% else %>
+  <<: *sqlite
   database: storage/test.sqlite3
+  <% end %>
 
 production:
+  <% if ENV['DATABASE_URL'].present? %>
+  <<: *postgres
+  url: <%= ENV['DATABASE_URL'] %>
+  <% else %>
   primary:
-    <<: *default
+    <<: *sqlite
     database: storage/production.sqlite3
   cache:
-    <<: *default
+    <<: *sqlite
     database: storage/production_cache.sqlite3
     migrations_paths: db/cache_migrate
   cable:
-    <<: *default
+    <<: *sqlite
     database: storage/production_cable.sqlite3
     migrations_paths: db/cable_migrate
+  <% end %>

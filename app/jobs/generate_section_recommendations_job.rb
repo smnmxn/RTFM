@@ -4,6 +4,8 @@ require "json"
 require "timeout"
 
 class GenerateSectionRecommendationsJob < ApplicationJob
+  include DockerVolumeHelper
+
   queue_as :analysis
 
   GENERATION_TIMEOUT = 300 # 5 minutes
@@ -72,8 +74,8 @@ class GenerateSectionRecommendationsJob < ApplicationJob
         "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
         "-e", "GITHUB_TOKEN=#{project.user.github_token}",
         "-e", "GITHUB_REPO=#{project.github_repo}",
-        "-v", "#{input_dir}:/input:ro",
-        "-v", "#{output_dir}:/output",
+        "-v", "#{host_volume_path(input_dir)}:/input:ro",
+        "-v", "#{host_volume_path(output_dir)}:/output",
         "--network", "host",
         "--entrypoint", "/generate_section_recommendations.sh",
         docker_image

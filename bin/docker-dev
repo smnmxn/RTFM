@@ -4,10 +4,17 @@ set -e
 # Helper script for common Docker development tasks
 # Usage: bin/docker-dev [command]
 
+# Auto-detect HOST_PROJECT_PATH for Docker-from-Docker volume mounts
+if [ -z "$HOST_PROJECT_PATH" ]; then
+  export HOST_PROJECT_PATH="$(cd "$(dirname "$0")/.." && pwd)"
+fi
+
 case "$1" in
   setup)
     echo "==> Building development containers..."
     docker compose build
+    echo "==> Building claude-analyzer image..."
+    docker build -t rtfm/claude-analyzer:latest docker/claude-analyzer/
     echo "==> Creating .env.docker from example..."
     if [ ! -f .env.docker ]; then
       cp .env.docker.example .env.docker
@@ -19,11 +26,13 @@ case "$1" in
     ;;
 
   up)
+    echo "==> HOST_PROJECT_PATH=$HOST_PROJECT_PATH"
     echo "==> Starting all services..."
     docker compose up
     ;;
 
   upd)
+    echo "==> HOST_PROJECT_PATH=$HOST_PROJECT_PATH"
     echo "==> Starting all services in background..."
     docker compose up -d
     echo "==> Services started. Use 'bin/docker-dev logs' to view logs"

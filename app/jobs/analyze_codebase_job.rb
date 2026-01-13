@@ -4,6 +4,8 @@ require "json"
 require "timeout"
 
 class AnalyzeCodebaseJob < ApplicationJob
+  include DockerVolumeHelper
+
   queue_as :analysis
 
   # Longer timeout for analysis (10 minutes)
@@ -86,7 +88,7 @@ class AnalyzeCodebaseJob < ApplicationJob
         "-e", "GITHUB_REPO=#{project.github_repo}",
         "-e", "GITHUB_TOKEN=#{user.github_token}",
         "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
-        "-v", "#{output_dir}:/output",
+        "-v", "#{host_volume_path(output_dir)}:/output",
         "--network", "host",
         docker_image
       ]
