@@ -47,7 +47,7 @@ Rails.application.configure do
   config.active_support.report_deprecations = false
 
   # Use Redis for caching
-  config.cache_store = :redis_cache_store, { url: ENV.fetch("REDIS_URL", "redis://localhost:6379/1") }
+  config.cache_store = :redis_cache_store, url: ENV.fetch("REDIS_URL", "redis://localhost:6379/1")
 
   # Replace the default in-process and non-durable queuing backend for Active Job.
   config.active_job.queue_adapter = :sidekiq
