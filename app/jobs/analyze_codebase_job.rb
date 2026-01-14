@@ -180,8 +180,7 @@ class AnalyzeCodebaseJob < ApplicationJob
         { success: false, error: "No summary generated" }
       end
     ensure
-      # Cleanup temporary directory
-      FileUtils.rm_rf(output_dir)
+      cleanup_analysis_dir(output_dir)
     end
   end
 

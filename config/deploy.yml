@@ -60,6 +60,9 @@ env:
     # Enable BuildKit for docker build commands in Sidekiq jobs
     DOCKER_BUILDKIT: "1"
 
+    # Keep analysis output files for debugging (set to "true" to enable)
+    KEEP_ANALYSIS_OUTPUT: "true"
+
     # Webhook callback URL (set to your production domain)
     # HOST_URL: https://your-production-domain.com
 

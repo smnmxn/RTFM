@@ -141,8 +141,8 @@ class AnalyzeCommitJob < ApplicationJob
     rescue Timeout::Error
       { success: false, error: "Analysis timed out after #{ANALYSIS_TIMEOUT} seconds" }
     ensure
-      FileUtils.rm_rf(input_dir)
-      FileUtils.rm_rf(output_dir)
+      cleanup_analysis_dir(input_dir)
+      cleanup_analysis_dir(output_dir)
     end
   end
 

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Rebuild claude-analyzer image after deploy by removing old one
+# The job will rebuild it on next run with the updated scripts
+
+echo "Removing old claude-analyzer image so it rebuilds with new code..."
+
+# Run on each host via SSH
+for host in $KAMAL_HOSTS; do
+  ssh root@$host "docker rmi rtfm/claude-analyzer:latest 2>/dev/null || true"
+done
+
+echo "Done. claude-analyzer will rebuild on next analysis job."

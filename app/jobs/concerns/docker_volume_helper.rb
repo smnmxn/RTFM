@@ -37,6 +37,18 @@ module DockerVolumeHelper
     create_analysis_dir(prefix, writable: false)
   end
 
+  # Conditionally clean up analysis directory based on environment variable.
+  # Set KEEP_ANALYSIS_OUTPUT=true to preserve output files for debugging.
+  def cleanup_analysis_dir(dir)
+    return if dir.blank?
+
+    if ENV["KEEP_ANALYSIS_OUTPUT"] == "true"
+      Rails.logger.info "[DockerVolumeHelper] Keeping output directory: #{dir}"
+    else
+      FileUtils.rm_rf(dir)
+    end
+  end
+
   # Translate container path to host path for Docker volume mounts.
   # When running in Docker, Rails.root is /rails but the host path differs.
   # Sibling containers need the host path for volume mounts.

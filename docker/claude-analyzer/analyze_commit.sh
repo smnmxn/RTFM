@@ -26,7 +26,16 @@ fi
 
 # Clone the repository for full code context
 echo "Cloning repository..."
-git clone --depth 1 "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" /repo 2>/dev/null
+if ! git clone --depth 1 "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" /repo 2>&1; then
+    echo "ERROR: Failed to clone repository ${GITHUB_REPO}"
+    exit 1
+fi
+
+if [ ! -d /repo/.git ]; then
+    echo "ERROR: Repository clone failed - /repo/.git not found"
+    exit 1
+fi
+
 cd /repo
 
 # Read commit SHA from context for logging

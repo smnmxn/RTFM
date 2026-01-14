@@ -106,8 +106,8 @@ class GenerateSectionRecommendationsJob < ApplicationJob
       Rails.logger.warn "[GenerateSectionRecommendationsJob] JSON parse error: #{e.message}"
       { success: false, error: "Failed to parse recommendations JSON" }
     ensure
-      FileUtils.rm_rf(input_dir)
-      FileUtils.rm_rf(output_dir)
+      cleanup_analysis_dir(input_dir)
+      cleanup_analysis_dir(output_dir)
     end
   end
 

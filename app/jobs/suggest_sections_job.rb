@@ -104,8 +104,8 @@ class SuggestSectionsJob < ApplicationJob
       Rails.logger.warn "[SuggestSectionsJob] JSON parse error: #{e.message}"
       { success: false, error: "Failed to parse sections JSON" }
     ensure
-      FileUtils.rm_rf(input_dir)
-      FileUtils.rm_rf(output_dir)
+      cleanup_analysis_dir(input_dir)
+      cleanup_analysis_dir(output_dir)
     end
   end
 
