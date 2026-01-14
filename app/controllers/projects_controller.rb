@@ -289,7 +289,7 @@ class ProjectsController < ApplicationController
   end
 
   def repositories
-    result = GithubRepositoriesService.new.call
+    result = GithubRepositoriesService.new(current_user).call
 
     Rails.logger.info "[ProjectsController#repositories] Success: #{result.success?}, Repos: #{result.repositories&.size || 0}, Installations: #{result.installations&.size || 0}"
 

@@ -1,5 +1,6 @@
 class User < ApplicationRecord
   has_many :projects, dependent: :destroy
+  has_many :github_app_installations, dependent: :nullify
 
   validates :email, presence: true, uniqueness: true
   validates :github_uid, uniqueness: true, allow_nil: true

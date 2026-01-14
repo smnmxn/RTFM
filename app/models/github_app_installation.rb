@@ -1,4 +1,5 @@
 class GithubAppInstallation < ApplicationRecord
+  belongs_to :user, optional: true
   has_many :projects, dependent: :nullify
 
   validates :github_installation_id, presence: true, uniqueness: true

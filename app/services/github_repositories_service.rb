@@ -1,8 +1,16 @@
 class GithubRepositoriesService
   Result = Struct.new(:success?, :repositories, :installations, :error, keyword_init: true)
 
+  def initialize(user)
+    @user = user
+  end
+
   def call
-    installations = GithubAppInstallation.active.order(:account_login)
+    # First-come-claims: assign unclaimed installations to this user
+    GithubAppInstallation.active.where(user_id: nil).update_all(user_id: @user.id)
+
+    # Now query only this user's installations
+    installations = @user.github_app_installations.active.order(:account_login)
 
     if installations.empty?
       return Result.new(

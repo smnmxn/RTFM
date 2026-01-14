@@ -40,7 +40,11 @@ class GithubAppController < ApplicationController
   def sync_installation(installation_id)
     # First check if the webhook already created this installation
     existing = GithubAppInstallation.find_by(github_installation_id: installation_id.to_i)
-    return existing if existing
+    if existing
+      # Associate with current user if not already owned
+      existing.update!(user: current_user) if existing.user_id.nil?
+      return existing
+    end
 
     # Fall back to fetching from GitHub API
     app_client = GithubAppService.app_client
@@ -50,11 +54,14 @@ class GithubAppController < ApplicationController
       github_installation_id: installation_id.to_i,
       account_login: installation_data.account.login,
       account_type: installation_data.account.type,
-      account_id: installation_data.account.id
+      account_id: installation_data.account.id,
+      user: current_user
     )
   rescue Octokit::Error => e
     Rails.logger.error "[GithubAppController] Failed to sync installation: #{e.message}"
     # One more check in case webhook arrived while we were making API call
-    GithubAppInstallation.find_by(github_installation_id: installation_id.to_i)
+    existing = GithubAppInstallation.find_by(github_installation_id: installation_id.to_i)
+    existing&.update!(user: current_user) if existing&.user_id.nil?
+    existing
   end
 end

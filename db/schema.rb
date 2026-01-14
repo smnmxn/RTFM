@@ -10,10 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_14_161108) do
-  # These are extensions that must be enabled in order to support this database
-  enable_extension "pg_catalog.plpgsql"
-
+ActiveRecord::Schema[8.1].define(version: 2026_01_14_180936) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -72,8 +69,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_14_161108) do
     t.bigint "github_installation_id", null: false
     t.datetime "suspended_at"
     t.datetime "updated_at", null: false
+    t.integer "user_id"
     t.index ["account_login"], name: "index_github_app_installations_on_account_login"
     t.index ["github_installation_id"], name: "index_github_app_installations_on_github_installation_id", unique: true
+    t.index ["user_id"], name: "index_github_app_installations_on_user_id"
   end
 
   create_table "projects", force: :cascade do |t|
@@ -84,7 +83,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_14_161108) do
     t.datetime "analyzed_at"
     t.json "contextual_questions"
     t.datetime "created_at", null: false
-    t.bigint "github_app_installation_id"
+    t.integer "github_app_installation_id"
     t.string "github_repo"
     t.string "name"
     t.datetime "onboarding_started_at"
@@ -139,7 +138,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_14_161108) do
   end
 
   create_table "step_images", force: :cascade do |t|
-    t.bigint "article_id", null: false
+    t.integer "article_id", null: false
     t.datetime "created_at", null: false
     t.integer "step_index", null: false
     t.datetime "updated_at", null: false
@@ -185,6 +184,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_14_161108) do
   add_foreign_key "articles", "projects"
   add_foreign_key "articles", "recommendations"
   add_foreign_key "articles", "sections"
+  add_foreign_key "github_app_installations", "users"
   add_foreign_key "projects", "github_app_installations"
   add_foreign_key "projects", "users"
   add_foreign_key "recommendations", "projects"
