@@ -5,8 +5,9 @@
 <%= heroicon "check-circle", variant: :solid, options: { class: "h-5 w-5 mr-2" } %>
         <span class="font-medium">All topics reviewed!</span>
       </div>
-      <%= link_to "View my Inbox",
-          project_path(project),
+      <%= button_to "View my Inbox",
+          complete_sections_onboarding_project_path(project),
+          method: :post,
           class: "px-5 py-2 bg-gradient-brand text-white font-medium rounded-lg hover:opacity-90 transition-smooth" %>
     </div>
   </div>
