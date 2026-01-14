@@ -49,6 +49,10 @@ env:
     - ANTHROPIC_API_KEY
     - GITHUB_CLIENT_ID
     - GITHUB_CLIENT_SECRET
+    - GITHUB_APP_SLUG
+    - GITHUB_APP_ID
+    - GITHUB_APP_PRIVATE_KEY
+    - GITHUB_APP_WEBHOOK_SECRET
   clear:
     # Redis for Sidekiq
     REDIS_URL: redis://supportpages-redis:6379/1
