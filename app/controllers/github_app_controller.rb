@@ -38,19 +38,23 @@ class GithubAppController < ApplicationController
   end
 
   def sync_installation(installation_id)
-    # Fetch installation details from GitHub using JWT auth
+    # First check if the webhook already created this installation
+    existing = GithubAppInstallation.find_by(github_installation_id: installation_id.to_i)
+    return existing if existing
+
+    # Fall back to fetching from GitHub API
     app_client = GithubAppService.app_client
     installation_data = app_client.installation(installation_id)
 
-    GithubAppInstallation.find_or_create_by!(
-      github_installation_id: installation_id.to_i
-    ) do |i|
-      i.account_login = installation_data.account.login
-      i.account_type = installation_data.account.type
-      i.account_id = installation_data.account.id
-    end
+    GithubAppInstallation.create!(
+      github_installation_id: installation_id.to_i,
+      account_login: installation_data.account.login,
+      account_type: installation_data.account.type,
+      account_id: installation_data.account.id
+    )
   rescue Octokit::Error => e
     Rails.logger.error "[GithubAppController] Failed to sync installation: #{e.message}"
-    nil
+    # One more check in case webhook arrived while we were making API call
+    GithubAppInstallation.find_by(github_installation_id: installation_id.to_i)
   end
 end

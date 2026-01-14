@@ -67,7 +67,10 @@ class GithubAppService
   end
 
   def generate_jwt
-    private_key = OpenSSL::PKey::RSA.new(app_private_key)
+    key_content = app_private_key
+    Rails.logger.debug "[GithubAppService] Generating JWT for app_id=#{app_id}, key starts with: #{key_content[0..30]}..."
+
+    private_key = OpenSSL::PKey::RSA.new(key_content)
 
     payload = {
       iat: Time.current.to_i - 60,
@@ -76,10 +79,13 @@ class GithubAppService
     }
 
     JWT.encode(payload, private_key, "RS256")
+  rescue OpenSSL::PKey::RSAError => e
+    Rails.logger.error "[GithubAppService] Failed to parse private key: #{e.message}"
+    raise
   end
 
   def app_id
-    ENV.fetch("GITHUB_APP_ID")
+    ENV.fetch("GITHUB_APP_ID").to_i
   end
 
   def app_private_key
