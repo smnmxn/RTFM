@@ -1,16 +1,18 @@
-require "octokit"
-
 class GithubCommitsService
   Result = Struct.new(:success?, :commits, :error, keyword_init: true)
 
-  def initialize(user)
-    @user = user
-    @client = Octokit::Client.new(access_token: user.github_token, auto_paginate: false)
+  def initialize(project)
+    @project = project
   end
 
-  def call(repo_full_name, page: 1, per_page: 30)
-    commits = @client.commits(
-      repo_full_name,
+  def call(page: 1, per_page: 30)
+    client = @project.github_client
+    unless client
+      return Result.new(success?: false, error: "No GitHub App installation found for this project.")
+    end
+
+    commits = client.commits(
+      @project.github_repo,
       page: page,
       per_page: per_page
     )
@@ -20,9 +22,9 @@ class GithubCommitsService
       commits: commits.map { |commit| format_commit(commit) }
     )
   rescue Octokit::Unauthorized, Octokit::Forbidden => e
-    Result.new(success?: false, error: "GitHub access denied. Please sign out and sign in again.")
+    Result.new(success?: false, error: "GitHub access denied. The app may have been uninstalled.")
   rescue Octokit::NotFound => e
-    Result.new(success?: false, error: "Repository not found or you don't have access.")
+    Result.new(success?: false, error: "Repository not found or the app doesn't have access.")
   rescue Octokit::Error => e
     Result.new(success?: false, error: "GitHub API error: #{e.message}")
   end

@@ -42,33 +42,27 @@ module Onboarding
 
     def connect
       repo_full_name = params[:github_repo]
+      installation_id = params[:installation_id]
       repo_name = repo_full_name&.split("/")&.last
+
+      # Find the installation
+      installation = GithubAppInstallation.find_by(github_installation_id: installation_id)
+      unless installation
+        redirect_to repository_onboarding_project_path(@project),
+          alert: "GitHub App installation not found. Please install the app first."
+        return
+      end
 
       @project.assign_attributes(
         name: repo_name&.titleize&.tr("-", " "),
         github_repo: repo_full_name,
-        slug: repo_name&.parameterize
+        slug: repo_name&.parameterize,
+        github_app_installation: installation
       )
 
-      # Create webhook
-      webhook_service = GithubWebhookService.new(current_user)
-      webhook_url = build_webhook_url
-
-      result = webhook_service.create(
-        repo_full_name: repo_full_name,
-        webhook_secret: @project.webhook_secret,
-        webhook_url: webhook_url
-      )
-
-      if result.success? || result.error == :webhook_exists
-        @project.github_webhook_id = result.webhook_id if result.success?
-        @project.save!
-        @project.advance_onboarding!("analyze")
-        redirect_to analyze_onboarding_project_path(@project)
-      else
-        redirect_to repository_onboarding_project_path(@project),
-          alert: webhook_error_message(result.error, repo_full_name)
-      end
+      @project.save!
+      @project.advance_onboarding!("analyze")
+      redirect_to analyze_onboarding_project_path(@project)
     end
 
     # Step 2: Analyze Codebase
@@ -84,6 +78,17 @@ module Onboarding
       unless @project.analysis_status == "running"
         @project.update!(analysis_status: "pending")
         AnalyzeCodebaseJob.perform_later(@project.id)
+      end
+      redirect_to analyze_onboarding_project_path(@project)
+    end
+
+    def retry_sections
+      unless @project.sections_generation_status == "running"
+        @project.update!(
+          sections_generation_status: "pending",
+          sections_generation_started_at: Time.current
+        )
+        SuggestSectionsJob.perform_later(project_id: @project.id)
       end
       redirect_to analyze_onboarding_project_path(@project)
     end
@@ -180,25 +185,6 @@ module Onboarding
 
       # Redirect to correct step
       redirect_to send("#{expected_step}_onboarding_project_path", @project)
-    end
-
-    def build_webhook_url
-      if ENV["HOST_URL"].present?
-        "#{ENV['HOST_URL']}/webhooks/github"
-      else
-        webhooks_github_url(protocol: "https")
-      end
-    end
-
-    def webhook_error_message(error, repo_full_name)
-      case error
-      when :no_admin_access
-        "You need admin access to #{repo_full_name} to create webhooks."
-      when :repo_not_found
-        "Repository not found. It may have been deleted or made private."
-      else
-        "Failed to connect repository: #{error}"
-      end
     end
 
     def context_params

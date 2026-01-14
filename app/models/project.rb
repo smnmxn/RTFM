@@ -2,6 +2,7 @@ class Project < ApplicationRecord
   include Turbo::Broadcastable
 
   belongs_to :user
+  belongs_to :github_app_installation, optional: true
 
   # Turbo refresh broadcasts - auto-refresh all subscribed streams on any update
   after_update_commit :broadcast_refreshes
@@ -26,7 +27,6 @@ class Project < ApplicationRecord
                           uniqueness: { scope: :user_id, message: "is already connected" }
 
   before_validation :generate_slug, on: :create
-  before_create :generate_webhook_secret
 
   # Onboarding
   ONBOARDING_STEPS = %w[repository analyze sections].freeze
@@ -101,16 +101,8 @@ class Project < ApplicationRecord
     update!(onboarding_step: nil)
   end
 
-  def verify_webhook_signature(payload, signature)
-    return false if webhook_secret.blank? || signature.blank?
-
-    expected_signature = "sha256=" + OpenSSL::HMAC.hexdigest(
-      OpenSSL::Digest.new("sha256"),
-      webhook_secret,
-      payload
-    )
-
-    ActiveSupport::SecurityUtils.secure_compare(expected_signature, signature)
+  def github_client
+    github_app_installation&.client
   end
 
   private
@@ -118,10 +110,6 @@ class Project < ApplicationRecord
   def generate_slug
     return if slug.present? || name.blank?
     self.slug = name.parameterize
-  end
-
-  def generate_webhook_secret
-    self.webhook_secret ||= SecureRandom.hex(32)
   end
 
   def broadcast_refreshes

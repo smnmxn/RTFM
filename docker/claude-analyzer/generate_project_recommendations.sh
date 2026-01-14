@@ -16,7 +16,7 @@ fi
 
 # Clone the repository for full code context
 echo "Cloning repository..."
-git clone --depth 1 "https://${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" /repo 2>/dev/null
+git clone --depth 1 "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" /repo 2>/dev/null
 cd /repo
 
 PROJECT_NAME=$(cat /input/context.json | grep -o '"project_name":"[^"]*"' | cut -d'"' -f4 || echo "unknown")

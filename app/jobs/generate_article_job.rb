@@ -70,12 +70,15 @@ class GenerateArticleJob < ApplicationJob
         File.write(File.join(input_dir, "diff.patch"), diff.to_s) if diff.present?
       end
 
+      github_token = get_github_token(project)
+      return { success: false, error: "No GitHub token available" } unless github_token
+
       # Run Docker with the article generation script
       cmd = [
         "docker", "run",
         "--rm",
         "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
-        "-e", "GITHUB_TOKEN=#{project.user.github_token}",
+        "-e", "GITHUB_TOKEN=#{github_token}",
         "-e", "GITHUB_REPO=#{project.github_repo}",
         "-v", "#{host_volume_path(input_dir)}:/input:ro",
         "-v", "#{host_volume_path(output_dir)}:/output",
@@ -146,10 +149,10 @@ class GenerateArticleJob < ApplicationJob
   end
 
   def fetch_pr_diff(project, source_update)
-    user = project.user
-    return nil unless user&.github_token.present?
+    token = get_github_token(project)
+    return nil unless token.present?
 
-    client = Octokit::Client.new(access_token: user.github_token)
+    client = Octokit::Client.new(access_token: token)
     client.pull_request(
       project.github_repo,
       source_update.pull_request_number,
@@ -261,5 +264,15 @@ class GenerateArticleJob < ApplicationJob
     end
 
     markdown.join("\n")
+  end
+
+  def get_github_token(project)
+    installation = project.github_app_installation
+    return nil unless installation
+
+    GithubAppService.installation_token(installation.github_installation_id)
+  rescue => e
+    Rails.logger.error "[GenerateArticleJob] Failed to get GitHub token: #{e.message}"
+    nil
   end
 end

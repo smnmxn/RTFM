@@ -27,6 +27,10 @@ Rails.application.routes.draw do
   get "/auth/github/callback", to: "sessions#create"
   get "/auth/failure", to: "sessions#failure"
 
+  # GitHub App installation
+  get "/github_app/install", to: "github_app#install", as: :github_app_install
+  get "/github_app/callback", to: "github_app#callback", as: :github_app_callback
+
   # Dashboard
   get "/dashboard", to: "dashboard#show", as: :dashboard
 
@@ -38,6 +42,7 @@ Rails.application.routes.draw do
         post :connect
         get :analyze
         post :start_analysis
+        post :retry_sections
         patch :save_context
         get :sections
         post :complete_sections

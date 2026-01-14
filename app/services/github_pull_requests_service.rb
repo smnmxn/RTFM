@@ -1,16 +1,18 @@
-require "octokit"
-
 class GithubPullRequestsService
   Result = Struct.new(:success?, :pull_requests, :error, keyword_init: true)
 
-  def initialize(user)
-    @user = user
-    @client = Octokit::Client.new(access_token: user.github_token, auto_paginate: false)
+  def initialize(project)
+    @project = project
   end
 
-  def call(repo_full_name, page: 1, per_page: 30)
-    prs = @client.pull_requests(
-      repo_full_name,
+  def call(page: 1, per_page: 30)
+    client = @project.github_client
+    unless client
+      return Result.new(success?: false, error: "No GitHub App installation found for this project.")
+    end
+
+    prs = client.pull_requests(
+      @project.github_repo,
       state: "closed",
       sort: "updated",
       direction: "desc",
@@ -18,7 +20,6 @@ class GithubPullRequestsService
       per_page: per_page
     )
 
-    # Filter to only merged PRs
     merged_prs = prs.select { |pr| pr.merged_at.present? }
 
     Result.new(
@@ -26,9 +27,9 @@ class GithubPullRequestsService
       pull_requests: merged_prs.map { |pr| format_pull_request(pr) }
     )
   rescue Octokit::Unauthorized, Octokit::Forbidden => e
-    Result.new(success?: false, error: "GitHub access denied. Please sign out and sign in again.")
+    Result.new(success?: false, error: "GitHub access denied. The app may have been uninstalled.")
   rescue Octokit::NotFound => e
-    Result.new(success?: false, error: "Repository not found or you don't have access.")
+    Result.new(success?: false, error: "Repository not found or the app doesn't have access.")
   rescue Octokit::Error => e
     Result.new(success?: false, error: "GitHub API error: #{e.message}")
   end

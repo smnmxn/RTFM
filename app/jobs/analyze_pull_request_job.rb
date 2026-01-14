@@ -18,10 +18,8 @@ class AnalyzePullRequestJob < ApplicationJob
     project = Project.find_by(id: project_id)
     return unless project
 
-    user = project.user
-    return unless user&.github_token.present?
-
-    client = build_github_client(user.github_token)
+    client = project.github_client
+    return unless client
 
     # Fetch the PR diff
     diff = client.pull_request(
@@ -76,10 +74,6 @@ class AnalyzePullRequestJob < ApplicationJob
 
   private
 
-  def build_github_client(access_token)
-    Octokit::Client.new(access_token: access_token)
-  end
-
   def run_pr_analysis(project, update, diff, pr_title, pr_body)
     input_dir = create_analysis_input_dir("pr_input_#{update.id}")
     output_dir = create_analysis_output_dir("pr_output_#{update.id}")
@@ -92,12 +86,16 @@ class AnalyzePullRequestJob < ApplicationJob
       File.write(File.join(input_dir, "diff.patch"), diff.to_s)
       File.write(File.join(input_dir, "context.json"), build_context_json(project, update, pr_title, pr_body))
 
+      # Get installation token for Docker
+      github_token = get_github_token(project)
+      return { success: false, error: "No GitHub token available" } unless github_token
+
       # Run Docker with the PR analysis script
       cmd = [
         "docker", "run",
         "--rm",
         "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
-        "-e", "GITHUB_TOKEN=#{project.user.github_token}",
+        "-e", "GITHUB_TOKEN=#{github_token}",
         "-e", "GITHUB_REPO=#{project.github_repo}",
         "-v", "#{host_volume_path(input_dir)}:/input:ro",
         "-v", "#{host_volume_path(output_dir)}:/output",
@@ -238,5 +236,15 @@ class AnalyzePullRequestJob < ApplicationJob
 
       _AI analysis was unavailable. This is a placeholder summary._
     CONTENT
+  end
+
+  def get_github_token(project)
+    installation = project.github_app_installation
+    return nil unless installation
+
+    GithubAppService.installation_token(installation.github_installation_id)
+  rescue => e
+    Rails.logger.error "[AnalyzePullRequestJob] Failed to get GitHub token: #{e.message}"
+    nil
   end
 end

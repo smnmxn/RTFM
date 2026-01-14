@@ -105,7 +105,7 @@ class SectionsController < ApplicationController
     check_sections_complete_for_onboarding
 
     respond_to do |format|
-      format.turbo_stream { render turbo_stream: turbo_stream.remove(@section) }
+      format.turbo_stream { render_section_update_streams }
       format.html { redirect_back fallback_location: project_path(@project), notice: "Section accepted." }
     end
   end
@@ -117,7 +117,7 @@ class SectionsController < ApplicationController
     check_sections_complete_for_onboarding
 
     respond_to do |format|
-      format.turbo_stream { render turbo_stream: turbo_stream.remove(@section) }
+      format.turbo_stream { render_section_update_streams }
       format.html { redirect_back fallback_location: project_path(@project), notice: "Section dismissed." }
     end
   end
@@ -154,5 +154,18 @@ class SectionsController < ApplicationController
   def check_sections_complete_for_onboarding
     # No-op: User must click "Complete" to finish onboarding
     # This method is kept for potential future use (e.g., enabling the complete button)
+  end
+
+  def render_section_update_streams
+    can_continue = @project.sections.pending.empty? && !@project.sections_being_generated?
+
+    render turbo_stream: [
+      turbo_stream.remove(@section),
+      turbo_stream.update(
+        "onboarding-sections-navigation",
+        partial: "onboarding/projects/sections_navigation",
+        locals: { project: @project, can_continue: can_continue }
+      )
+    ]
   end
 end

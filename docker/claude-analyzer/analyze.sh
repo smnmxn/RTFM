@@ -9,9 +9,9 @@ set -e
 echo "Starting codebase analysis..."
 echo "Repository: ${GITHUB_REPO}"
 
-# Clone the repository
+# Clone the repository (x-access-token format works for both OAuth and GitHub App tokens)
 echo "Cloning repository..."
-git clone --depth 1 "https://${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" /repo 2>/dev/null
+git clone --depth 1 "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" /repo 2>/dev/null
 
 cd /repo
 

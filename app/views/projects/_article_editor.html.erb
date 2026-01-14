@@ -25,18 +25,14 @@
               form: { data: { turbo_stream: true } },
               class: "px-4 py-1.5 text-sm bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 cursor-pointer" %>
         <% elsif article.approved? %>
-          <span class="inline-flex items-center gap-1.5 text-sm">
-            <svg class="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-            </svg>
+<span class="inline-flex items-center gap-1.5 text-sm">
+            <%= heroicon "check-circle", variant: :solid, options: { class: "h-5 w-5 text-green-500" } %>
             <span class="text-green-700 font-medium">Approved</span>
           </span>
         <% else %>
           <div class="flex items-center gap-3">
-            <span class="inline-flex items-center gap-1.5 text-sm">
-              <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-              </svg>
+<span class="inline-flex items-center gap-1.5 text-sm">
+              <%= heroicon "x-circle", variant: :solid, options: { class: "h-5 w-5 text-gray-400" } %>
               <span class="text-gray-500 font-medium">Rejected</span>
             </span>
             <%= button_to "Undo",
@@ -72,10 +68,8 @@
             <p class="mt-4 text-gray-500">Article content is being generated...</p>
           </div>
         <% elsif article.generation_failed? %>
-          <div class="text-center py-12">
-            <svg class="mx-auto h-12 w-12 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-            </svg>
+<div class="text-center py-12">
+            <%= heroicon "exclamation-triangle", options: { class: "mx-auto h-12 w-12 text-red-400" } %>
             <p class="mt-4 text-red-600">Article generation failed</p>
           </div>
         <% end %>

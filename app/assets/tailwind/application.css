@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Restore pointer cursor on interactive elements (Tailwind v4 preflight removes this) */
-a, button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"] {
+a, button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"], [data-action*="click"] {
   cursor: pointer;
 }
 

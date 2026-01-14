@@ -94,5 +94,9 @@ class Section < ApplicationRecord
 
   def broadcast_refreshes
     Turbo::StreamsChannel.broadcast_refresh_to([project, :onboarding])
+    # Also broadcast to inbox when recommendations_status changes
+    if saved_change_to_recommendations_status?
+      Turbo::StreamsChannel.broadcast_refresh_to([project, :inbox])
+    end
   end
 end

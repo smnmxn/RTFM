@@ -59,11 +59,15 @@ class SuggestSectionsJob < ApplicationJob
 
       File.write(File.join(input_dir, "context.json"), build_context_json(project))
 
+      # Get installation token for Docker
+      github_token = get_github_token(project)
+      return { success: false, error: "No GitHub token available" } unless github_token
+
       cmd = [
         "docker", "run",
         "--rm",
         "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
-        "-e", "GITHUB_TOKEN=#{project.user.github_token}",
+        "-e", "GITHUB_TOKEN=#{github_token}",
         "-e", "GITHUB_REPO=#{project.github_repo}",
         "-v", "#{host_volume_path(input_dir)}:/input:ro",
         "-v", "#{host_volume_path(output_dir)}:/output",
@@ -187,5 +191,15 @@ class SuggestSectionsJob < ApplicationJob
         raise "Failed to build Docker image: #{stderr}"
       end
     end
+  end
+
+  def get_github_token(project)
+    installation = project.github_app_installation
+    return nil unless installation
+
+    GithubAppService.installation_token(installation.github_installation_id)
+  rescue => e
+    Rails.logger.error "[SuggestSectionsJob] Failed to get GitHub token: #{e.message}"
+    nil
   end
 end

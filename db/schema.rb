@@ -10,7 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_13_110623) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_14_101620) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_catalog.plpgsql"
+
   create_table "articles", force: :cascade do |t|
     t.text "content"
     t.datetime "created_at", null: false
@@ -33,6 +36,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_13_110623) do
     t.index ["section_id"], name: "index_articles_on_section_id"
   end
 
+  create_table "github_app_installations", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "account_login", null: false
+    t.string "account_type", null: false
+    t.datetime "created_at", null: false
+    t.bigint "github_installation_id", null: false
+    t.datetime "suspended_at"
+    t.datetime "updated_at", null: false
+    t.index ["account_login"], name: "index_github_app_installations_on_account_login"
+    t.index ["github_installation_id"], name: "index_github_app_installations_on_github_installation_id", unique: true
+  end
+
   create_table "projects", force: :cascade do |t|
     t.string "analysis_commit_sha"
     t.json "analysis_metadata"
@@ -41,8 +56,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_13_110623) do
     t.datetime "analyzed_at"
     t.json "contextual_questions"
     t.datetime "created_at", null: false
+    t.bigint "github_app_installation_id"
     t.string "github_repo"
-    t.integer "github_webhook_id"
     t.string "name"
     t.datetime "onboarding_started_at"
     t.string "onboarding_step"
@@ -53,7 +68,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_13_110623) do
     t.datetime "updated_at", null: false
     t.json "user_context"
     t.integer "user_id", null: false
-    t.string "webhook_secret"
+    t.index ["github_app_installation_id"], name: "index_projects_on_github_app_installation_id"
     t.index ["onboarding_step"], name: "index_projects_on_onboarding_step"
     t.index ["slug"], name: "index_projects_on_slug", unique: true
     t.index ["user_id"], name: "index_projects_on_user_id"
@@ -131,6 +146,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_13_110623) do
   add_foreign_key "articles", "projects"
   add_foreign_key "articles", "recommendations"
   add_foreign_key "articles", "sections"
+  add_foreign_key "projects", "github_app_installations"
   add_foreign_key "projects", "users"
   add_foreign_key "recommendations", "projects"
   add_foreign_key "recommendations", "sections"

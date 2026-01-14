@@ -1,9 +1,33 @@
 <%= turbo_frame_tag "repository_list" do %>
   <div class="divide-y divide-slate-100">
-    <% if @repositories.empty? %>
-      <div class="p-6 text-center text-slate-500">
-        <p>No repositories available.</p>
-        <p class="text-sm mt-1">You need admin access to a repository to connect it.</p>
+    <% if @installations.blank? %>
+      <%# No GitHub App installed %>
+      <div class="p-8 text-center">
+<div class="mx-auto w-12 h-12 rounded-full bg-violet-100 flex items-center justify-center mb-4">
+          <%= heroicon "link", options: { class: "w-6 h-6 text-violet-600" } %>
+        </div>
+        <h3 class="text-lg font-medium text-slate-900 mb-2">Install the GitHub App</h3>
+        <p class="text-slate-500 mb-6 max-w-sm mx-auto">
+          To connect repositories, you need to install our GitHub App and grant access to the repos you want to document.
+        </p>
+        <% return_path = @onboarding_project.present? ? repository_onboarding_project_path(@onboarding_project) : new_project_path %>
+        <%= link_to "Install GitHub App",
+            github_app_install_path(return_to: return_path),
+            class: "inline-flex items-center px-4 py-2 bg-gradient-brand text-white text-sm font-medium rounded-lg hover:opacity-90 transition-smooth",
+            data: { turbo: false } %>
+      </div>
+    <% elsif @repositories.empty? %>
+      <%# App installed but no repos accessible %>
+      <div class="p-8 text-center">
+        <p class="text-slate-500 mb-4">No repositories available.</p>
+        <p class="text-sm text-slate-400 mb-6">
+          The GitHub App is installed but doesn't have access to any repositories yet.
+        </p>
+        <% return_path = @onboarding_project.present? ? repository_onboarding_project_path(@onboarding_project) : new_project_path %>
+        <%= link_to "Configure Repository Access",
+            github_app_install_path(return_to: return_path),
+            class: "text-violet-600 hover:text-violet-800 transition-smooth",
+            data: { turbo: false } %>
       </div>
     <% else %>
       <% @repositories.each do |repo| %>
@@ -34,35 +58,34 @@
             </span>
           <% elsif @onboarding_project.present? %>
             <%# Onboarding mode - connect to wizard flow %>
-            <%= button_to "Connect", connect_onboarding_project_path(@onboarding_project, github_repo: repo[:full_name]),
+            <%= button_to "Connect",
+                connect_onboarding_project_path(@onboarding_project,
+                  github_repo: repo[:full_name],
+                  installation_id: repo[:installation_id]),
                 method: :post,
                 class: "ml-4 px-4 py-2 bg-gradient-brand text-white text-sm rounded-lg hover:opacity-90 transition-smooth",
                 data: { turbo_frame: "_top" } %>
           <% else %>
             <%# Normal mode - connect via standard flow %>
-            <%= button_to "Connect", projects_path(github_repo: repo[:full_name]),
+            <%= button_to "Connect",
+                projects_path(
+                  github_repo: repo[:full_name],
+                  installation_id: repo[:installation_id]),
                 method: :post,
                 class: "ml-4 px-4 py-2 bg-gradient-brand text-white text-sm rounded-lg hover:opacity-90 transition-smooth",
-                data: { turbo_frame: "_top", turbo_confirm: "Connect #{repo[:full_name]}? This will create a webhook on the repository." } %>
+                data: { turbo_frame: "_top" } %>
           <% end %>
         </div>
       <% end %>
 
-      <% if @has_more %>
-        <div class="p-4 text-center">
-          <% if @onboarding_project.present? %>
-            <%= link_to "Load more repositories",
-                repositories_projects_path(page: @page + 1, onboarding_project_id: @onboarding_project.id),
-                class: "text-violet-600 hover:text-violet-800 transition-smooth",
-                data: { turbo_frame: "repository_list" } %>
-          <% else %>
-            <%= link_to "Load more repositories",
-                repositories_projects_path(page: @page + 1),
-                class: "text-violet-600 hover:text-violet-800 transition-smooth",
-                data: { turbo_frame: "repository_list" } %>
-          <% end %>
-        </div>
-      <% end %>
+      <%# Link to add more repos %>
+      <div class="p-4 text-center border-t border-slate-100">
+        <% return_path = @onboarding_project.present? ? repository_onboarding_project_path(@onboarding_project) : new_project_path %>
+        <%= link_to "Add more repositories",
+            github_app_install_path(return_to: return_path),
+            class: "text-violet-600 hover:text-violet-800 transition-smooth text-sm",
+            data: { turbo: false } %>
+      </div>
     <% end %>
   </div>
 <% end %>

@@ -10,22 +10,16 @@
   </div>
 
 <% when "pending", "running" %>
-  <div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center rounded-t-lg -mt-6 -mx-6 mb-6">
-    <svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-    </svg>
+<div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center rounded-t-lg -mt-6 -mx-6 mb-6">
+    <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2") %>
     Analyzing your codebase...
   </div>
   <%= render "onboarding/projects/analysis_questions", project: project %>
 
 <% when "completed" %>
   <% if project.sections_being_generated? %>
-    <div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center rounded-t-lg -mt-6 -mx-6 mb-6">
-      <svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
+<div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center rounded-t-lg -mt-6 -mx-6 mb-6">
+      <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2") %>
       Generating help topic suggestions...
     </div>
     <% if project.contextual_questions.present? %>
@@ -42,16 +36,19 @@
   <% elsif project.sections_generation_status == "failed" %>
     <div class="text-center py-8">
       <p class="text-amber-600 mb-4">Couldn't generate suggestions automatically.</p>
-      <%= link_to "Continue",
-          sections_onboarding_project_path(project),
-          class: "px-6 py-3 bg-gradient-brand text-white font-medium rounded-lg hover:opacity-90 transition-smooth" %>
+      <div class="flex justify-center gap-3">
+        <%= button_to "Retry",
+            retry_sections_onboarding_project_path(project),
+            method: :post,
+            class: "px-6 py-3 bg-amber-600 text-white font-medium rounded-lg hover:bg-amber-700 transition-smooth" %>
+        <%= link_to "Continue Manually",
+            sections_onboarding_project_path(project),
+            class: "px-6 py-3 bg-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-300 transition-smooth" %>
+      </div>
     </div>
   <% else %>
-    <div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center rounded-t-lg -mt-6 -mx-6 mb-6">
-      <svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
+<div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center rounded-t-lg -mt-6 -mx-6 mb-6">
+      <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2") %>
       Preparing suggestions...
     </div>
     <% if project.contextual_questions.present? %>

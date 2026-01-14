@@ -157,9 +157,9 @@ class ProjectsController < ApplicationController
   end
 
   def pull_requests
-    service = GithubPullRequestsService.new(current_user)
+    service = GithubPullRequestsService.new(@project)
     page = (params[:page] || 1).to_i
-    result = service.call(@project.github_repo, page: page)
+    result = service.call(page: page)
 
     if result.success?
       @pull_requests = result.pull_requests
@@ -177,8 +177,8 @@ class ProjectsController < ApplicationController
     page = (params[:page] || 1).to_i
 
     if @view_type == "commits"
-      service = GithubCommitsService.new(current_user)
-      result = service.call(@project.github_repo, page: page)
+      service = GithubCommitsService.new(@project)
+      result = service.call(page: page)
 
       if result.success?
         @commits = result.commits
@@ -194,8 +194,8 @@ class ProjectsController < ApplicationController
         render partial: "projects/pull_request_error", locals: { error: result.error }
       end
     else
-      service = GithubPullRequestsService.new(current_user)
-      result = service.call(@project.github_repo, page: page)
+      service = GithubPullRequestsService.new(@project)
+      result = service.call(page: page)
 
       if result.success?
         @pull_requests = result.pull_requests
@@ -288,16 +288,13 @@ class ProjectsController < ApplicationController
   end
 
   def repositories
-    service = GithubRepositoriesService.new(current_user)
-    page = (params[:page] || 1).to_i
-    result = service.call(page: page)
+    result = GithubRepositoriesService.new.call
 
-    Rails.logger.info "[ProjectsController#repositories] Success: #{result.success?}, Repos: #{result.repositories&.size || 0}, Error: #{result.error}"
+    Rails.logger.info "[ProjectsController#repositories] Success: #{result.success?}, Repos: #{result.repositories&.size || 0}, Installations: #{result.installations&.size || 0}"
 
     if result.success?
       @repositories = result.repositories
-      @page = page
-      @has_more = result.repositories.size == 30
+      @installations = result.installations
       @connected_repos = current_user.projects.pluck(:github_repo)
 
       # Pass through onboarding project if in wizard
@@ -311,55 +308,30 @@ class ProjectsController < ApplicationController
 
   def create
     repo_full_name = params[:github_repo].presence
+    installation_id = params[:installation_id]
     repo_name = repo_full_name&.split("/")&.last
 
-    # Build project (generates webhook_secret via before_create callback)
-    @project = current_user.projects.build(
-      name: repo_name&.titleize&.tr("-", " "),
-      github_repo: repo_full_name
-    )
-
-    unless @project.valid?
-      redirect_to new_project_path, alert: @project.errors.full_messages.join(", ")
+    # Find the installation
+    installation = GithubAppInstallation.find_by(github_installation_id: installation_id)
+    unless installation
+      redirect_to new_project_path, alert: "GitHub App installation not found. Please install the app first."
       return
     end
 
-    # Create webhook on GitHub
-    webhook_service = GithubWebhookService.new(current_user)
-    webhook_url = if ENV["HOST_URL"].present?
-      "#{ENV['HOST_URL']}/webhooks/github"
-    else
-      webhooks_github_url(protocol: "https")
-    end
-
-    result = webhook_service.create(
-      repo_full_name: repo_full_name,
-      webhook_secret: @project.webhook_secret,
-      webhook_url: webhook_url
+    @project = current_user.projects.build(
+      name: repo_name&.titleize&.tr("-", " "),
+      github_repo: repo_full_name,
+      github_app_installation: installation
     )
 
-    Rails.logger.info "[ProjectsController#create] Webhook URL: #{webhook_url}"
-    Rails.logger.info "[ProjectsController#create] Webhook result: success=#{result.success?}, error=#{result.error.inspect}"
-
-    if result.success?
-      @project.github_webhook_id = result.webhook_id
-      @project.save!
+    if @project.save
       redirect_to dashboard_path, notice: "Project '#{@project.name}' connected successfully!"
     else
-      handle_webhook_error(result.error, repo_full_name)
+      redirect_to new_project_path, alert: @project.errors.full_messages.join(", ")
     end
   end
 
   def destroy
-    # Remove webhook from GitHub if we have its ID
-    if @project.github_webhook_id.present?
-      webhook_service = GithubWebhookService.new(current_user)
-      webhook_service.delete(
-        repo_full_name: @project.github_repo,
-        webhook_id: @project.github_webhook_id
-      )
-    end
-
     @project.destroy
     redirect_to dashboard_path, notice: "Project '#{@project.name}' disconnected."
   end
@@ -409,22 +381,4 @@ class ProjectsController < ApplicationController
       .first
   end
 
-  def handle_webhook_error(error, repo_full_name)
-    case error
-    when :webhook_exists
-      # Webhook exists - could be from previous setup. Create project anyway.
-      @project.save!
-      redirect_to dashboard_path,
-        notice: "Project connected! Note: A webhook already existed on this repository."
-    when :no_admin_access
-      redirect_to new_project_path,
-        alert: "You need admin access to #{repo_full_name} to create webhooks."
-    when :repo_not_found
-      redirect_to new_project_path,
-        alert: "Repository not found. It may have been deleted or made private."
-    else
-      redirect_to new_project_path,
-        alert: "Failed to create webhook: #{error}"
-    end
-  end
 end

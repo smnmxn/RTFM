@@ -1,3 +1,16 @@
+<!-- Generation Status Banner -->
+<% if project.sections_being_generated? %>
+<div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center flex-shrink-0">
+    <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2") %>
+    Generating topic suggestions...
+  </div>
+<% elsif project.sections.accepted.where(recommendations_status: "running").any? %>
+  <div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center flex-shrink-0">
+    <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2") %>
+    Generating article suggestions...
+  </div>
+<% end %>
+
 <!-- Inbox Header -->
 <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
   <div class="flex items-center justify-between">
@@ -36,10 +49,8 @@
   <div class="w-80 flex-shrink-0 border-r border-gray-200 flex flex-col bg-gray-50">
     <div id="inbox-list" class="flex-1 overflow-y-auto">
       <% if inbox_empty %>
-        <div class="p-6 text-center text-gray-500">
-          <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-          </svg>
+<div class="p-6 text-center text-gray-500">
+          <%= heroicon "check", options: { class: "mx-auto h-12 w-12 text-gray-300" } %>
           <p class="mt-2 text-sm font-medium text-gray-900">All done!</p>
           <p class="mt-1 text-xs text-gray-400">No pending items to review.</p>
         </div>
@@ -78,11 +89,9 @@
       <%= render "projects/recommendation_editor", recommendation: selected_recommendation %>
     <% else %>
       <%= turbo_frame_tag "inbox-editor", class: "h-full block" do %>
-        <div class="h-full flex items-center justify-center bg-white">
+<div class="h-full flex items-center justify-center bg-white">
           <div class="text-center px-6">
-            <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
+            <%= heroicon "document-text", options: { class: "mx-auto h-16 w-16 text-gray-300" } %>
             <h3 class="mt-4 text-lg font-medium text-gray-900">Select an item</h3>
             <p class="mt-2 text-sm text-gray-500">
               Choose an item from the list to review.

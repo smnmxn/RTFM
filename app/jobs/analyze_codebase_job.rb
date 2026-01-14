@@ -14,14 +14,12 @@ class AnalyzeCodebaseJob < ApplicationJob
   def perform(project_id)
     project = Project.find_by(id: project_id)
     return unless project
-
-    user = project.user
-    return unless user&.github_token.present?
+    return unless project.github_app_installation.present?
 
     project.update!(analysis_status: "running")
 
     begin
-      result = run_analysis(project, user)
+      result = run_analysis(project)
 
       if result[:success]
         project.update!(
@@ -61,7 +59,7 @@ class AnalyzeCodebaseJob < ApplicationJob
 
   private
 
-  def run_analysis(project, user)
+  def run_analysis(project)
     # Create a temporary directory for output (uses shared host path in production)
     output_dir = create_analysis_output_dir("project_#{project.id}")
 
@@ -72,12 +70,16 @@ class AnalyzeCodebaseJob < ApplicationJob
       # Check if we need to build the image
       build_docker_image_if_needed(docker_image)
 
+      # Get installation token for Docker
+      github_token = get_github_token(project)
+      return { success: false, error: "No GitHub token available" } unless github_token
+
       # Run the Docker container
       cmd = [
         "docker", "run",
         "--rm",
         "-e", "GITHUB_REPO=#{project.github_repo}",
-        "-e", "GITHUB_TOKEN=#{user.github_token}",
+        "-e", "GITHUB_TOKEN=#{github_token}",
         "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
         "-v", "#{host_volume_path(output_dir)}:/output",
         "--network", "host",
@@ -200,5 +202,15 @@ class AnalyzeCodebaseJob < ApplicationJob
         raise "Failed to build Docker image: #{stderr}"
       end
     end
+  end
+
+  def get_github_token(project)
+    installation = project.github_app_installation
+    return nil unless installation
+
+    GithubAppService.installation_token(installation.github_installation_id)
+  rescue => e
+    Rails.logger.error "[AnalyzeCodebaseJob] Failed to get GitHub token: #{e.message}"
+    nil
   end
 end
