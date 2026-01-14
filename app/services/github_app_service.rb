@@ -68,7 +68,7 @@ class GithubAppService
 
   def generate_jwt
     key_content = app_private_key
-    Rails.logger.debug "[GithubAppService] Generating JWT for app_id=#{app_id}, key starts with: #{key_content[0..30]}..."
+    Rails.logger.info "[GithubAppService] Generating JWT for app_id=#{app_id}, key length=#{key_content.length}, starts with: #{key_content[0..26]}..."
 
     private_key = OpenSSL::PKey::RSA.new(key_content)
 

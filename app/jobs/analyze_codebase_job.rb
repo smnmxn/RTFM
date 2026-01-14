@@ -206,11 +206,24 @@ class AnalyzeCodebaseJob < ApplicationJob
 
   def get_github_token(project)
     installation = project.github_app_installation
-    return nil unless installation
 
-    GithubAppService.installation_token(installation.github_installation_id)
+    unless installation
+      Rails.logger.error "[AnalyzeCodebaseJob] Project #{project.id} has no GitHub App installation"
+      return nil
+    end
+
+    # Verify the installation account matches the repo owner
+    repo_owner = project.github_repo.split("/").first
+    if installation.account_login != repo_owner
+      Rails.logger.error "[AnalyzeCodebaseJob] Installation account '#{installation.account_login}' doesn't match repo owner '#{repo_owner}'"
+      return nil
+    end
+
+    token = GithubAppService.installation_token(installation.github_installation_id)
+    Rails.logger.info "[AnalyzeCodebaseJob] Got GitHub App token for installation #{installation.github_installation_id} (#{installation.account_login})"
+    token
   rescue => e
-    Rails.logger.error "[AnalyzeCodebaseJob] Failed to get GitHub token: #{e.message}"
+    Rails.logger.error "[AnalyzeCodebaseJob] Failed to get GitHub App token: #{e.message}"
     nil
   end
 end
