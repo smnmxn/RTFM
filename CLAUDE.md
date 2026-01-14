@@ -29,8 +29,9 @@ RTFM is a developer-first platform that automatically converts code changes into
 - **Backend**: Ruby 3.3.6, Rails 8.1, SQLite (dev), Sidekiq (Redis)
 - **Frontend**: Tailwind CSS, Hotwire (Turbo & Stimulus), ERB
 - **Auth**: Devise + OmniAuth GitHub (Phase 2)
-- **AI**: Anthropic API (Claude 3.5 Sonnet)
+- **AI**: Claude Code CLI (in Docker), Anthropic API
 - **VCS**: GitHub API via Octokit
+- **Image Generation**: Puppeteer + Chromium (in Docker)
 
 ## Development Commands
 
@@ -52,6 +53,9 @@ rails test test/path/to/test_file.rb
 
 # Run a specific test
 rails test test/path/to/test_file.rb:LINE_NUMBER
+
+# Rebuild Docker analyzer image (after changing docker/claude-analyzer/*)
+docker build -t rtfm/claude-analyzer:latest docker/claude-analyzer/
 ```
 
 ## Architecture
@@ -69,6 +73,7 @@ The application follows a **Webhook → Worker → Service** pattern:
 - `app/services/` - Business logic (GitHub fetching, AI prompting)
 - `app/jobs/` - Sidekiq workers for async processing
 - `app/controllers/webhooks/` - Incoming API events from GitHub
+- `docker/claude-analyzer/` - Docker image with Claude Code CLI for codebase analysis and article generation
 - `docs/phases/` - Phase-by-phase implementation documentation
 
 ## Environment Variables

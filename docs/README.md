@@ -10,6 +10,7 @@
 | [Phase 2.5](phases/phase-2.5-codebase-understanding.md) | Codebase Understanding | Complete |
 | [Phase 3](phases/phase-3-ai-pr-analysis.md) | AI Service Integration | Complete |
 | [Phase 3.5](phases/phase-3.5-article-recommendations.md) | Support Article Recommendations | Complete |
+| [Phase 3.6](phases/phase-3.6-article-mockups.md) | AI-Generated UI Mockups | Complete |
 | Phase 4 | Editor Dashboard UI | Pending |
 | Phase 5 | Public Changelog Page | Pending |
 | Phase 6 | Polish & Deployment | Pending |

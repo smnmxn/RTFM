@@ -28,6 +28,15 @@ class GenerateArticleJob < ApplicationJob
             content: generate_markdown_from_structured(result[:structured_content]),
             generation_status: :generation_completed
           )
+
+          # Attach generated images to StepImage records
+          if result[:generated_images].present?
+            attach_generated_images(article, result[:generated_images])
+          end
+
+          # Cleanup directories after images are attached
+          cleanup_analysis_dir(result[:input_dir])
+          cleanup_analysis_dir(result[:output_dir])
         else
           article.update!(
             content: result[:content],
@@ -105,26 +114,89 @@ class GenerateArticleJob < ApplicationJob
           begin
             parsed = JSON.parse(cleaned)
             if parsed.is_a?(Hash) && (parsed["introduction"] || parsed["steps"])
-              { success: true, structured_content: parsed }
+              generated_images = collect_generated_images(output_dir, parsed)
+              {
+                success: true,
+                structured_content: parsed,
+                generated_images: generated_images,
+                input_dir: input_dir,
+                output_dir: output_dir
+              }
             else
               Rails.logger.warn "[GenerateArticleJob] JSON missing expected structure"
+              cleanup_analysis_dir(input_dir)
+              cleanup_analysis_dir(output_dir)
               { success: true, content: json_content }
             end
           rescue JSON::ParserError => e
             Rails.logger.warn "[GenerateArticleJob] JSON parse error: #{e.message}, falling back to raw content"
+            cleanup_analysis_dir(input_dir)
+            cleanup_analysis_dir(output_dir)
             { success: true, content: json_content }
           end
         else
+          cleanup_analysis_dir(input_dir)
+          cleanup_analysis_dir(output_dir)
           { success: false, error: "No content generated" }
         end
       else
+        cleanup_analysis_dir(input_dir)
+        cleanup_analysis_dir(output_dir)
         { success: false, error: "Docker command failed: #{stderr}" }
       end
     rescue Timeout::Error
-      { success: false, error: "Generation timed out after #{GENERATION_TIMEOUT} seconds" }
-    ensure
       cleanup_analysis_dir(input_dir)
       cleanup_analysis_dir(output_dir)
+      { success: false, error: "Generation timed out after #{GENERATION_TIMEOUT} seconds" }
+    end
+  end
+
+  def collect_generated_images(output_dir, structured_content)
+    images_dir = File.join(output_dir, "images")
+    return {} unless Dir.exist?(images_dir)
+
+    images = {}
+    steps = structured_content["steps"] || []
+
+    steps.each_with_index do |step, index|
+      image_path = File.join(images_dir, "step_#{index}.png")
+      if File.exist?(image_path)
+        if step["has_image"]
+          images[index] = image_path
+          Rails.logger.info "[GenerateArticleJob] Found generated image for step #{index}: #{image_path}"
+        else
+          Rails.logger.warn "[GenerateArticleJob] Image exists for step #{index} but has_image is false"
+        end
+      end
+    end
+
+    Rails.logger.info "[GenerateArticleJob] Collected #{images.size} generated images"
+    images
+  end
+
+  def attach_generated_images(article, generated_images)
+    return if generated_images.blank?
+
+    generated_images.each do |step_index, image_path|
+      next unless File.exist?(image_path)
+
+      begin
+        step_image = article.step_images.find_or_initialize_by(step_index: step_index)
+
+        # Read file content into memory to avoid closed stream issues
+        image_data = File.binread(image_path)
+
+        step_image.image.attach(
+          io: StringIO.new(image_data),
+          filename: "step_#{step_index}.png",
+          content_type: "image/png"
+        )
+
+        step_image.save!
+        Rails.logger.info "[GenerateArticleJob] Attached generated image to step #{step_index} for article #{article.id}"
+      rescue => e
+        Rails.logger.error "[GenerateArticleJob] Failed to attach image for step #{step_index}: #{e.message}"
+      end
     end
   end
 

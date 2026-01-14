@@ -1,19 +1,38 @@
 FROM node:20-slim
 
-# Install git and other dependencies
+# Install git, Chromium, and dependencies for Puppeteer
 RUN apt-get update && apt-get install -y \
     git \
     ca-certificates \
+    chromium \
+    fonts-liberation \
+    fonts-noto-color-emoji \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libcups2 \
+    libdrm2 \
+    libgbm1 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Claude Code CLI globally
-RUN npm install -g @anthropic-ai/claude-code
+# Set Puppeteer to use installed Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+ENV NODE_PATH=/usr/local/lib/node_modules
+
+# Install Claude Code CLI and Puppeteer globally
+RUN npm install -g @anthropic-ai/claude-code puppeteer
 
 # Create non-root user
 RUN useradd -m -s /bin/bash analyzer
 
 # Create directories and set permissions
-RUN mkdir -p /output /repo /input && chown -R analyzer:analyzer /output /repo /input
+RUN mkdir -p /output /output/images /repo /input && chown -R analyzer:analyzer /output /repo /input
 
 # Copy analysis scripts and make executable by all
 COPY --chmod=755 analyze.sh /analyze.sh
@@ -23,6 +42,8 @@ COPY --chmod=755 generate_article.sh /generate_article.sh
 COPY --chmod=755 generate_project_recommendations.sh /generate_project_recommendations.sh
 COPY --chmod=755 generate_section_recommendations.sh /generate_section_recommendations.sh
 COPY --chmod=755 suggest_sections.sh /suggest_sections.sh
+COPY --chmod=755 render_mockup.sh /render_mockup.sh
+COPY --chmod=644 render_mockup.js /render_mockup.js
 
 # Switch to non-root user
 USER analyzer
