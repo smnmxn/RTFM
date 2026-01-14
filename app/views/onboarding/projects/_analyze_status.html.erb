@@ -16,7 +16,7 @@
   </div>
   <%= render "onboarding/projects/analysis_questions", project: project %>
 
-<% when "completed" %>
+<% when "completed" %> 
   <% if project.sections_being_generated? %>
 <div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center rounded-t-lg -mt-6 -mx-6 mb-6">
       <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2") %>
