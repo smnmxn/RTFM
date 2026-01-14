@@ -1,0 +1,49 @@
+<% step_image = article.step_image(index) %>
+
+<%= turbo_frame_tag "step_image_#{article.id}_#{index}" do %>
+  <div class="mt-3"
+       data-controller="step-image"
+       data-step-image-upload-url-value="<%= upload_step_image_project_article_path(article.project, article) %>"
+       data-step-image-remove-url-value="<%= remove_step_image_project_article_path(article.project, article) %>"
+       data-step-image-step-index-value="<%= index %>">
+
+    <% if step_image&.image&.attached? %>
+      <!-- Image Preview -->
+      <div class="relative group/image inline-block">
+        <%= image_tag step_image.image,
+            class: "rounded-lg max-h-48 object-cover border border-gray-200",
+            data: { step_image_target: "preview" } %>
+
+        <!-- Remove button (appears on hover) -->
+        <button type="button"
+                data-action="click->step-image#remove"
+                class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-full opacity-0 group-hover/image:opacity-100 transition-opacity cursor-pointer">
+          <%= heroicon "x-mark", options: { class: "w-4 h-4" } %>
+        </button>
+      </div>
+    <% else %>
+      <!-- Upload placeholder -->
+      <div data-step-image-target="placeholder"
+           data-action="click->step-image#triggerUpload"
+           class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-indigo-400 hover:bg-gray-50 transition-colors max-w-xs">
+        <div class="text-gray-400">
+          <%= heroicon "photo", options: { class: "w-8 h-8 mx-auto mb-2" } %>
+          <p class="text-sm">Click or drag to add image</p>
+        </div>
+      </div>
+
+      <!-- Uploading state -->
+      <div data-step-image-target="uploading" class="hidden border-2 border-indigo-300 rounded-lg p-4 text-center max-w-xs">
+        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600 mx-auto"></div>
+        <p class="text-sm text-gray-500 mt-2">Uploading...</p>
+      </div>
+    <% end %>
+
+    <!-- Hidden file input -->
+    <input type="file"
+           accept="image/*"
+           data-step-image-target="input"
+           data-action="change->step-image#upload"
+           class="hidden">
+  </div>
+<% end %>

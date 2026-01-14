@@ -16,6 +16,7 @@ import ArticlesSectionController from "controllers/articles_section_controller"
 import OnboardingQuestionsController from "controllers/onboarding_questions_controller"
 import ContextualQuestionsController from "controllers/contextual_questions_controller"
 import FeedbackController from "controllers/feedback_controller"
+import StepImageController from "controllers/step_image_controller"
 
 application.register("inline-edit", InlineEditController)
 application.register("array-edit", ArrayEditController)
@@ -28,3 +29,4 @@ application.register("articles-section", ArticlesSectionController)
 application.register("onboarding-questions", OnboardingQuestionsController)
 application.register("contextual-questions", ContextualQuestionsController)
 application.register("feedback", FeedbackController)
+application.register("step-image", StepImageController)

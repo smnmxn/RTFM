@@ -92,6 +92,8 @@ Rails.application.routes.draw do
         patch :move_to_section
         patch :reorder
         post :duplicate
+        post :upload_step_image
+        delete :remove_step_image
       end
     end
     resources :sections do

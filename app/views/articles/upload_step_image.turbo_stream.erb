@@ -1,0 +1,3 @@
+<%= turbo_stream.replace "step_image_#{@article.id}_#{@step_index}" do %>
+  <%= render "articles/editable/step_image", article: @article, index: @step_index %>
+<% end %>

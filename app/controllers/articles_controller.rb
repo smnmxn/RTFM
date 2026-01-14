@@ -83,6 +83,7 @@ class ArticlesController < ApplicationController
     updated_content[field]&.delete_at(index)
 
     if @article.update(structured_content: updated_content)
+      @article.reindex_step_images_after_removal(index) if field == "steps"
       @field = field
       respond_to do |format|
         format.turbo_stream
@@ -159,6 +160,45 @@ class ArticlesController < ApplicationController
     respond_to do |format|
       format.turbo_stream
       format.html { redirect_to project_path(@article.project, anchor: "articles"), notice: "Article duplicated." }
+    end
+  end
+
+  def upload_step_image
+    step_index = params[:step_index].to_i
+
+    unless @article.steps[step_index]
+      return head :unprocessable_entity
+    end
+
+    step_image = @article.step_images.find_or_initialize_by(step_index: step_index)
+    step_image.image.attach(params[:image])
+
+    if step_image.save
+      @step_index = step_index
+      respond_to do |format|
+        format.turbo_stream
+        format.json { render json: { success: true, url: url_for(step_image.display) } }
+      end
+    else
+      respond_to do |format|
+        format.turbo_stream { head :unprocessable_entity }
+        format.json { render json: { success: false, errors: step_image.errors }, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def remove_step_image
+    step_index = params[:step_index].to_i
+    step_image = @article.step_images.find_by(step_index: step_index)
+
+    if step_image&.destroy
+      @step_index = step_index
+      respond_to do |format|
+        format.turbo_stream
+        format.json { render json: { success: true } }
+      end
+    else
+      head :unprocessable_entity
     end
   end
 

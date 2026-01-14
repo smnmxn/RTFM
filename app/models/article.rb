@@ -4,6 +4,7 @@ class Article < ApplicationRecord
   belongs_to :project
   belongs_to :recommendation
   belongs_to :section, optional: true
+  has_many :step_images, dependent: :destroy
 
   # Turbo refresh broadcasts
   after_update_commit :broadcast_refreshes
@@ -62,6 +63,17 @@ class Article < ApplicationRecord
     structured_content&.dig("steps") || []
   end
 
+  def step_image(index)
+    step_images.find_by(step_index: index)
+  end
+
+  def reindex_step_images_after_removal(removed_index)
+    step_images.where(step_index: removed_index).destroy_all
+    step_images.where("step_index > ?", removed_index).find_each do |si|
+      si.update!(step_index: si.step_index - 1)
+    end
+  end
+
   def tips
     structured_content&.dig("tips") || []
   end
@@ -82,7 +94,7 @@ class Article < ApplicationRecord
 
   # Create a duplicate of this article
   def duplicate!
-    project.articles.create!(
+    new_article = project.articles.create!(
       recommendation: recommendation,
       section: section,
       title: "#{title} (Copy)",
@@ -93,6 +105,14 @@ class Article < ApplicationRecord
       review_status: :approved,
       position: (section&.articles&.maximum(:position).to_i || 0) + 1
     )
+
+    step_images.each do |step_image|
+      new_step_image = new_article.step_images.build(step_index: step_image.step_index)
+      new_step_image.image.attach(step_image.image.blob)
+      new_step_image.save!
+    end
+
+    new_article
   end
 
   # Reorder article within its section
