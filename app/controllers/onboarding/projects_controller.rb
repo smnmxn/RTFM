@@ -8,12 +8,6 @@ module Onboarding
 
     # Step 0: Start onboarding - auto-creates project and goes to repository selection
     def new
-      # If user already has projects, they don't need onboarding for first project
-      unless current_user.needs_onboarding? || current_user.onboarding_in_progress?
-        redirect_to dashboard_path
-        return
-      end
-
       # If there's already an onboarding in progress, resume it
       if current_user.onboarding_in_progress?
         project = current_user.current_onboarding_project

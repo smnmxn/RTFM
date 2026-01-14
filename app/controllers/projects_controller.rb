@@ -2,7 +2,8 @@ class ProjectsController < ApplicationController
   before_action :set_project, except: [ :new, :create, :repositories ]
 
   def new
-    @repositories = []
+    # All new projects should go through onboarding
+    redirect_to new_onboarding_project_path
   end
 
   def show
@@ -307,28 +308,24 @@ class ProjectsController < ApplicationController
   end
 
   def create
-    repo_full_name = params[:github_repo].presence
-    installation_id = params[:installation_id]
-    repo_name = repo_full_name&.split("/")&.last
+    # All new projects should go through onboarding
+    redirect_to new_onboarding_project_path
+  end
 
-    # Find the installation
-    installation = GithubAppInstallation.find_by(github_installation_id: installation_id)
-    unless installation
-      redirect_to new_project_path, alert: "GitHub App installation not found. Please install the app first."
-      return
-    end
+  def start_over
+    # Clear all generated content
+    @project.articles.destroy_all
+    @project.recommendations.destroy_all
+    @project.sections.destroy_all
 
-    @project = current_user.projects.build(
-      name: repo_name&.titleize&.tr("-", " "),
-      github_repo: repo_full_name,
-      github_app_installation: installation
+    # Reset status and enter onboarding
+    @project.update!(
+      analysis_status: nil,
+      sections_generation_status: nil,
+      onboarding_step: "analyze"
     )
 
-    if @project.save
-      redirect_to dashboard_path, notice: "Project '#{@project.name}' connected successfully!"
-    else
-      redirect_to new_project_path, alert: @project.errors.full_messages.join(", ")
-    end
+    redirect_to analyze_onboarding_project_path(@project)
   end
 
   def destroy

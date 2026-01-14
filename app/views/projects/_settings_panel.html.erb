@@ -13,13 +13,39 @@
 <!-- Settings Content -->
 <div class="flex-1 overflow-y-auto p-6">
   <div class="max-w-2xl">
-    <!-- Placeholder content -->
-    <div class="text-center py-12">
-<%= heroicon "cog-6-tooth", options: { class: "mx-auto h-12 w-12 text-gray-300" } %>
-      <h3 class="mt-4 text-lg font-medium text-gray-900">Settings coming soon</h3>
-      <p class="mt-2 text-sm text-gray-500">
-        Project configuration options will be available here.
-      </p>
+    <!-- Danger Zone -->
+    <div class="border border-red-200 rounded-lg">
+      <div class="px-4 py-3 bg-red-50 border-b border-red-200 rounded-t-lg">
+        <h3 class="text-lg font-medium text-red-600">Danger Zone</h3>
+      </div>
+
+      <div class="divide-y divide-red-200">
+        <!-- Start Over -->
+        <div class="p-4 flex items-center justify-between">
+          <div>
+            <h4 class="text-sm font-medium text-gray-900">Start Over</h4>
+            <p class="text-sm text-gray-500">Clear all articles and sections, then re-run the setup wizard.</p>
+          </div>
+          <%= button_to "Start Over...",
+              start_over_project_path(@project),
+              method: :post,
+              class: "ml-4 px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium",
+              data: { turbo_confirm: "Are you sure you want to start over? This will delete all articles, sections, and recommendations. You'll need to go through the setup wizard again." } %>
+        </div>
+
+        <!-- Delete Project -->
+        <div class="p-4 flex items-center justify-between">
+          <div>
+            <h4 class="text-sm font-medium text-gray-900">Delete Project</h4>
+            <p class="text-sm text-gray-500">Permanently delete this project and all its data.</p>
+          </div>
+          <%= button_to "Delete Project...",
+              project_path(@project),
+              method: :delete,
+              class: "ml-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium",
+              data: { turbo_confirm: "Are you sure you want to delete this project? This will permanently remove all articles, sections, and data. This action cannot be undone." } %>
+        </div>
+      </div>
     </div>
   </div>
 </div>

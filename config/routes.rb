@@ -74,6 +74,8 @@ Rails.application.routes.draw do
       # Articles tab actions
       post :select_articles_section
       get :select_articles_article
+      # Settings actions
+      post :start_over
     end
     resources :recommendations, only: [] do
       member do
