@@ -301,6 +301,64 @@ async function renderMockup(outputPath) {
             background: #fee2e2;
             color: #991b1b;
         }
+        /* Terminal mockup styles */
+        .terminal {
+            background: #1e1e1e;
+            border-radius: 8px;
+            overflow: hidden;
+            font-family: 'SF Mono', Monaco, Inconsolata, 'Fira Code', 'Courier New', monospace;
+            font-size: 13px;
+            max-width: 700px;
+        }
+        .terminal-header {
+            background: #323232;
+            padding: 8px 12px;
+            color: #8b8b8b;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .terminal-dots {
+            display: flex;
+            gap: 6px;
+        }
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .terminal-dot.red { background: #ff5f56; }
+        .terminal-dot.yellow { background: #ffbd2e; }
+        .terminal-dot.green { background: #27ca40; }
+        .terminal-body {
+            padding: 16px;
+            color: #d4d4d4;
+            line-height: 1.6;
+        }
+        .terminal-line {
+            white-space: pre-wrap;
+            margin-bottom: 4px;
+        }
+        .prompt {
+            color: #6a9955;
+            margin-right: 8px;
+        }
+        .terminal-output {
+            color: #9cdcfe;
+        }
+        .terminal-success {
+            color: #4ec9b0;
+        }
+        .terminal-error {
+            color: #f14c4c;
+        }
+        .terminal-warning {
+            color: #cca700;
+        }
+        .terminal-dim {
+            color: #6a6a6a;
+        }
     </style>
 </head>
 <body>
