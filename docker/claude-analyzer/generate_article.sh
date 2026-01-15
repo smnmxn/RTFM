@@ -44,6 +44,14 @@ else
     echo "WARNING: No style_context.json found - mockups may use default styling"
 fi
 
+# Check for compiled CSS (for accurate mockup generation)
+if [ -f /input/compiled_css.txt ] && [ -s /input/compiled_css.txt ]; then
+    CSS_SIZE=$(wc -c < /input/compiled_css.txt)
+    echo "Compiled CSS found (${CSS_SIZE} bytes) - mockups will use real CSS and class names"
+else
+    echo "No compiled CSS - mockups will use style context fallback"
+fi
+
 # Check if diff is available
 HAS_DIFF="false"
 if [ -f /input/diff.patch ] && [ -s /input/diff.patch ]; then
@@ -72,23 +80,9 @@ This file contains:
 STEP 2: If a diff file exists, read it to understand the specific code changes:
 /input/diff.patch
 
-STEP 3: Read the style context to get the EXACT styling used by this project:
-/input/style_context.json
-
-This file contains comprehensive style information extracted from the project:
-- app_type: "web", "cli", or "desktop"
-- framework: The CSS framework (tailwind, bootstrap, none)
-- colors: All color values (primary, background, text, borders, etc.)
-- fonts: Font families for sans, mono, headings
-- typography: Base size, font weights
-- spacing: Padding values for buttons, inputs, cards
-- borders: Border radius and width values
-- shadows: Box shadow values
-- buttons: Complete button styles (primary/secondary)
-- inputs: Form input styling
-- cdn_links: External libraries to include (Google Fonts, FontAwesome, etc.)
-
-YOU MUST USE THESE EXACT VALUES when generating mockups. Do not approximate or guess - use the exact hex codes, font names, and measurements from this file.
+STEP 3: Check for compiled CSS (preferred) and style context (fallback):
+- /input/compiled_css.txt - The actual compiled CSS from the project (if available)
+- /input/style_context.json - Extracted style values as fallback
 
 STEP 4: Explore the full codebase at /repo to understand the feature in detail. Use Glob, Grep, and Read tools to find relevant code, UI components, configuration, and related functionality. This will help you write accurate, specific instructions.
 
@@ -104,69 +98,80 @@ IMPORTANT GUIDELINES:
 === UI MOCKUP GENERATION ===
 You can generate UI mockup images for steps that involve visual interfaces.
 
-APPROACH:
-1. Read /tmp/style_context.json to get the EXACT colors and fonts for this project
-2. Include any cdn_links from the style context in your HTML <head>
-3. Generate complete HTML using ONLY the colors and fonts from style_context.json
-4. Write to /tmp/mockup_<step_index>.html
-5. Call /render_mockup.sh to convert to PNG
+FIRST, determine which approach to use:
+1. Read /input/compiled_css.txt - if it has content (not empty), use the CSS EMBEDDING approach
+2. If compiled_css.txt is empty, fall back to the INLINE STYLES approach using /input/style_context.json
 
-CRITICAL - USE EXACT STYLE VALUES:
-The /tmp/style_context.json file contains the real colors and fonts extracted from this project.
-You MUST use these exact values - do not approximate or use generic defaults.
+=== APPROACH A: CSS EMBEDDING (PREFERRED) ===
+Use this when /input/compiled_css.txt has content.
 
-Example style_context.json:
-{
-  "colors": {"primary": "#4f46e5", "background": "#f8fafc", "text": "#1f2937", ...},
-  "fonts": {"sans": "Inter, -apple-system, sans-serif", ...},
-  "cdn_links": ["<link href=\"https://fonts.googleapis.com/...\">"]
-}
+This approach produces mockups that look IDENTICAL to the real application because you use:
+- The ACTUAL compiled CSS from the project
+- REAL class names from the project's view templates
+- The exact HTML structure used in the codebase
 
-When creating mockups:
-- Use colors.background for body background-color
-- Use colors.text for text color
-- Use colors.primary for buttons and links
-- Use fonts.sans for all text elements
-- Include all cdn_links in the HTML <head>
+STEPS:
+1. Read the compiled CSS from /input/compiled_css.txt
+2. Find relevant view templates in /repo (*.erb, *.jsx, *.vue, *.html, *.tsx)
+3. Copy the REAL HTML structure and class names from those templates
+4. Create mockup HTML that embeds the CSS and uses real classes
 
-USE INLINE STYLES ON ALL ELEMENTS:
-Every visible element MUST have a style attribute with the exact values from style_context.json.
-- Set font-family on every text element using the exact font from style_context.json
-- Set background-color and color on every element using exact hex values from style_context.json
-- NEVER use generic fallback fonts or colors - always use the extracted values
-- The mockup MUST look identical to what users see in the real application
-
-DETERMINING APP TYPE:
-- Web app: Has routes, views/templates, CSS files, frontend framework
-- CLI tool: Has command parsers, no web UI, outputs to stdout/stderr
-- Desktop app: Has Electron, Qt, GTK, native UI framework
-
-FOR WEB APPLICATIONS:
-Create a complete HTML file with embedded styles that matches the app's visual design.
-
-Example mockup file (note: inline styles on EVERY element):
+Example mockup with embedded CSS:
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-  <!-- Include CDN links if the project uses these libraries -->
+  <style>
+/* Paste the ENTIRE compiled CSS content here */
+/* This includes all the utility classes, component styles, etc. */
+  </style>
+  <!-- Include CDN links from style_context.json if available -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8fafc; color: #1f2937; padding: 24px; margin: 0;">
-  <div style="background-color: #ffffff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-    <label style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 6px; display: block;">Project Name</label>
-    <input type="text" value="My Project" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; background-color: #ffffff; color: #1f2937;">
-    <button style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #4f46e5; color: #ffffff; padding: 10px 20px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; margin-top: 16px;"><i class="fa-solid fa-save"></i> Save Changes</button>
+<body class="bg-gray-100 min-h-screen">
+  <!-- Copy REAL HTML structure and classes from the project's templates -->
+  <div class="max-w-md mx-auto p-6">
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Settings</h2>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
+      <input type="text" value="My Project" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+      <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+        Save Changes
+      </button>
+    </div>
   </div>
 </body>
 </html>
 ```
 
-IMPORTANT: Use inline styles on every element. Do NOT use CSS classes - the mockup must render correctly without any stylesheet.
+CRITICAL FOR CSS EMBEDDING:
+- Embed the ENTIRE compiled CSS in the <style> tag - do not skip any of it
+- Use the EXACT class names you find in the project's view templates
+- Look at actual components in /repo to see how they structure HTML
+- The mockup should be indistinguishable from a screenshot of the real app
 
-FOR CLI/TERMINAL TOOLS:
-Use terminal styling with a dark background:
+=== APPROACH B: INLINE STYLES (FALLBACK) ===
+Use this when /input/compiled_css.txt is empty. Read /input/style_context.json for values.
 
+Create HTML with inline styles on every element using the extracted values:
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body style="font-family: -apple-system, sans-serif; background-color: #f8fafc; padding: 24px;">
+  <div style="background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <label style="font-size: 14px; font-weight: 500; color: #374151; display: block; margin-bottom: 6px;">Project Name</label>
+    <input type="text" value="My Project" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
+    <button style="background: #4f46e5; color: white; padding: 10px 20px; border: none; border-radius: 6px; margin-top: 16px;">Save</button>
+  </div>
+</body>
+</html>
+```
+
+=== FOR CLI/TERMINAL TOOLS ===
+Use terminal styling regardless of which approach:
 ```html
 <!DOCTYPE html>
 <html>
@@ -202,13 +207,27 @@ Use terminal styling with a dark background:
 </html>
 ```
 
-TO RENDER A MOCKUP:
-1. Write complete HTML (with embedded styles) to: /tmp/mockup_<step_index>.html
+=== HANDLING IMAGES IN MOCKUPS ===
+When you need to include images (logos, icons, screenshots):
+
+Option A - Base64 Data URIs (for local images):
+1. Find the image file in /repo (e.g., /repo/public/logo.png)
+2. Convert to base64: base64 -w0 /repo/public/logo.png
+3. Use in HTML: <img src="data:image/png;base64,..." alt="Logo">
+
+Option B - External URLs:
+- Use CDN links from style_context.json for icons (FontAwesome, etc.)
+- Use actual external image URLs if the project references them
+
+IMPORTANT: Do NOT use file:// URLs - they will not render in the mockup.
+
+=== TO RENDER A MOCKUP ===
+1. Write complete HTML to: /tmp/mockup_<step_index>.html
 2. Run: /render_mockup.sh <step_index> /tmp/mockup_<step_index>.html
 
 The step_index is 0-based (first step is 0, second is 1, etc.).
 
-WHEN TO CREATE MOCKUPS:
+=== WHEN TO CREATE MOCKUPS ===
 - Each article MUST have at least one image - choose the most visually relevant step
 - Steps involving buttons, forms, dialogs, or settings panels
 - Steps showing UI elements the user needs to interact with

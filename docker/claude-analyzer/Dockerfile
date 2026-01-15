@@ -42,6 +42,7 @@ COPY --chmod=755 generate_article.sh /generate_article.sh
 COPY --chmod=755 generate_project_recommendations.sh /generate_project_recommendations.sh
 COPY --chmod=755 generate_section_recommendations.sh /generate_section_recommendations.sh
 COPY --chmod=755 suggest_sections.sh /suggest_sections.sh
+COPY --chmod=755 generate_css.sh /generate_css.sh
 COPY --chmod=755 render_mockup.sh /render_mockup.sh
 COPY --chmod=644 render_mockup.js /render_mockup.js
 

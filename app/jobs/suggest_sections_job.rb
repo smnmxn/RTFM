@@ -30,6 +30,9 @@ class SuggestSectionsJob < ApplicationJob
         create_sections(project, result[:sections])
         project.reload.update!(sections_generation_status: "completed")
         Rails.logger.info "[SuggestSectionsJob] Suggested #{result[:sections]&.size || 0} sections for project #{project.id}"
+
+        # Trigger CSS generation for mockup styling
+        GenerateCssJob.perform_later(project_id: project.id)
       else
         project.reload.update!(sections_generation_status: "failed")
         Rails.logger.warn "[SuggestSectionsJob] Suggestion failed for project #{project.id}: #{result[:error]}"

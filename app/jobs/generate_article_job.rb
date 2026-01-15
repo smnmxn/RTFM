@@ -84,6 +84,19 @@ class GenerateArticleJob < ApplicationJob
         Rails.logger.warn "[GenerateArticleJob] No style_context found in project analysis_metadata"
       end
 
+      # Write compiled CSS for accurate mockup generation
+      if project.analysis_metadata&.dig("compiled_css").present?
+        File.write(
+          File.join(input_dir, "compiled_css.txt"),
+          project.analysis_metadata["compiled_css"]
+        )
+        Rails.logger.info "[GenerateArticleJob] Wrote compiled_css.txt (#{project.analysis_metadata['compiled_css'].length} bytes)"
+      else
+        # Write empty file so the script knows there's no compiled CSS
+        File.write(File.join(input_dir, "compiled_css.txt"), "")
+        Rails.logger.info "[GenerateArticleJob] No compiled CSS available - mockups will use style context fallback"
+      end
+
       # If there's a source PR, include the diff
       if source_update.present?
         diff = fetch_pr_diff(project, source_update)

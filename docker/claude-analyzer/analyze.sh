@@ -281,5 +281,6 @@ Output ONLY valid JSON, no markdown or commentary.
 STYLE_PROMPT
 
 echo "Style context extraction complete!"
+
 echo "Output files:"
 ls -la /output/
