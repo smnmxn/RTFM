@@ -141,6 +141,145 @@ sed -n '/---TARGET_USERS---/,/---CONTEXTUAL_QUESTIONS---/p' /output/analysis_raw
 # Extract contextual questions (everything after ---CONTEXTUAL_QUESTIONS---)
 sed -n '/---CONTEXTUAL_QUESTIONS---/,$p' /output/analysis_raw.txt | tail -n +2 > /output/contextual_questions.json
 
-echo "Analysis complete!"
+echo "Main analysis complete!"
+
+# Extract style context for UI mockup generation
+echo "Extracting style context..."
+
+cat <<'STYLE_PROMPT' | claude -p --allowedTools "Read,Glob,Grep" > /output/style_context.json
+Analyze this codebase and extract a comprehensive visual style context for generating accurate UI mockups.
+
+STEP 1: Determine the application type:
+- "web": Has routes, views/templates, CSS files, web framework (Rails, React, Vue, Django, etc.)
+- "cli": Has command parsers (argparse, commander, clap), outputs to stdout, no web UI
+- "desktop": Has Electron, Qt, GTK, Tauri, or native UI framework
+
+STEP 2: Extract styling information based on app type.
+
+FOR WEB APPS, examine these sources:
+- tailwind.config.js - theme colors, fonts, spacing, border radius
+- CSS files - :root variables, component classes
+- SCSS/SASS files - variables, mixins
+- Layout templates - CDN links (Google Fonts, FontAwesome, Bootstrap)
+- Component files - actual button, input, card implementations
+
+Extract:
+1. COLORS: Find actual hex values for primary buttons, backgrounds, text, borders, links, success/error states
+2. FONTS: Font families from CSS or Google Fonts, including weights used
+3. TYPOGRAPHY: Base font size, heading weights
+4. SPACING: Button padding, input padding, card padding (look at actual components)
+5. BORDERS: Border radius values used on buttons, inputs, cards (look for rounded-*, border-radius)
+6. SHADOWS: Box shadows used on cards, dropdowns
+7. BUTTONS: Full button styles including background, color, border, radius, padding
+8. INPUTS: Input field styles including background, border, radius, padding, focus states
+9. CDN LINKS: Any external stylesheets or fonts to include
+
+FOR CLI APPS:
+- Set app_type to "cli"
+- Use standard terminal styling:
+  - Dark background (#1e1e1e)
+  - Light text (#d4d4d4)
+  - Green for success (#4ec9b0)
+  - Red for errors (#f14c4c)
+  - Monospace font
+
+FOR DESKTOP APPS:
+- Identify the UI framework (Electron, Qt, GTK, etc.)
+- Extract theme colors if available
+- Note any custom styling
+
+STEP 3: Output a JSON object matching this structure exactly:
+{
+  "app_type": "web|cli|desktop",
+  "framework": "tailwind|bootstrap|none",
+  "colors": {
+    "primary": "#hex",
+    "primary_hover": "#hex",
+    "primary_text": "#hex",
+    "secondary": "#hex",
+    "background": "#hex",
+    "surface": "#hex",
+    "text": "#hex",
+    "text_muted": "#hex",
+    "border": "#hex",
+    "input_border": "#hex",
+    "input_focus": "#hex",
+    "link": "#hex",
+    "link_hover": "#hex",
+    "success": "#hex",
+    "error": "#hex",
+    "warning": "#hex"
+  },
+  "fonts": {
+    "sans": "Font, fallbacks",
+    "mono": "Mono Font, fallbacks",
+    "heading": "Heading Font, fallbacks"
+  },
+  "typography": {
+    "base_size": "16px",
+    "heading_weight": "600",
+    "body_weight": "400"
+  },
+  "spacing": {
+    "button_padding": "Xpx Ypx",
+    "input_padding": "Xpx Ypx",
+    "card_padding": "Xpx",
+    "container_padding": "Xpx"
+  },
+  "borders": {
+    "radius_sm": "Xpx",
+    "radius_md": "Xpx",
+    "radius_lg": "Xpx",
+    "radius_full": "9999px",
+    "button_radius": "Xpx",
+    "input_radius": "Xpx",
+    "card_radius": "Xpx",
+    "width": "1px"
+  },
+  "shadows": {
+    "card": "CSS shadow value",
+    "button": "CSS shadow value or none",
+    "dropdown": "CSS shadow value"
+  },
+  "buttons": {
+    "primary": {
+      "background": "#hex",
+      "color": "#hex",
+      "border": "CSS border or none",
+      "radius": "Xpx",
+      "padding": "Xpx Ypx",
+      "font_weight": "500"
+    },
+    "secondary": {
+      "background": "#hex",
+      "color": "#hex",
+      "border": "CSS border",
+      "radius": "Xpx",
+      "padding": "Xpx Ypx",
+      "font_weight": "500"
+    }
+  },
+  "inputs": {
+    "background": "#hex",
+    "border": "CSS border",
+    "radius": "Xpx",
+    "padding": "Xpx Ypx",
+    "focus_ring": "CSS outline/ring"
+  },
+  "cdn_links": [
+    "<link href='...' rel='stylesheet'>",
+    "<script src='...'></script>"
+  ]
+}
+
+CRITICAL: Use ACTUAL values extracted from the codebase.
+- Look at real button implementations, not just config files
+- If Tailwind, translate classes like "rounded-lg" to actual px values (sm=2px, md=6px, lg=8px, xl=12px)
+- Include ALL CDN links found in layout/head templates
+
+Output ONLY valid JSON, no markdown or commentary.
+STYLE_PROMPT
+
+echo "Style context extraction complete!"
 echo "Output files:"
 ls -la /output/

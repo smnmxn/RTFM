@@ -11,6 +11,9 @@ class ArticlesController < ApplicationController
       return
     end
 
+    # Clear old images before regenerating
+    @article.step_images.destroy_all
+
     @article.update!(
       generation_status: :generation_running,
       content: "Regenerating article...",
@@ -19,9 +22,7 @@ class ArticlesController < ApplicationController
     GenerateArticleJob.perform_later(article_id: @article.id)
 
     respond_to do |format|
-      format.turbo_stream {
-        render turbo_stream: turbo_stream.replace(@article, partial: "articles/card", locals: { article: @article })
-      }
+      format.turbo_stream
       format.html { redirect_to project_path(@article.project), notice: "Article regeneration started" }
     end
   end

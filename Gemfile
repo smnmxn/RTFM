@@ -71,6 +71,11 @@ group :development, :test do
   # Environment variables
   gem "dotenv"
 
+  # Better Rails console experience
+  gem "pry-rails"
+  gem "pry-byebug"
+  gem "amazing_print"
+
   # Audits gems for known security defects (use config/bundler-audit.yml to ignore issues)
   gem "bundler-audit", require: false
 

@@ -73,6 +73,17 @@ class GenerateArticleJob < ApplicationJob
       # Write input files
       File.write(File.join(input_dir, "context.json"), build_context_json(project, recommendation, source_update))
 
+      # Write style context from stored project analysis
+      if project.analysis_metadata&.dig("style_context").present?
+        File.write(
+          File.join(input_dir, "style_context.json"),
+          project.analysis_metadata["style_context"].to_json
+        )
+        Rails.logger.info "[GenerateArticleJob] Wrote style_context.json from stored analysis"
+      else
+        Rails.logger.warn "[GenerateArticleJob] No style_context found in project analysis_metadata"
+      end
+
       # If there's a source PR, include the diff
       if source_update.present?
         diff = fetch_pr_diff(project, source_update)

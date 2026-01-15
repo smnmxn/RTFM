@@ -167,6 +167,37 @@ class AnalyzeCodebaseJob < ApplicationJob
         end
       end
 
+      # Parse style context JSON and add to metadata
+      style_context_path = File.join(output_dir, "style_context.json")
+      Rails.logger.info "[AnalyzeCodebaseJob] Looking for style_context at: #{style_context_path}"
+      Rails.logger.info "[AnalyzeCodebaseJob] File exists: #{File.exist?(style_context_path)}"
+
+      style_context_raw = File.read(style_context_path).strip rescue nil
+      Rails.logger.info "[AnalyzeCodebaseJob] style_context_raw present: #{style_context_raw.present?}, metadata present: #{metadata.present?}"
+
+      if style_context_raw.present? && metadata
+        begin
+          # Extract JSON from markdown code fences if present, or find raw JSON object
+          clean_json = if style_context_raw =~ /```json\s*(.*?)\s*```/m
+            $1.strip
+          elsif style_context_raw =~ /(\{[\s\S]*\})/
+            $1.strip
+          else
+            style_context_raw
+              .gsub(/\A\s*```json\s*/i, "")
+              .gsub(/\s*```\s*\z/, "")
+              .strip
+          end
+          metadata["style_context"] = JSON.parse(clean_json)
+          Rails.logger.info "[AnalyzeCodebaseJob] Extracted style context: app_type=#{metadata['style_context']['app_type']}, framework=#{metadata['style_context']['framework']}"
+        rescue JSON::ParserError => e
+          Rails.logger.warn "[AnalyzeCodebaseJob] Failed to parse style_context JSON: #{e.message}"
+          Rails.logger.warn "[AnalyzeCodebaseJob] Raw style_context: #{style_context_raw[0..200]}"
+        end
+      else
+        Rails.logger.warn "[AnalyzeCodebaseJob] Skipping style_context: raw=#{style_context_raw.present?}, metadata=#{metadata.present?}"
+      end
+
       if summary.present?
         {
           success: true,

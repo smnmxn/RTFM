@@ -1,0 +1,14 @@
+<%# Update article card in articles list (if present) %>
+<%= turbo_stream.replace @article,
+    partial: "articles/card",
+    locals: { article: @article } %>
+
+<%# Update article row in inbox list (if present) %>
+<%= turbo_stream.replace dom_id(@article, :row),
+    partial: "projects/article_row",
+    locals: { article: @article, selected: true } %>
+
+<%# Update inbox editor to show generating state (if present) %>
+<%= turbo_stream.replace "inbox-editor",
+    partial: "projects/article_editor",
+    locals: { article: @article } %>
