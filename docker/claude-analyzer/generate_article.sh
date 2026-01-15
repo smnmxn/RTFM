@@ -78,77 +78,87 @@ IMPORTANT GUIDELINES:
 
 === UI MOCKUP GENERATION ===
 You can generate UI mockup images for steps that involve visual interfaces.
-The goal is to show users what they will ACTUALLY see in the real application.
 
-CRITICAL: First determine the application type, then follow ONLY the matching section below.
+APPROACH:
+1. Explore the codebase to understand the app's visual style (colors, fonts, component patterns)
+2. Generate complete HTML with embedded <style> block that replicates the app's look
+3. Write to /tmp/mockup_<step_index>.html
+4. Call /render_mockup.sh to convert to PNG
 
-### DETERMINING APP TYPE
-Look at the codebase structure to determine the app type:
-- Web app: Has routes, views/templates, CSS/SCSS files, frontend framework (Rails, Django, React, Vue, etc.)
-- CLI tool: Has command parsers (argparse, commander, clap), no web UI, outputs to stdout/stderr
-- Desktop app: Has Electron, Qt, GTK, native UI framework code
+DETERMINING APP TYPE:
+- Web app: Has routes, views/templates, CSS files, frontend framework
+- CLI tool: Has command parsers, no web UI, outputs to stdout/stderr
+- Desktop app: Has Electron, Qt, GTK, native UI framework
 
-### FOR WEB APPLICATIONS (Rails, React, Vue, Django, Express, etc.)
-DO NOT use terminal styling for web apps. Web apps have graphical UIs, not terminal interfaces.
+FOR WEB APPLICATIONS:
+Create a complete HTML file with embedded styles that matches the app's visual design.
 
-1. Find the project's CSS/styles:
-   - Look for: *.css, *.scss, *.sass, tailwind.config.*, styled-components, CSS modules
-   - Read the main stylesheet to understand colors, fonts, button styles, form styles
-
-2. Find relevant view templates:
-   - Look for the views/components related to the feature you're documenting
-   - Note the actual HTML structure, class names, and UI patterns used
-
-3. Generate a COMPLETE HTML document with the project's actual styles:
+Example mockup file:
+```html
 <!DOCTYPE html>
 <html>
 <head>
   <style>
-    /* Extract and paste the relevant CSS from the project */
-    /* Include: colors, fonts, button styles, form inputs, cards, etc. */
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; padding: 24px; margin: 0; }
+    .card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .btn { background: #4f46e5; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; }
+    .label { font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 6px; display: block; }
+    .input { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; }
   </style>
 </head>
-<body style="background: #f8fafc; padding: 24px;">
-  <!-- Recreate the UI using the project's actual markup patterns -->
-  <!-- Use the same class names and structure as the real views -->
+<body>
+  <div class="card">
+    <label class="label">Project Name</label>
+    <input class="input" type="text" value="My Project">
+    <button class="btn" style="margin-top: 16px;">Save Changes</button>
+  </div>
 </body>
 </html>
+```
 
-4. FALLBACK: If you cannot find project styles, use these generic classes:
-   .mockup-container, .btn, .btn-primary, .btn-secondary, .input, .label,
-   .card, .heading, .alert, .badge, .tabs, .table, .checkbox, .toggle,
-   plus utilities: .flex, .items-center, .gap-2, .mt-4, .mb-4, .p-4
+Customize colors, fonts, and styling to match what you see in the actual codebase.
 
-### FOR CLI/TERMINAL TOOLS ONLY
-ONLY use terminal styling for actual command-line tools - NOT for web apps, NOT for desktop apps.
+FOR CLI/TERMINAL TOOLS:
+Use terminal styling with a dark background:
 
-Use the terminal container format:
-<div class="terminal">
-  <div class="terminal-header">
-    <div class="terminal-dots">
-      <span class="terminal-dot red"></span>
-      <span class="terminal-dot yellow"></span>
-      <span class="terminal-dot green"></span>
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { margin: 0; padding: 24px; background: #f8fafc; }
+    .terminal { background: #1e1e1e; border-radius: 8px; overflow: hidden; font-family: 'SF Mono', Monaco, monospace; font-size: 13px; max-width: 600px; }
+    .terminal-header { background: #323232; padding: 8px 12px; display: flex; align-items: center; gap: 8px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .red { background: #ff5f56; }
+    .yellow { background: #ffbd2e; }
+    .green { background: #27ca40; }
+    .terminal-body { padding: 16px; color: #d4d4d4; line-height: 1.6; }
+    .prompt { color: #6a9955; }
+    .output { color: #9cdcfe; }
+    .success { color: #4ec9b0; }
+  </style>
+</head>
+<body>
+  <div class="terminal">
+    <div class="terminal-header">
+      <span class="dot red"></span>
+      <span class="dot yellow"></span>
+      <span class="dot green"></span>
     </div>
-    Terminal
+    <div class="terminal-body">
+      <div><span class="prompt">$</span> mycommand --flag value</div>
+      <div class="output">Processing...</div>
+      <div class="success">Done!</div>
+    </div>
   </div>
-  <div class="terminal-body">
-    <div class="terminal-line"><span class="prompt">$</span> command --flag value</div>
-    <div class="terminal-line terminal-output">Output from the command</div>
-    <div class="terminal-line terminal-success">✓ Success message</div>
-    <div class="terminal-line terminal-error">✗ Error message</div>
-  </div>
-</div>
-
-### FOR DESKTOP APPLICATIONS
-Match the look and feel of the desktop framework (Electron, Qt, native, etc.).
-Extract styles from the app's theme/styling system and create appropriate mockups.
-
----
+</body>
+</html>
+```
 
 TO RENDER A MOCKUP:
-1. Write your HTML to a temp file: /tmp/mockup_<step_index>.html
-2. Call: /render_mockup.sh <step_index> --file /tmp/mockup_<step_index>.html
+1. Write complete HTML (with embedded styles) to: /tmp/mockup_<step_index>.html
+2. Run: /render_mockup.sh <step_index> /tmp/mockup_<step_index>.html
 
 The step_index is 0-based (first step is 0, second is 1, etc.).
 
