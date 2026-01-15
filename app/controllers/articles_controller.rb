@@ -16,6 +16,7 @@ class ArticlesController < ApplicationController
 
     @article.update!(
       generation_status: :generation_running,
+      review_status: :unreviewed,
       content: "Regenerating article...",
       structured_content: nil
     )
