@@ -1,0 +1,12 @@
+<%= turbo_stream.replace "logo_preview" do %>
+  <div id="logo_preview" class="mb-3">
+    <div class="flex items-center gap-4">
+      <%= image_tag @project.logo, class: "h-12 object-contain" %>
+      <button type="button"
+              data-action="click->logo-upload#remove"
+              class="text-sm text-red-600 hover:text-red-800">
+        Remove
+      </button>
+    </div>
+  </div>
+<% end %>

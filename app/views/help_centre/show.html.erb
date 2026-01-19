@@ -16,15 +16,15 @@
                 <%= link_to art.title.truncate(35),
                     help_centre_article_path(project_slug: @project.slug, id: art.id),
                     class: art.id == @article.id ?
-                      "text-indigo-600 font-medium" :
-                      "text-gray-600 hover:text-indigo-600 transition-colors" %>
+                      "text-brand font-medium" :
+                      "text-gray-600 hover:text-brand transition-colors" %>
               </li>
             <% end %>
             <% if @section.articles.published.count > 8 %>
               <li>
                 <%= link_to "View all...",
                     help_centre_section_path(project_slug: @project.slug, section_slug: @section.slug),
-                    class: "text-indigo-600 hover:text-indigo-800 text-xs font-medium" %>
+                    class: "text-brand hover:opacity-80 text-xs font-medium" %>
               </li>
             <% end %>
           </ul>
@@ -41,12 +41,12 @@
         <nav class="text-sm mb-3">
           <%= link_to "Help Centre",
               help_centre_path(project_slug: @project.slug),
-              class: "text-indigo-600 hover:text-indigo-800 transition-colors" %>
+              class: "text-brand hover:opacity-80 transition-colors" %>
           <% if @section %>
             <span class="mx-2 text-gray-400">/</span>
             <%= link_to @section.name,
                 help_centre_section_path(project_slug: @project.slug, section_slug: @section.slug),
-                class: "text-indigo-600 hover:text-indigo-800 transition-colors" %>
+                class: "text-brand hover:opacity-80 transition-colors" %>
           <% end %>
         </nav>
         <h1 class="text-2xl font-bold text-gray-900"><%= @article.title %></h1>

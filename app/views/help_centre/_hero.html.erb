@@ -1,10 +1,10 @@
-<div class="bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
+<div style="background: linear-gradient(to bottom right, var(--brand-primary), var(--brand-accent)); color: var(--brand-title)">
   <div class="max-w-6xl mx-auto px-4 py-16 sm:px-6 lg:px-8 text-center">
     <h1 class="text-3xl sm:text-4xl font-bold mb-4">
-      How can we help you?
+      <%= @project.help_centre_title_or_default %>
     </h1>
-    <p class="text-indigo-100 mb-8 text-lg">
-      Search our help centre or browse categories below
+    <p class="opacity-80 mb-8 text-lg">
+      <%= @project.help_centre_tagline_or_default %>
     </p>
 
     <!-- Search Bar -->

@@ -1,11 +1,13 @@
 FROM node:20-slim
 
-# Install git, Chromium, and dependencies for Puppeteer
+# Install git, Chromium, fonts, and dependencies for Puppeteer
 RUN apt-get update && apt-get install -y \
     git \
     ca-certificates \
     chromium \
     fonts-recommended \
+    fonts-liberation \
+    fonts-noto-core \
     libatk-bridge2.0-0 \
     libatk1.0-0 \
     libcups2 \
@@ -24,14 +26,14 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 ENV NODE_PATH=/usr/local/lib/node_modules
 
-# Install Claude Code CLI and Puppeteer globally
-RUN npm install -g @anthropic-ai/claude-code puppeteer
+# Install Claude Code CLI, Puppeteer, and jsdom globally
+RUN npm install -g @anthropic-ai/claude-code puppeteer jsdom
 
 # Create non-root user
 RUN useradd -m -s /bin/bash analyzer
 
 # Create directories and set permissions
-RUN mkdir -p /output /output/images /repo /input && chown -R analyzer:analyzer /output /repo /input
+RUN mkdir -p /output /output/images /output/html /repo /input && chown -R analyzer:analyzer /output /repo /input
 
 # Copy analysis scripts and make executable by all
 COPY --chmod=755 analyze.sh /analyze.sh
@@ -45,6 +47,7 @@ COPY --chmod=755 suggest_sections.sh /suggest_sections.sh
 COPY --chmod=755 generate_css.sh /generate_css.sh
 COPY --chmod=755 render_mockup.sh /render_mockup.sh
 COPY --chmod=644 render_mockup.js /render_mockup.js
+COPY --chmod=755 validate_html.js /validate_html.js
 
 # Switch to non-root user
 USER analyzer

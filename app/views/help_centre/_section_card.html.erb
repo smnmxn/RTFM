@@ -4,14 +4,15 @@
            p-6 border border-gray-100 group" do %>
   <div class="flex items-start gap-4">
     <!-- Icon -->
-    <div class="flex-shrink-0 w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl
-                flex items-center justify-center group-hover:bg-indigo-600
-                group-hover:text-white transition-colors">
-<%= heroicon section.icon_name, options: { class: "w-6 h-6" } %>
+    <div class="flex-shrink-0 w-12 h-12 bg-brand-light rounded-xl
+                flex items-center justify-center group-hover:bg-brand
+                group-hover:text-white transition-colors"
+         style="color: var(--brand-primary)">
+      <%= heroicon section.icon_name, options: { class: "w-6 h-6" } %>
     </div>
 
     <div class="flex-1 min-w-0">
-      <h3 class="text-lg font-semibold text-gray-900 group-hover:text-indigo-600
+      <h3 class="text-lg font-semibold text-gray-900 group-hover:text-brand
                  transition-colors"><%= section.name %></h3>
       <% if section.description.present? %>
         <p class="text-gray-500 text-sm mt-1 line-clamp-2"><%= section.description %></p>
@@ -21,7 +22,7 @@
       </p>
     </div>
 
-<!-- Arrow -->
-    <%= heroicon "chevron-right", options: { class: "w-5 h-5 text-gray-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all flex-shrink-0 mt-1" } %>
+    <!-- Arrow -->
+    <%= heroicon "chevron-right", options: { class: "w-5 h-5 text-gray-300 group-hover:text-brand group-hover:translate-x-1 transition-all flex-shrink-0 mt-1" } %>
   </div>
 <% end %>

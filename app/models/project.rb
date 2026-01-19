@@ -11,6 +11,9 @@ class Project < ApplicationRecord
   has_many :recommendations, dependent: :destroy
   has_many :sections, dependent: :destroy
 
+  # Logo upload via Active Storage
+  has_one_attached :logo
+
   # User-provided context (collected during onboarding)
   store :user_context, accessors: [
     :target_audience,
@@ -20,11 +23,25 @@ class Project < ApplicationRecord
     :product_stage
   ], coder: JSON
 
+  # Help Centre branding settings
+  store :branding, accessors: [
+    :primary_color,
+    :accent_color,
+    :title_text_color,
+    :help_centre_title,
+    :help_centre_tagline
+  ], coder: JSON
+
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true, format: { with: /\A[a-z0-9-]+\z/, message: "only allows lowercase letters, numbers, and hyphens" }
   validates :github_repo, presence: true,
                           format: { with: %r{\A[\w.-]+/[\w.-]+\z}, message: "must be in 'owner/repo' format" },
                           uniqueness: { scope: :user_id, message: "is already connected" }
+
+  # Branding validations
+  validates :primary_color, format: { with: /\A#[0-9a-fA-F]{6}\z/, message: "must be a valid hex color" }, allow_blank: true
+  validates :accent_color, format: { with: /\A#[0-9a-fA-F]{6}\z/, message: "must be a valid hex color" }, allow_blank: true
+  validates :title_text_color, format: { with: /\A#[0-9a-fA-F]{6}\z/, message: "must be a valid hex color" }, allow_blank: true
 
   before_validation :generate_slug, on: :create
 
@@ -103,6 +120,27 @@ class Project < ApplicationRecord
 
   def github_client
     github_app_installation&.client
+  end
+
+  # Branding helper methods with defaults
+  def primary_color_or_default
+    primary_color.presence || "#4f46e5"
+  end
+
+  def accent_color_or_default
+    accent_color.presence || "#7c3aed"
+  end
+
+  def title_text_color_or_default
+    title_text_color.presence || "#ffffff"
+  end
+
+  def help_centre_title_or_default
+    help_centre_title.presence || "Help Centre"
+  end
+
+  def help_centre_tagline_or_default
+    help_centre_tagline.presence || "How can we help you?"
   end
 
   private

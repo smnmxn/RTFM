@@ -207,8 +207,28 @@ class GenerateArticleJob < ApplicationJob
       begin
         step_image = article.step_images.find_or_initialize_by(step_index: step_index)
 
+        # Read diagnostics JSON if available
+        diagnostics_path = image_path.sub(".png", "_diagnostics.json")
+        diagnostics = if File.exist?(diagnostics_path)
+          begin
+            JSON.parse(File.read(diagnostics_path))
+          rescue JSON::ParserError => e
+            Rails.logger.warn "[GenerateArticleJob] Failed to parse diagnostics for step #{step_index}: #{e.message}"
+            nil
+          end
+        end
+
+        # Determine render status from diagnostics
+        render_status = determine_render_status(diagnostics)
+
         # Read file content into memory to avoid closed stream issues
         image_data = File.binread(image_path)
+
+        step_image.assign_attributes(
+          render_metadata: diagnostics,
+          render_status: render_status,
+          render_attempts: (step_image.render_attempts || 0) + 1
+        )
 
         step_image.image.attach(
           io: StringIO.new(image_data),
@@ -217,10 +237,34 @@ class GenerateArticleJob < ApplicationJob
         )
 
         step_image.save!
-        Rails.logger.info "[GenerateArticleJob] Attached generated image to step #{step_index} for article #{article.id}"
+
+        if render_status == StepImage::RENDER_STATUS_WARNING
+          Rails.logger.warn "[GenerateArticleJob] Mockup for step #{step_index} has quality warnings (score: #{diagnostics&.dig('qualityScore', 'score')})"
+        elsif render_status == StepImage::RENDER_STATUS_FAILED
+          Rails.logger.error "[GenerateArticleJob] Mockup for step #{step_index} failed quality checks"
+        else
+          Rails.logger.info "[GenerateArticleJob] Attached generated image to step #{step_index} for article #{article.id}"
+        end
       rescue => e
         Rails.logger.error "[GenerateArticleJob] Failed to attach image for step #{step_index}: #{e.message}"
       end
+    end
+  end
+
+  def determine_render_status(diagnostics)
+    return StepImage::RENDER_STATUS_PENDING unless diagnostics
+
+    quality_rating = diagnostics.dig("qualityScore", "rating")
+    is_likely_blank = diagnostics.dig("metrics", "isLikelyBlank")
+    page_errors = diagnostics["pageErrors"] || []
+    failed_resources = diagnostics["failedResources"] || []
+
+    if is_likely_blank || quality_rating == "poor"
+      StepImage::RENDER_STATUS_FAILED
+    elsif quality_rating == "acceptable" || page_errors.any? || failed_resources.length > 2
+      StepImage::RENDER_STATUS_WARNING
+    else
+      StepImage::RENDER_STATUS_SUCCESS
     end
   end
 

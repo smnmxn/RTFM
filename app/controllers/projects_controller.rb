@@ -328,6 +328,60 @@ class ProjectsController < ApplicationController
     redirect_to analyze_onboarding_project_path(@project)
   end
 
+  # Branding settings
+  def update_branding
+    # Merge new values into existing branding (similar to save_context pattern)
+    current_branding = @project.branding || {}
+    new_branding = current_branding.merge(branding_params.to_h.stringify_keys)
+
+    if @project.update(branding: new_branding)
+      @project.reload
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            "branding_form",
+            partial: "projects/branding_form",
+            locals: { project: @project, saved: true }
+          )
+        end
+        format.html { redirect_to project_path(@project, anchor: "settings"), notice: "Branding updated." }
+      end
+    else
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            "branding_form",
+            partial: "projects/branding_form",
+            locals: { project: @project, saved: false }
+          )
+        end
+        format.html { redirect_to project_path(@project, anchor: "settings"), alert: "Failed to update branding." }
+      end
+    end
+  end
+
+  def upload_logo
+    if params[:logo].present? && @project.logo.attach(params[:logo])
+      respond_to do |format|
+        format.turbo_stream
+        format.json { render json: { success: true, url: url_for(@project.logo) } }
+      end
+    else
+      respond_to do |format|
+        format.turbo_stream { head :unprocessable_entity }
+        format.json { render json: { success: false, errors: @project.errors.full_messages }, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def remove_logo
+    @project.logo.purge
+    respond_to do |format|
+      format.turbo_stream
+      format.json { render json: { success: true } }
+    end
+  end
+
   def destroy
     @project.destroy
     redirect_to dashboard_path, notice: "Project '#{@project.name}' disconnected."
@@ -337,6 +391,10 @@ class ProjectsController < ApplicationController
 
   def set_project
     @project = current_user.projects.find(params[:id])
+  end
+
+  def branding_params
+    params.require(:project).permit(:primary_color, :accent_color, :title_text_color, :help_centre_title, :help_centre_tagline)
   end
 
   def load_inbox_items

@@ -77,6 +77,10 @@ Rails.application.routes.draw do
       get :select_articles_article
       # Settings actions
       post :start_over
+      # Branding settings
+      patch :update_branding
+      post :upload_logo
+      delete :remove_logo
     end
     resources :recommendations, only: [] do
       member do

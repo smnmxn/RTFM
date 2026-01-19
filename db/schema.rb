@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_14_180936) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_19_153905) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -84,6 +84,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_14_180936) do
     t.string "analysis_status"
     t.text "analysis_summary"
     t.datetime "analyzed_at"
+    t.json "branding"
     t.json "contextual_questions"
     t.datetime "created_at", null: false
     t.bigint "github_app_installation_id"
@@ -143,6 +144,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_14_180936) do
   create_table "step_images", force: :cascade do |t|
     t.bigint "article_id", null: false
     t.datetime "created_at", null: false
+    t.integer "render_attempts", default: 0
+    t.json "render_metadata"
+    t.string "render_status", default: "pending"
     t.integer "step_index", null: false
     t.datetime "updated_at", null: false
     t.index ["article_id", "step_index"], name: "index_step_images_on_article_id_and_step_index", unique: true

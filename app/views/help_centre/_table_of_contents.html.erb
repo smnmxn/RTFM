@@ -5,20 +5,20 @@
     <ul class="space-y-2 text-sm">
       <% if article.prerequisites.any? %>
         <li>
-          <a href="#prerequisites" class="text-gray-600 hover:text-indigo-600 transition-colors">
+          <a href="#prerequisites" class="text-gray-600 hover:text-brand transition-colors">
             Prerequisites
           </a>
         </li>
       <% end %>
       <% if article.steps.any? %>
         <li>
-          <a href="#steps" class="text-gray-600 hover:text-indigo-600 transition-colors">
+          <a href="#steps" class="text-gray-600 hover:text-brand transition-colors">
             Steps
           </a>
           <ul class="mt-2 ml-3 space-y-1.5 border-l border-gray-200 pl-3">
             <% article.steps.each_with_index do |step, i| %>
               <li>
-                <a href="#step-<%= i + 1 %>" class="text-gray-500 hover:text-indigo-600 transition-colors text-xs">
+                <a href="#step-<%= i + 1 %>" class="text-gray-500 hover:text-brand transition-colors text-xs">
                   <%= i + 1 %>. <%= step["title"].to_s.truncate(35) %>
                 </a>
               </li>
@@ -28,14 +28,14 @@
       <% end %>
       <% if article.tips.any? %>
         <li>
-          <a href="#tips" class="text-gray-600 hover:text-indigo-600 transition-colors">
+          <a href="#tips" class="text-gray-600 hover:text-brand transition-colors">
             Tips
           </a>
         </li>
       <% end %>
       <% if article.summary.present? %>
         <li>
-          <a href="#summary" class="text-gray-600 hover:text-indigo-600 transition-colors">
+          <a href="#summary" class="text-gray-600 hover:text-brand transition-colors">
             Summary
           </a>
         </li>

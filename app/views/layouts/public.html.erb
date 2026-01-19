@@ -1,14 +1,49 @@
 <!DOCTYPE html>
 <html class="scroll-smooth">
   <head>
-    <title><%= content_for(:title) || "#{@project.name} Help Centre" %></title>
+    <title><%= content_for(:title) || "#{@project.name} #{@project.help_centre_title_or_default}" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <!-- Dynamic branding colors -->
+    <style>
+      :root {
+        --brand-primary: <%= @project.primary_color_or_default %>;
+        --brand-accent: <%= @project.accent_color_or_default %>;
+        --brand-title: <%= @project.title_text_color_or_default %>;
+      }
+
+      /* Brand color utilities */
+      .text-brand { color: var(--brand-primary); }
+      .text-brand-title { color: var(--brand-title); }
+      .bg-brand { background-color: var(--brand-primary); }
+      .border-brand { border-color: var(--brand-primary); }
+      .bg-brand-light { background-color: color-mix(in srgb, var(--brand-primary) 15%, white); }
+
+      /* Hover states */
+      .hover\:text-brand:hover { color: var(--brand-primary); }
+      .hover\:bg-brand:hover { background-color: var(--brand-primary); }
+      .hover\:border-brand:hover { border-color: var(--brand-primary); }
+      .group:hover .group-hover\:text-brand { color: var(--brand-primary); }
+      .group:hover .group-hover\:bg-brand { background-color: var(--brand-primary); }
+      .group:hover .group-hover\:bg-brand-light { background-color: color-mix(in srgb, var(--brand-primary) 15%, white); }
+
+      /* Focus states */
+      .focus\:ring-brand:focus { --tw-ring-color: var(--brand-primary); }
+      .focus\:border-brand:focus { border-color: var(--brand-primary); }
+
+      /* Icon hover - ensure white text overrides brand color */
+      .group:hover .group-hover\:text-white { color: white !important; }
+    </style>
+
+    <% if @project.logo.attached? %>
+      <link rel="icon" href="<%= url_for(@project.logo) %>" type="<%= @project.logo.content_type %>">
+    <% else %>
+      <link rel="icon" href="/icon.png" type="image/png">
+      <link rel="icon" href="/icon.svg" type="image/svg+xml">
+      <link rel="apple-touch-icon" href="/icon.png">
+    <% end %>
 
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
@@ -17,11 +52,21 @@
   <body class="min-h-screen bg-gray-50 flex flex-col">
     <header class="bg-white/95 backdrop-blur-sm shadow-sm sticky top-0 z-50">
       <div class="max-w-6xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
-        <div>
-          <h1 class="text-xl font-bold text-gray-900">
-            <%= link_to @project.name, help_centre_path(project_slug: @project.slug), class: "hover:text-indigo-600 transition-colors" %>
-          </h1>
-          <p class="text-sm text-gray-500">Help Centre</p>
+        <div class="flex items-center gap-3">
+          <% if @project.logo.attached? %>
+            <%= link_to help_centre_path(project_slug: @project.slug), class: "hover:opacity-80 transition-opacity" do %>
+              <%= image_tag @project.logo, class: "h-10 object-contain", alt: @project.name %>
+            <% end %>
+          <% else %>
+            <div>
+              <h1 class="text-xl font-bold">
+                <%= link_to @project.name, help_centre_path(project_slug: @project.slug),
+                    class: "hover:opacity-80 transition-opacity",
+                    style: "color: var(--brand-primary)" %>
+              </h1>
+              <p class="text-sm text-gray-500"><%= @project.help_centre_title_or_default %></p>
+            </div>
+          <% end %>
         </div>
 
         <% unless content_for?(:hero) %>
@@ -50,7 +95,7 @@
 
     <footer class="bg-gray-100 mt-auto">
       <div class="max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
-        Powered by <a href="/" class="text-indigo-600 hover:text-indigo-800">supportpages.io</a>
+        Powered by <a href="/" style="color: var(--brand-primary)" class="hover:opacity-80">supportpages.io</a>
       </div>
     </footer>
   </body>
