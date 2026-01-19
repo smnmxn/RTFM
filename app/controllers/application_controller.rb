@@ -24,4 +24,11 @@ class ApplicationController < ActionController::Base
       redirect_to login_path, alert: "Please sign in with GitHub to continue."
     end
   end
+
+  def rollbar_custom_data
+    {
+      project_id: @project&.id,
+      project_slug: @project&.slug
+    }
+  end
 end

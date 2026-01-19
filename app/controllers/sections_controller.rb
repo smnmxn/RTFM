@@ -98,8 +98,10 @@ class SectionsController < ApplicationController
   def accept
     @section.update!(status: :accepted)
 
-    # Immediately start generating recommendations for this section (parallel processing)
-    trigger_recommendations_for_section(@section)
+    # Note: Recommendations are NOT generated here during onboarding.
+    # They are generated in bulk via GenerateAllRecommendationsJob when
+    # the user clicks "Complete" on the sections step. This prevents
+    # duplicate recommendations across sections.
 
     # Check if all sections reviewed → can advance to articles step
     check_sections_complete_for_onboarding
@@ -134,21 +136,6 @@ class SectionsController < ApplicationController
 
   def section_params
     params.require(:section).permit(:name, :description, :visible)
-  end
-
-  def trigger_recommendations_for_section(section)
-    return unless @project.analysis_status == "completed"
-    return if section.recommendations_status.present? # Already started
-
-    section.update!(
-      recommendations_status: "running",
-      recommendations_started_at: Time.current
-    )
-
-    GenerateSectionRecommendationsJob.perform_later(
-      project_id: @project.id,
-      section_id: section.id
-    )
   end
 
   def check_sections_complete_for_onboarding

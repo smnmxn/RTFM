@@ -106,22 +106,33 @@ module Onboarding
         return
       end
 
-      # Trigger recommendation generation for any sections that haven't been started yet
-      # (Most should already be running since they're kicked off in sections#accept)
-      @project.sections.accepted.where(recommendations_status: nil).find_each do |section|
-        section.update!(
-          recommendations_status: "running",
-          recommendations_started_at: Time.current
-        )
-        GenerateSectionRecommendationsJob.perform_later(
-          project_id: @project.id,
-          section_id: section.id
-        )
+      # Mark all accepted sections as running
+      # Using a single consolidated job prevents duplicate recommendations across sections
+      @project.sections.accepted.update_all(
+        recommendations_status: "running",
+        recommendations_started_at: Time.current
+      )
+
+      # Single consolidated job generates recommendations for ALL accepted sections
+      # This allows Claude to see all sections at once and assign each recommendation
+      # to exactly one section, preventing duplicates
+      GenerateAllRecommendationsJob.perform_later(project_id: @project.id)
+
+      # Advance to generating step (will redirect to inbox when complete)
+      @project.advance_onboarding!("generating")
+      redirect_to generating_onboarding_project_path(@project)
+    end
+
+    # Step 4: Generating Recommendations (loading state)
+    def generating
+      # If all recommendations are generated, complete onboarding and redirect
+      if @project.all_recommendations_generated?
+        @project.complete_onboarding!
+        redirect_to project_path(@project), notice: "Your help centre is ready!"
+        return
       end
 
-      # Complete onboarding and redirect to inbox
-      @project.complete_onboarding!
-      redirect_to project_path(@project), notice: "Recommendations are being generated and will appear in your inbox."
+      @progress = @project.recommendations_generation_progress
     end
 
     private
@@ -171,7 +182,8 @@ module Onboarding
       action_to_step = {
         "repository" => "repository",
         "analyze" => "analyze",
-        "sections" => "sections"
+        "sections" => "sections",
+        "generating" => "generating"
       }
 
       return unless action_to_step.key?(current_action)

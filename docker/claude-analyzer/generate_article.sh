@@ -147,6 +147,7 @@ Example mockup with embedded CSS:
 CRITICAL FOR CSS EMBEDDING:
 - Embed the ENTIRE compiled CSS in the <style> tag - do not skip any of it
 - Use the EXACT class names you find in the project's view templates
+- COPY ALL CLASSES FROM EACH ELEMENT - if an element has class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700", you MUST include ALL of those classes, not just some of them. Missing classes will break the styling.
 - Look at actual components in /repo to see how they structure HTML
 - The mockup should be indistinguishable from a screenshot of the real app
 

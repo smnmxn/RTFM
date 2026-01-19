@@ -3,6 +3,17 @@ require "fileutils"
 require "json"
 require "timeout"
 
+# Generates recommendations for a SINGLE section.
+#
+# NOTE: This job is NOT used during onboarding. During onboarding, we use
+# GenerateAllRecommendationsJob instead, which generates recommendations for
+# ALL accepted sections in a single Claude session. This prevents duplicate
+# recommendations across sections because Claude can see all sections at once.
+#
+# This job is still used for:
+# - Custom sections added after onboarding (via SectionsController#create)
+# - Manual "regenerate" triggers on individual sections
+#   (via SectionsController#generate_recommendations)
 class GenerateSectionRecommendationsJob < ApplicationJob
   include DockerVolumeHelper
 

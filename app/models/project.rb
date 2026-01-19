@@ -29,7 +29,7 @@ class Project < ApplicationRecord
   before_validation :generate_slug, on: :create
 
   # Onboarding
-  ONBOARDING_STEPS = %w[repository analyze sections].freeze
+  ONBOARDING_STEPS = %w[repository analyze sections generating].freeze
 
   scope :onboarding_incomplete, -> { where.not(onboarding_step: [ nil, "complete" ]) }
 

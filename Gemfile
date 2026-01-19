@@ -52,6 +52,9 @@ gem "jwt"
 # Markdown rendering
 gem "redcarpet"
 
+# Error tracking
+gem "rollbar"
+
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 

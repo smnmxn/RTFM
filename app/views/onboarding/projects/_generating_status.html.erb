@@ -1,0 +1,44 @@
+<% if project.all_recommendations_generated? %>
+  <div class="p-6 text-center"
+       data-controller="redirect"
+       data-redirect-url-value="<%= project_path(project) %>">
+    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
+      <%= heroicon "check", variant: :solid, options: { class: "w-8 h-8 text-green-600" } %>
+    </div>
+    <h3 class="text-lg font-semibold text-slate-900 mb-2">All done!</h3>
+    <p class="text-slate-600">Redirecting to your help centre...</p>
+  </div>
+<% else %>
+  <div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center">
+    <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2") %>
+    Generating article recommendations...
+  </div>
+
+  <div class="p-8 text-center">
+    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-100 mb-6">
+      <%= heroicon "sparkles", variant: :outline, options: { class: "w-10 h-10 text-brand-600 animate-pulse" } %>
+    </div>
+
+    <h3 class="text-xl font-semibold text-slate-900 mb-2">Creating your help centre</h3>
+    <p class="text-slate-600 mb-6 max-w-md mx-auto">
+      We're analyzing your codebase and generating personalized article recommendations for each section.
+    </p>
+
+    <% if progress[:total] > 0 %>
+      <div class="max-w-xs mx-auto">
+        <div class="flex justify-between text-sm text-slate-600 mb-2">
+          <span>Progress</span>
+          <span><%= progress[:done] %> of <%= progress[:total] %> sections</span>
+        </div>
+        <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+          <div class="h-full bg-gradient-brand rounded-full transition-all duration-500"
+               style="width: <%= progress[:percent] %>%"></div>
+        </div>
+      </div>
+    <% end %>
+
+    <p class="text-sm text-slate-500 mt-6">
+      This usually takes a minute or two. Please don't close this page.
+    </p>
+  </div>
+<% end %>

@@ -336,6 +336,7 @@ GEM
     reline (0.6.3)
       io-console (~> 0.5)
     rexml (3.4.4)
+    rollbar (3.7.0)
     rubocop (1.81.7)
       json (~> 2.3)
       language_server-protocol (~> 3.17.0.2)
@@ -487,6 +488,7 @@ DEPENDENCIES
   rails (~> 8.1.1)
   redcarpet
   redis
+  rollbar
   rubocop-rails-omakase
   selenium-webdriver
   sidekiq

@@ -29,15 +29,19 @@ if [ ! -f "$HTML_FILE" ]; then
 fi
 
 OUTPUT_PATH="/output/images/step_${STEP_NUM}.png"
+HTML_OUTPUT_PATH="/output/html/step_${STEP_NUM}.html"
 
-# Ensure output directory exists
-mkdir -p /output/images
+# Ensure output directories exist
+mkdir -p /output/images /output/html
+
+# Copy HTML source to output for debugging (preserved when KEEP_ANALYSIS_OUTPUT=true)
+cp "$HTML_FILE" "$HTML_OUTPUT_PATH"
 
 # Run the Node.js renderer
 node /render_mockup.js "$OUTPUT_PATH" "$HTML_FILE"
 
 if [ -f "$OUTPUT_PATH" ]; then
-    echo "Success: Image saved to $OUTPUT_PATH"
+    echo "Success: Image saved to $OUTPUT_PATH, HTML saved to $HTML_OUTPUT_PATH"
 else
     echo "Error: Failed to generate image"
     exit 1

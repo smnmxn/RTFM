@@ -5,8 +5,7 @@ RUN apt-get update && apt-get install -y \
     git \
     ca-certificates \
     chromium \
-    fonts-liberation \
-    fonts-noto-color-emoji \
+    fonts-recommended \
     libatk-bridge2.0-0 \
     libatk1.0-0 \
     libcups2 \
@@ -41,6 +40,7 @@ COPY --chmod=755 analyze_commit.sh /analyze_commit.sh
 COPY --chmod=755 generate_article.sh /generate_article.sh
 COPY --chmod=755 generate_project_recommendations.sh /generate_project_recommendations.sh
 COPY --chmod=755 generate_section_recommendations.sh /generate_section_recommendations.sh
+COPY --chmod=755 generate_all_recommendations.sh /generate_all_recommendations.sh
 COPY --chmod=755 suggest_sections.sh /suggest_sections.sh
 COPY --chmod=755 generate_css.sh /generate_css.sh
 COPY --chmod=755 render_mockup.sh /render_mockup.sh

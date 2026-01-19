@@ -46,6 +46,7 @@ Rails.application.routes.draw do
         patch :save_context
         get :sections
         post :complete_sections
+        get :generating
       end
     end
   end
