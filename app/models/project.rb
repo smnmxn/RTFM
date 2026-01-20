@@ -43,6 +43,26 @@ class Project < ApplicationRecord
   validates :accent_color, format: { with: /\A#[0-9a-fA-F]{6}\z/, message: "must be a valid hex color" }, allow_blank: true
   validates :title_text_color, format: { with: /\A#[0-9a-fA-F]{6}\z/, message: "must be a valid hex color" }, allow_blank: true
 
+  # Subdomain validations
+  RESERVED_SUBDOMAINS = %w[
+    www api admin app mail smtp ftp cdn assets static
+    help support docs blog status dashboard
+    dev staging test demo
+  ].freeze
+
+  validates :subdomain,
+    uniqueness: true,
+    allow_blank: true,
+    length: { minimum: 3, maximum: 63 },
+    format: {
+      with: /\A[a-z0-9]([a-z0-9-]*[a-z0-9])?\z/,
+      message: "only allows lowercase letters, numbers, and hyphens (cannot start or end with hyphen)"
+    }
+
+  validate :subdomain_not_reserved
+  validate :subdomain_not_conflicting_with_slugs
+  validate :slug_not_conflicting_with_subdomains
+
   before_validation :generate_slug, on: :create
 
   # Onboarding
@@ -143,6 +163,15 @@ class Project < ApplicationRecord
     help_centre_tagline.presence || "How can we help you?"
   end
 
+  # Subdomain helper methods
+  def effective_subdomain
+    subdomain.presence || slug
+  end
+
+  def self.find_by_subdomain!(subdomain)
+    find_by!(subdomain: subdomain)
+  end
+
   private
 
   def generate_slug
@@ -163,5 +192,26 @@ class Project < ApplicationRecord
     saved_change_to_analysis_status? ||
       saved_change_to_onboarding_step? ||
       saved_change_to_sections_generation_status?
+  end
+
+  def subdomain_not_reserved
+    return if subdomain.blank?
+    if RESERVED_SUBDOMAINS.include?(subdomain.downcase)
+      errors.add(:subdomain, "is reserved and cannot be used")
+    end
+  end
+
+  def subdomain_not_conflicting_with_slugs
+    return if subdomain.blank?
+    if Project.where.not(id: id).exists?(slug: subdomain)
+      errors.add(:subdomain, "conflicts with an existing project URL")
+    end
+  end
+
+  def slug_not_conflicting_with_subdomains
+    return if slug.blank?
+    if Project.where.not(id: id).exists?(subdomain: slug)
+      errors.add(:slug, "conflicts with an existing subdomain")
+    end
   end
 end

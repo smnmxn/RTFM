@@ -1,4 +1,17 @@
 module ApplicationHelper
+  # Help Centre URL helpers - uses subdomain when configured
+  def project_help_centre_url(project)
+    base_domain = Rails.application.config.x.base_domain
+    protocol = Rails.env.production? ? "https" : "http"
+    subdomain = project.effective_subdomain
+
+    "#{protocol}://#{subdomain}.#{base_domain}"
+  end
+
+  def project_help_centre_article_url(project, article)
+    "#{project_help_centre_url(project)}/article/#{article.id}"
+  end
+
   def markdown(text)
     return "" if text.blank?
 

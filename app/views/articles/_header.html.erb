@@ -31,7 +31,7 @@
           <%= button_to "Unpublish", unpublish_project_article_path(article.project, article),
               method: :post,
               class: "px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700 cursor-pointer" %>
-          <%= link_to "View Public", help_centre_article_path(project_slug: article.project.slug, id: article.id),
+          <%= link_to "View Public", project_help_centre_article_url(article.project, article),
               target: "_blank",
               class: "px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700" %>
         <% else %>

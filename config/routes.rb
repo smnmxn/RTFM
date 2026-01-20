@@ -117,7 +117,15 @@ Rails.application.routes.draw do
     end
   end
 
-  # Public Help Centre (unauthenticated)
+  # Subdomain-based Public Help Centre (e.g., acme.example.com)
+  constraints SubdomainConstraint do
+    root "help_centre#index", as: :subdomain_root
+    get "search", to: "help_centre#search", as: :subdomain_help_centre_search
+    get "section/:section_slug", to: "help_centre#section", as: :subdomain_help_centre_section
+    get "article/:id", to: "help_centre#show", as: :subdomain_help_centre_article
+  end
+
+  # Path-based Public Help Centre (e.g., example.com/my-project/help)
   scope "/:project_slug" do
     get "help", to: "help_centre#index", as: :help_centre
     get "help/search", to: "help_centre#search", as: :help_centre_search

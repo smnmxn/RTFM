@@ -12,7 +12,7 @@
           <%= link_to @project.github_repo, "https://github.com/#{@project.github_repo}", target: "_blank", class: "text-sm text-gray-500 hover:text-indigo-600" %>
         </div>
         <div class="flex items-center gap-4">
-          <%= link_to help_centre_path(project_slug: @project.slug), target: "_blank", class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-indigo-600 hover:text-indigo-800 font-medium" do %>
+          <%= link_to project_help_centre_url(@project), target: "_blank", class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-indigo-600 hover:text-indigo-800 font-medium" do %>
             View Help Centre
             <%= heroicon "arrow-top-right-on-square", options: { class: "w-4 h-4" } %>
           <% end %>

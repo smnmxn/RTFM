@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_19_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_20_114413) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -118,12 +118,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_19_180000) do
     t.datetime "sections_generation_started_at"
     t.string "sections_generation_status"
     t.string "slug"
+    t.string "subdomain"
     t.datetime "updated_at", null: false
     t.json "user_context"
     t.integer "user_id", null: false
     t.index ["github_app_installation_id"], name: "index_projects_on_github_app_installation_id"
     t.index ["onboarding_step"], name: "index_projects_on_onboarding_step"
     t.index ["slug"], name: "index_projects_on_slug", unique: true
+    t.index ["subdomain"], name: "index_projects_on_subdomain", unique: true, where: "(subdomain IS NOT NULL)"
     t.index ["user_id"], name: "index_projects_on_user_id"
   end
 

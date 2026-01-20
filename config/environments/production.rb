@@ -78,12 +78,18 @@ Rails.application.configure do
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]
 
+  # Subdomain support for public help centres
+  config.x.base_domain = ENV.fetch("BASE_DOMAIN", "example.com")
+
   # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
-  #
+  # Dynamically configure hosts based on BASE_DOMAIN to support subdomains
+  if ENV["BASE_DOMAIN"].present?
+    config.hosts = [
+      ENV["BASE_DOMAIN"],
+      /.*\.#{Regexp.escape(ENV["BASE_DOMAIN"])}/
+    ]
+  end
+
   # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end

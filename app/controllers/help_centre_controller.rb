@@ -51,6 +51,18 @@ class HelpCentreController < ApplicationController
   private
 
   def set_project
-    @project = Project.find_by!(slug: params[:project_slug])
+    @project = if subdomain_request?
+      Project.find_by_subdomain!(current_subdomain)
+    else
+      Project.find_by!(slug: params[:project_slug])
+    end
+  end
+
+  def subdomain_request?
+    current_subdomain.present?
+  end
+
+  def current_subdomain
+    @current_subdomain ||= SubdomainConstraint.extract_subdomain(request)
   end
 end

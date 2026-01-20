@@ -10,7 +10,7 @@
       </p>
 
       <div class="mt-8">
-        <%= link_to help_centre_path(project_slug: project.slug),
+        <%= link_to project_help_centre_url(project),
             target: "_blank",
             class: "inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700" do %>
 View Help Centre
@@ -21,7 +21,7 @@ View Help Centre
       <div class="mt-8 p-4 bg-gray-50 rounded-lg">
         <p class="text-sm text-gray-500">
           <strong class="text-gray-700">Share your Help Centre:</strong><br>
-          <code class="mt-1 block text-indigo-600 break-all"><%= help_centre_url(project_slug: project.slug) %></code>
+          <code class="mt-1 block text-indigo-600 break-all"><%= project_help_centre_url(project) %></code>
         </p>
       </div>
     </div>

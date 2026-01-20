@@ -359,11 +359,17 @@ class ProjectsController < ApplicationController
 
   # Branding settings
   def update_branding
+    # Handle subdomain separately (it's a direct column, not part of branding JSON)
+    subdomain_value = params[:project]&.delete(:subdomain)
+
     # Merge new values into existing branding (similar to save_context pattern)
     current_branding = @project.branding || {}
     new_branding = current_branding.merge(branding_params.to_h.stringify_keys)
 
-    if @project.update(branding: new_branding)
+    update_attrs = { branding: new_branding }
+    update_attrs[:subdomain] = subdomain_value.presence if params[:project]&.key?(:subdomain) || subdomain_value.present?
+
+    if @project.update(update_attrs)
       @project.reload
       respond_to do |format|
         format.turbo_stream do

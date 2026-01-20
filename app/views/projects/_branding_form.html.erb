@@ -67,6 +67,29 @@
         </div>
       </div>
 
+      <!-- Custom Subdomain -->
+      <div class="p-4 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-900 mb-1">Custom Subdomain</label>
+          <p class="text-sm text-gray-500 mb-2">
+            Access your help centre at a custom subdomain.
+          </p>
+          <div class="flex items-center gap-2">
+            <%= form.text_field :subdomain,
+                value: project.subdomain,
+                placeholder: project.slug,
+                pattern: "[a-z0-9][a-z0-9-]*[a-z0-9]",
+                minlength: 3,
+                maxlength: 63,
+                class: "flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-mono" %>
+            <span class="text-gray-500 text-sm">.<%= Rails.application.config.x.base_domain || "example.com" %></span>
+          </div>
+          <p class="text-xs text-gray-400 mt-1">
+            Leave blank to use your project slug: <code class="bg-gray-100 px-1 py-0.5 rounded"><%= project.slug %></code>
+          </p>
+        </div>
+      </div>
+
       <!-- Colors -->
       <div class="p-4 space-y-4">
         <div class="grid grid-cols-3 gap-4">
