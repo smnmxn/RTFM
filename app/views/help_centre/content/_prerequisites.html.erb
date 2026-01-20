@@ -1,9 +1,15 @@
 <% if article.prerequisites.any? %>
   <div id="prerequisites" class="mb-8 scroll-mt-24">
-    <h2 class="text-lg font-semibold text-gray-900 mb-3">Prerequisites</h2>
-    <ul class="list-disc list-inside space-y-2 text-gray-700">
+    <h2 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+      <%= heroicon "clipboard-document-check", options: { class: "w-5 h-5 text-indigo-600" } %>
+      Prerequisites
+    </h2>
+    <ul class="space-y-2">
       <% article.prerequisites.each do |prereq| %>
-        <li><%= prereq %></li>
+        <li class="flex items-start gap-2 text-gray-700">
+          <%= heroicon "check", options: { class: "w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" } %>
+          <span><%= prereq %></span>
+        </li>
       <% end %>
     </ul>
   </div>
