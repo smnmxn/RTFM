@@ -13,25 +13,32 @@
 
       <div class="flex items-center gap-2">
         <% if article.unreviewed? %>
-          <%= button_to "Reject",
-              reject_article_project_path(article.project, article_id: article.id),
-              method: :post,
-              form: { data: { turbo_stream: true } },
-              class: "px-3 py-1.5 text-sm border border-red-300 text-red-700 font-medium rounded-lg hover:bg-red-50 cursor-pointer" %>
-
-          <% if article.generation_completed? || article.generation_failed? %>
-            <%= button_to "Regenerate",
-                regenerate_project_article_path(article.project, article),
+          <% if article.generation_running? %>
+            <span class="inline-flex items-center gap-2 text-sm text-gray-500">
+              <%= spinner_icon(size: "h-4 w-4") %>
+              Generating...
+            </span>
+          <% else %>
+            <%= button_to "Reject",
+                reject_article_project_path(article.project, article_id: article.id),
                 method: :post,
-                form: { data: { turbo_stream: true, turbo_confirm: "Regenerate this article? Current content will be replaced." } },
-                class: "px-3 py-1.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 cursor-pointer" %>
-          <% end %>
+                form: { data: { turbo_stream: true } },
+                class: "px-3 py-1.5 text-sm border border-red-300 text-red-700 font-medium rounded-lg hover:bg-red-50 cursor-pointer" %>
 
-          <%= button_to "Approve",
-              approve_article_project_path(article.project, article_id: article.id),
-              method: :post,
-              form: { data: { turbo_stream: true } },
-              class: "px-4 py-1.5 text-sm bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 cursor-pointer" %>
+            <% if article.generation_completed? || article.generation_failed? %>
+              <%= button_to "Regenerate",
+                  regenerate_project_article_path(article.project, article),
+                  method: :post,
+                  form: { data: { turbo_stream: true, turbo_confirm: "Regenerate this article? Current content will be replaced." } },
+                  class: "px-3 py-1.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 cursor-pointer" %>
+            <% end %>
+
+            <%= button_to "Approve",
+                approve_article_project_path(article.project, article_id: article.id),
+                method: :post,
+                form: { data: { turbo_stream: true } },
+                class: "px-4 py-1.5 text-sm bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 cursor-pointer" %>
+          <% end %>
         <% elsif article.approved? %>
 <span class="inline-flex items-center gap-1.5 text-sm">
             <%= heroicon "check-circle", variant: :solid, options: { class: "h-5 w-5 text-green-500" } %>
