@@ -27,7 +27,8 @@ class GenerateArticleJob < ApplicationJob
           article.update!(
             structured_content: result[:structured_content],
             content: generate_markdown_from_structured(result[:structured_content]),
-            generation_status: :generation_completed
+            generation_status: :generation_completed,
+            regeneration_guidance: nil  # Clear guidance after successful generation
           )
 
           # Attach generated images to StepImage records
@@ -41,7 +42,8 @@ class GenerateArticleJob < ApplicationJob
         else
           article.update!(
             content: result[:content],
-            generation_status: :generation_completed
+            generation_status: :generation_completed,
+            regeneration_guidance: nil  # Clear guidance after successful generation
           )
         end
         Rails.logger.info "[GenerateArticleJob] Article generation completed for article #{article.id}"
@@ -293,6 +295,8 @@ class GenerateArticleJob < ApplicationJob
   end
 
   def build_context_json(project, recommendation, source_update)
+    article = recommendation.article
+
     context = {
       project_name: project.name,
       project_overview: project.project_overview,
@@ -302,6 +306,11 @@ class GenerateArticleJob < ApplicationJob
       article_description: recommendation.description,
       article_justification: recommendation.justification
     }
+
+    # Include regeneration guidance if present (user-provided instructions for improvement)
+    if article&.regeneration_guidance.present?
+      context[:regeneration_guidance] = article.regeneration_guidance
+    end
 
     if source_update.present?
       context[:source_pr_number] = source_update.pull_request_number

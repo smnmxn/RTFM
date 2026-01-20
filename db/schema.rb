@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_20_144534) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_20_160034) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -50,6 +50,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_20_144534) do
     t.integer "project_id", null: false
     t.datetime "published_at"
     t.integer "recommendation_id", null: false
+    t.text "regeneration_guidance"
     t.string "review_status", default: "unreviewed", null: false
     t.datetime "reviewed_at"
     t.integer "section_id"

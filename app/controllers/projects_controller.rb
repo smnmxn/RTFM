@@ -38,12 +38,12 @@ class ProjectsController < ApplicationController
 
     # Articles tab data
     @articles_sections = @project.sections.visible.ordered
-    @uncategorized_articles_count = @project.articles.for_help_centre.where(section: nil).count
-    @total_published_articles = @project.articles.for_help_centre.count
+    @uncategorized_articles_count = @project.articles.for_editor.where(section: nil).count
+    @total_published_articles = @project.articles.for_editor.count
 
     # Article preselection (from ?article=:id param, used by help centre Edit link)
     if params[:article].present?
-      @preselected_article = @project.articles.for_help_centre.find_by(id: params[:article])
+      @preselected_article = @project.articles.for_editor.find_by(id: params[:article])
       @preselected_section = @preselected_article&.section
       @active_tab = "articles" if @preselected_article
     end
@@ -177,9 +177,9 @@ class ProjectsController < ApplicationController
     @section_id = params[:section_id]
 
     @articles = if @section_id == "uncategorized"
-      @project.articles.for_help_centre.where(section: nil).ordered
+      @project.articles.for_editor.where(section: nil).ordered
     elsif @section_id.present?
-      @project.sections.find(@section_id).articles.for_help_centre.ordered
+      @project.sections.find(@section_id).articles.for_editor.ordered
     else
       []
     end
@@ -193,7 +193,7 @@ class ProjectsController < ApplicationController
   end
 
   def select_articles_article
-    @article = @project.articles.for_help_centre.find(params[:article_id])
+    @article = @project.articles.for_editor.find(params[:article_id])
     @sections = @project.sections.visible.ordered
 
     if turbo_frame_request?

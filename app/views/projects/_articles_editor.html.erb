@@ -98,13 +98,10 @@
 
       <!-- Regenerate (draft articles only) -->
       <% if article.draft? && article.generation_completed? %>
-        <%= button_to regenerate_project_article_path(project, article),
-            method: :post,
-            form: { data: { turbo_stream: true, turbo_confirm: "Regenerate this article? Current content will be replaced and it will return to your inbox for approval." } },
-            class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 text-gray-700 cursor-pointer" do %>
-          <%= heroicon "arrow-path", options: { class: "w-4 h-4" } %>
-          Regenerate
-        <% end %>
+        <%= render "articles/regenerate_modal",
+            article: article,
+            button_classes: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 text-gray-700 cursor-pointer",
+            show_icon: true %>
       <% end %>
 
       <!-- Duplicate -->

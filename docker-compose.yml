@@ -43,7 +43,7 @@ services:
 
   css:
     <<: *app
-    command: bash -c "bundle install && bin/rails tailwindcss:watch"
+    command: bash -c "bundle install && bin/rails tailwindcss:watch -- --poll"
     depends_on:
       - web
 

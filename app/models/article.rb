@@ -31,6 +31,7 @@ class Article < ApplicationRecord
   scope :drafts, -> { where(status: :draft).order(created_at: :desc) }
   scope :needs_review, -> { where(review_status: :unreviewed, generation_status: :generation_completed) }
   scope :for_help_centre, -> { approved.published }
+  scope :for_editor, -> { approved }
   scope :ordered, -> { order(:position) }
 
   def publish!
@@ -89,7 +90,7 @@ class Article < ApplicationRecord
   def move_to_section!(new_section)
     raise ArgumentError, "Section is required" if new_section.nil?
 
-    new_position = new_section.articles.for_help_centre.maximum(:position).to_i + 1
+    new_position = new_section.articles.for_editor.maximum(:position).to_i + 1
     update!(section: new_section, position: new_position)
   end
 
@@ -120,7 +121,7 @@ class Article < ApplicationRecord
   def reorder!(new_position)
     return if new_position == position
 
-    articles_scope = section.articles.for_help_centre
+    articles_scope = section.articles.for_editor
 
     if new_position > position
       # Moving down: decrement positions of articles between old and new position

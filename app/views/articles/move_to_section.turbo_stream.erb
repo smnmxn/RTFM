@@ -2,7 +2,7 @@
 <%= turbo_stream.replace "articles-sections-list" do %>
   <div id="articles-sections-list" class="flex-1 overflow-y-auto">
     <% @article.project.sections.visible.ordered.each do |section| %>
-      <% article_count = section.articles.for_help_centre.count %>
+      <% article_count = section.articles.for_editor.count %>
       <%= render "projects/articles_section_row",
           section: section,
           article_count: article_count,
@@ -10,7 +10,7 @@
           project: @article.project %>
     <% end %>
 
-    <% uncategorized_count = @article.project.articles.for_help_centre.where(section: nil).count %>
+    <% uncategorized_count = @article.project.articles.for_editor.where(section: nil).count %>
     <% if uncategorized_count > 0 %>
       <div class="border-t border-gray-200 mt-2 pt-2">
         <%= render "projects/articles_section_row",
@@ -26,7 +26,7 @@
 <%# Update article list to show articles from the new section %>
 <%= turbo_stream.replace "articles-list-frame" do %>
   <% new_section = @new_section_id == "uncategorized" ? nil : @article.project.sections.find_by(id: @new_section_id) %>
-  <% articles = new_section ? new_section.articles.for_help_centre.ordered : @article.project.articles.for_help_centre.where(section: nil).ordered %>
+  <% articles = new_section ? new_section.articles.for_editor.ordered : @article.project.articles.for_editor.where(section: nil).ordered %>
   <%= turbo_frame_tag "articles-list-frame" do %>
     <%= render "projects/articles_list",
         articles: articles,

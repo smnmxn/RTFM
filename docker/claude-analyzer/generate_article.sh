@@ -91,6 +91,17 @@ This file contains:
 - article_description: A brief description of what the guide should cover
 - article_justification: Why this guide is needed (based on recent code changes)
 - source_pr_title/content: Information about the PR that triggered this recommendation (if available)
+- regeneration_guidance: (optional) User-provided instructions for improving this regeneration
+
+STEP 1.5: Check if there is regeneration guidance from the user.
+If the context.json contains a "regeneration_guidance" field with content, you MUST carefully follow these instructions while generating the article. The user is providing this guidance because a previous generation didn't meet their expectations. Treat their feedback as high-priority requirements.
+
+Examples of regeneration guidance and how to handle them:
+- "Make the tone more friendly and conversational" -> Adjust your writing style accordingly
+- "Focus more on the mobile app workflow" -> Emphasize mobile-specific steps and screenshots
+- "Include a step about configuring notifications" -> Add this specific step
+- "The images don't match our UI - use accurate mockups" -> Pay extra attention to mockup accuracy
+- "Fix the prerequisites section" -> Update the prerequisites appropriately
 
 STEP 2: If a diff file exists, read it to understand the specific code changes:
 /input/diff.patch

@@ -26,6 +26,7 @@ RUN install -m 0755 -d /etc/apt/keyrings && \
     apt-get install --no-install-recommends -y docker-ce-cli && \
     rm -rf /var/lib/apt/lists/*
 
+
 # Rails app lives here
 WORKDIR /rails
 

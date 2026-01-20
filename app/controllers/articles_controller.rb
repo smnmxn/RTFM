@@ -13,6 +13,13 @@ class ArticlesController < ApplicationController
       return
     end
 
+    # Extract guidance from JSON body or form params
+    guidance = if request.content_type&.include?("application/json")
+      JSON.parse(request.body.read).dig("regeneration_guidance")
+    else
+      params[:regeneration_guidance]
+    end
+
     # Clear old images before regenerating
     @article.step_images.destroy_all
 
@@ -20,7 +27,8 @@ class ArticlesController < ApplicationController
       generation_status: :generation_running,
       review_status: :unreviewed,
       content: "Regenerating article...",
-      structured_content: nil
+      structured_content: nil,
+      regeneration_guidance: guidance.presence
     )
     GenerateArticleJob.perform_later(article_id: @article.id)
 
@@ -135,7 +143,7 @@ class ArticlesController < ApplicationController
 
   def reorder
     direction = params[:direction]
-    articles_scope = @article.section ? @article.section.articles.for_help_centre.ordered : @article.project.articles.for_help_centre.where(section: nil).ordered
+    articles_scope = @article.section ? @article.section.articles.for_editor.ordered : @article.project.articles.for_editor.where(section: nil).ordered
     articles = articles_scope.to_a
     current_index = articles.index(@article)
 

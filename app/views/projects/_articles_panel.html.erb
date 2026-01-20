@@ -12,7 +12,7 @@
 
 <!-- Three Column Layout -->
 <%# Use preselected article/section if provided, otherwise default to first %>
-<% active_section = local_assigns[:preselected_section] || sections.find { |s| s.articles.for_help_centre.any? } %>
+<% active_section = local_assigns[:preselected_section] || sections.find { |s| s.articles.for_editor.any? } %>
 <% is_uncategorized = local_assigns[:preselected_article] && local_assigns[:preselected_section].nil? %>
 
 <div class="flex-1 flex overflow-hidden">
@@ -23,7 +23,7 @@
     </div>
     <div id="articles-sections-list" class="flex-1 overflow-y-auto">
       <% sections.each do |section| %>
-        <% article_count = section.articles.for_help_centre.count %>
+        <% article_count = section.articles.for_editor.count %>
         <%= render "projects/articles_section_row",
             section: section,
             article_count: article_count,
@@ -52,11 +52,11 @@
   <!-- Middle: Articles List -->
   <div class="w-72 flex-shrink-0 border-r border-gray-200 flex flex-col bg-white">
     <% if is_uncategorized %>
-      <% initial_articles = project.articles.for_help_centre.where(section: nil).ordered %>
+      <% initial_articles = project.articles.for_editor.where(section: nil).ordered %>
     <% elsif active_section %>
-      <% initial_articles = active_section.articles.for_help_centre.ordered %>
+      <% initial_articles = active_section.articles.for_editor.ordered %>
     <% else %>
-      <% initial_articles = uncategorized_count > 0 ? project.articles.for_help_centre.where(section: nil).ordered : [] %>
+      <% initial_articles = uncategorized_count > 0 ? project.articles.for_editor.where(section: nil).ordered : [] %>
     <% end %>
 
     <%= turbo_frame_tag "articles-list-frame" do %>

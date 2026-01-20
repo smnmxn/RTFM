@@ -26,11 +26,9 @@
                 class: "px-3 py-1.5 text-sm border border-red-300 text-red-700 font-medium rounded-lg hover:bg-red-50 cursor-pointer" %>
 
             <% if article.generation_completed? || article.generation_failed? %>
-              <%= button_to "Regenerate",
-                  regenerate_project_article_path(article.project, article),
-                  method: :post,
-                  form: { data: { turbo_stream: true, turbo_confirm: "Regenerate this article? Current content will be replaced." } },
-                  class: "px-3 py-1.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 cursor-pointer" %>
+              <%= render "articles/regenerate_modal",
+                  article: article,
+                  button_classes: "px-3 py-1.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 cursor-pointer" %>
             <% end %>
 
             <%= button_to "Approve",
