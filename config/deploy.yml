@@ -7,10 +7,10 @@ image: togetherlyhub/supportpages
 # Deploy to these servers.
 servers:
   web:
-    - app.supportpages.io
+    - host.supportpages.io
   worker:
     hosts:
-      - app.supportpages.io
+      - host.supportpages.io
     cmd: bundle exec sidekiq -C config/sidekiq.yml
     options:
       volume:
@@ -18,7 +18,7 @@ servers:
         - /usr/libexec/docker/cli-plugins:/usr/libexec/docker/cli-plugins:ro
         - /var/supportpages/analysis:/var/supportpages/analysis
       group-add:
-        - "988"  # Docker group GID on host
+        - "988" # Docker group GID on host
 
 # Enable SSL with Cloudflare Origin Certificate for wildcard subdomain support.
 # Using an SSL proxy like this requires turning on config.assume_ssl and config.force_ssl in production.rb!
@@ -93,7 +93,6 @@ volumes:
 # version inside the asset_path.
 asset_path: /rails/public/assets
 
-
 # Configure the image builder.
 builder:
   arch: arm64
@@ -116,7 +115,7 @@ builder:
 accessories:
   db:
     image: postgres:16-alpine
-    host: app.supportpages.io
+    host: host.supportpages.io
     port: "127.0.0.1:5432:5432"
     env:
       clear:
@@ -128,7 +127,7 @@ accessories:
       - data:/var/lib/postgresql/data
   redis:
     image: redis:7-alpine
-    host: app.supportpages.io
+    host: host.supportpages.io
     port: "127.0.0.1:6379:6379"
     directories:
       - data:/data
