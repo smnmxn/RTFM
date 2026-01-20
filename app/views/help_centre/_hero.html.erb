@@ -9,7 +9,7 @@
 
     <!-- Search Bar -->
     <div class="max-w-2xl mx-auto">
-      <%= form_with url: help_centre_search_path(project_slug: @project.slug),
+      <%= form_with url: help_centre_search_path,
                     method: :get,
                     data: { turbo: false } do %>
         <div class="relative">

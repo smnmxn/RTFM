@@ -9,7 +9,7 @@ module ApplicationHelper
   end
 
   def project_help_centre_article_url(project, article)
-    "#{project_help_centre_url(project)}/article/#{article.id}"
+    "#{project_help_centre_url(project)}/#{article.section.slug}/#{article.slug}"
   end
 
   def markdown(text)

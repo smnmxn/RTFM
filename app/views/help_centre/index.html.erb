@@ -32,20 +32,8 @@
     </section>
   <% end %>
 
-  <!-- Uncategorized Articles -->
-  <% if @uncategorized_articles.any? %>
-    <section>
-      <h2 class="text-xl font-semibold text-gray-900 mb-6">Other articles</h2>
-      <div class="grid gap-4 md:grid-cols-2">
-        <% @uncategorized_articles.each do |article| %>
-          <%= render "help_centre/article_card", article: article %>
-        <% end %>
-      </div>
-    </section>
-  <% end %>
-
   <!-- Empty State -->
-  <% if sections_with_articles.empty? && @uncategorized_articles.empty? %>
+  <% if sections_with_articles.empty? %>
     <div class="text-center py-16 bg-white rounded-xl shadow-sm">
 <%= heroicon "book-open", options: { class: "mx-auto w-12 h-12 text-gray-300 mb-4" } %>
       <p class="text-gray-500 text-lg">No articles published yet.</p>

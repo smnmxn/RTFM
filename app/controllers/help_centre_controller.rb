@@ -11,9 +11,6 @@ class HelpCentreController < ApplicationController
       .ordered
       .includes(articles: :recommendation)
 
-    # Articles without a section
-    @uncategorized_articles = @project.articles.published.where(section: nil)
-
     # Popular/recent articles for the homepage
     @popular_articles = @project.articles.published.order(published_at: :desc).limit(6)
   end
@@ -32,15 +29,11 @@ class HelpCentreController < ApplicationController
   end
 
   def show
-    @article = @project.articles.published.find(params[:id])
-    @section = @article.section
+    @section = @project.sections.visible.find_by!(slug: params[:section_slug])
+    @article = @section.articles.published.find_by!(slug: params[:article_slug])
 
     # Related articles from the same section
-    @related_articles = if @section
-      @section.articles.published.where.not(id: @article.id).limit(3)
-    else
-      []
-    end
+    @related_articles = @section.articles.published.where.not(id: @article.id).limit(3)
   end
 
   def section
@@ -51,21 +44,9 @@ class HelpCentreController < ApplicationController
   private
 
   def set_project
-    @project = if subdomain_request?
-      Project.find_by(subdomain: current_subdomain)
-    else
-      Project.find_by!(slug: params[:project_slug])
-    end
-
+    subdomain = SubdomainConstraint.extract_subdomain(request)
+    @project = Project.find_by(subdomain: subdomain)
     redirect_to_app if @project.nil?
-  end
-
-  def subdomain_request?
-    current_subdomain.present?
-  end
-
-  def current_subdomain
-    @current_subdomain ||= SubdomainConstraint.extract_subdomain(request)
   end
 
   def redirect_to_app

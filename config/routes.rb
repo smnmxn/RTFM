@@ -36,7 +36,7 @@ Rails.application.routes.draw do
 
   # Onboarding Wizard
   namespace :onboarding do
-    resources :projects, only: [ :new, :create ] do
+    resources :projects, only: [ :new, :create ], param: :slug do
       member do
         get :repository
         post :connect
@@ -52,7 +52,7 @@ Rails.application.routes.draw do
   end
 
   # Projects
-  resources :projects, only: [ :new, :create, :show, :destroy ] do
+  resources :projects, only: [ :new, :create, :show, :destroy ], param: :slug do
     collection do
       get :repositories
     end
@@ -117,20 +117,13 @@ Rails.application.routes.draw do
     end
   end
 
-  # Subdomain-based Public Help Centre (e.g., acme.example.com)
+  # Public Help Centre (subdomain-based, e.g., acme.supportpages.io)
+  # URL structure: /:section_slug/:article_slug
   constraints SubdomainConstraint do
-    root "help_centre#index", as: :subdomain_root
-    get "search", to: "help_centre#search", as: :subdomain_help_centre_search
-    get "section/:section_slug", to: "help_centre#section", as: :subdomain_help_centre_section
-    get "article/:id", to: "help_centre#show", as: :subdomain_help_centre_article
-  end
-
-  # Path-based Public Help Centre (e.g., example.com/my-project/help)
-  scope "/:project_slug" do
-    get "help", to: "help_centre#index", as: :help_centre
-    get "help/search", to: "help_centre#search", as: :help_centre_search
-    get "help/section/:section_slug", to: "help_centre#section", as: :help_centre_section
-    get "help/:id", to: "help_centre#show", as: :help_centre_article
+    root "help_centre#index", as: :help_centre
+    get "search", to: "help_centre#search", as: :help_centre_search
+    get ":section_slug/:article_slug", to: "help_centre#show", as: :help_centre_article
+    get ":section_slug", to: "help_centre#section", as: :help_centre_section
   end
 
   # Root

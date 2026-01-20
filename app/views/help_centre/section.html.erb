@@ -4,7 +4,7 @@
   <!-- Breadcrumb -->
   <nav class="text-sm">
     <%= link_to "Help Centre",
-        help_centre_path(project_slug: @project.slug),
+        help_centre_path(),
         class: "text-brand hover:opacity-80 transition-colors" %>
     <span class="mx-2 text-gray-400">/</span>
     <span class="text-gray-600"><%= @section.name %></span>

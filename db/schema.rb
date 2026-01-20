@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_20_114413) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_20_132106) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -53,6 +53,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_20_114413) do
     t.string "review_status", default: "unreviewed", null: false
     t.datetime "reviewed_at"
     t.integer "section_id"
+    t.string "slug"
     t.string "status", default: "draft", null: false
     t.json "structured_content"
     t.string "title", null: false
@@ -61,6 +62,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_20_114413) do
     t.index ["recommendation_id"], name: "index_articles_on_recommendation_id"
     t.index ["review_status"], name: "index_articles_on_review_status"
     t.index ["section_id", "position"], name: "index_articles_on_section_id_and_position"
+    t.index ["section_id", "slug"], name: "index_articles_on_section_id_and_slug", unique: true
     t.index ["section_id"], name: "index_articles_on_section_id"
   end
 

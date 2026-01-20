@@ -4,7 +4,7 @@
   <!-- Breadcrumb -->
   <nav class="text-sm">
     <%= link_to "Help Centre",
-        help_centre_path(project_slug: @project.slug),
+        help_centre_path(),
         class: "text-brand hover:opacity-80" %>
     <span class="mx-2 text-gray-400">/</span>
     <span class="text-gray-600">Search</span>
@@ -12,7 +12,7 @@
 
   <!-- Search Form -->
   <div class="max-w-2xl">
-    <%= form_with url: help_centre_search_path(project_slug: @project.slug),
+    <%= form_with url: help_centre_search_path(),
                   method: :get,
                   data: { turbo: false } do %>
       <div class="relative">
@@ -49,7 +49,7 @@
           <p class="text-gray-500 text-lg">No articles found matching your search.</p>
           <p class="text-gray-400 text-sm mt-2">Try different keywords or browse our categories.</p>
           <%= link_to "Browse all categories",
-              help_centre_path(project_slug: @project.slug),
+              help_centre_path(),
               class: "inline-block mt-4 text-brand hover:opacity-80 font-medium" %>
         </div>
       <% end %>

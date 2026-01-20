@@ -2,6 +2,10 @@ class Project < ApplicationRecord
   include Turbo::Broadcastable
 
   belongs_to :user
+
+  def to_param
+    slug
+  end
   belongs_to :github_app_installation, optional: true
 
   # Turbo refresh broadcasts - auto-refresh all subscribed streams on any update

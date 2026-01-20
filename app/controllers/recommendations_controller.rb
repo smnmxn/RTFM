@@ -42,10 +42,7 @@ class RecommendationsController < ApplicationController
   private
 
   def set_recommendation
-    @recommendation = current_user.projects
-      .joins(:recommendations)
-      .where(recommendations: { id: params[:id] })
-      .first!
-      .recommendations.find(params[:id])
+    @project = current_user.projects.find_by!(slug: params[:project_slug])
+    @recommendation = @project.recommendations.find(params[:id])
   end
 end

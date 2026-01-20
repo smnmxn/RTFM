@@ -3,7 +3,7 @@ class Article < ApplicationRecord
 
   belongs_to :project
   belongs_to :recommendation
-  belongs_to :section, optional: true
+  belongs_to :section
   has_many :step_images, dependent: :destroy
 
   # Turbo refresh broadcasts
@@ -23,6 +23,9 @@ class Article < ApplicationRecord
   }, default: :unreviewed
 
   validates :title, presence: true
+  validates :slug, presence: true, uniqueness: { scope: :section_id }
+
+  before_validation :generate_slug, on: :create
 
   scope :published, -> { where(status: :published).order(published_at: :desc) }
   scope :drafts, -> { where(status: :draft).order(created_at: :desc) }
@@ -84,11 +87,9 @@ class Article < ApplicationRecord
 
   # Move article to a different section
   def move_to_section!(new_section)
-    new_position = if new_section
-      new_section.articles.for_help_centre.maximum(:position).to_i + 1
-    else
-      project.articles.for_help_centre.where(section: nil).maximum(:position).to_i + 1
-    end
+    raise ArgumentError, "Section is required" if new_section.nil?
+
+    new_position = new_section.articles.for_help_centre.maximum(:position).to_i + 1
     update!(section: new_section, position: new_position)
   end
 
@@ -119,7 +120,7 @@ class Article < ApplicationRecord
   def reorder!(new_position)
     return if new_position == position
 
-    articles_scope = section ? section.articles.for_help_centre : project.articles.for_help_centre.where(section: nil)
+    articles_scope = section.articles.for_help_centre
 
     if new_position > position
       # Moving down: decrement positions of articles between old and new position
@@ -133,6 +134,21 @@ class Article < ApplicationRecord
   end
 
   private
+
+  def generate_slug
+    return if slug.present? || title.blank? || section.blank?
+
+    base_slug = title.parameterize
+    candidate = base_slug
+    counter = 2
+
+    while section.articles.where(slug: candidate).where.not(id: id).exists?
+      candidate = "#{base_slug}-#{counter}"
+      counter += 1
+    end
+
+    self.slug = candidate
+  end
 
   def broadcast_refreshes
     # Only broadcast for relevant status changes

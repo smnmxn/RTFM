@@ -337,7 +337,7 @@ class ProjectsController < ApplicationController
       @connected_repos = current_user.projects.pluck(:github_repo)
 
       # Pass through onboarding project if in wizard
-      @onboarding_project = current_user.projects.find_by(id: params[:onboarding_project_id]) if params[:onboarding_project_id].present?
+      @onboarding_project = current_user.projects.find_by(slug: params[:onboarding_project_slug]) if params[:onboarding_project_slug].present?
 
       render partial: "projects/repository_list"
     else
@@ -434,7 +434,7 @@ class ProjectsController < ApplicationController
   private
 
   def set_project
-    @project = current_user.projects.find(params[:id])
+    @project = current_user.projects.find_by!(slug: params[:slug])
   end
 
   def branding_params

@@ -220,11 +220,8 @@ class ArticlesController < ApplicationController
   private
 
   def set_article
-    @article = current_user.projects
-      .joins(:articles)
-      .where(articles: { id: params[:id] })
-      .first!
-      .articles.find(params[:id])
+    @project = current_user.projects.find_by!(slug: params[:project_slug])
+    @article = @project.articles.find(params[:id])
   end
 
   def update_nested_field(content, path, value)

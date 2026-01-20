@@ -41,11 +41,11 @@ export default class extends Controller {
   }
 
   async refreshArticlesList() {
-    const projectId = this.element.dataset.projectId
-    if (!projectId) return
+    const projectSlug = this.element.dataset.projectSlug
+    if (!projectSlug) return
 
     try {
-      const response = await fetch(`/projects/${projectId}/inbox_articles`, {
+      const response = await fetch(`/projects/${projectSlug}/inbox_articles`, {
         headers: {
           "Accept": "text/vnd.turbo-stream.html",
           "X-Requested-With": "XMLHttpRequest"

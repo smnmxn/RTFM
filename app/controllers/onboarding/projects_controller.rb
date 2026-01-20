@@ -138,7 +138,7 @@ module Onboarding
     private
 
     def set_project
-      @project = current_user.projects.find(params[:id])
+      @project = current_user.projects.find_by!(slug: params[:slug])
     end
 
     def create_and_start_onboarding

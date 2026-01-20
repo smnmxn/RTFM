@@ -127,7 +127,7 @@ class SectionsController < ApplicationController
   private
 
   def set_project
-    @project = current_user.projects.find(params[:project_id])
+    @project = current_user.projects.find_by!(slug: params[:project_slug])
   end
 
   def set_section

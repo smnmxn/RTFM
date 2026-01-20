@@ -14,7 +14,7 @@
             <% @section.articles.published.limit(8).each do |art| %>
               <li>
                 <%= link_to art.title.truncate(35),
-                    help_centre_article_path(project_slug: @project.slug, id: art.id),
+                    help_centre_article_path(section_slug: art.section.slug, article_slug: art.slug),
                     class: art.id == @article.id ?
                       "text-brand font-medium" :
                       "text-gray-600 hover:text-brand transition-colors" %>
@@ -23,7 +23,7 @@
             <% if @section.articles.published.count > 8 %>
               <li>
                 <%= link_to "View all...",
-                    help_centre_section_path(project_slug: @project.slug, section_slug: @section.slug),
+                    help_centre_section_path(section_slug: @section.slug),
                     class: "text-brand hover:opacity-80 text-xs font-medium" %>
               </li>
             <% end %>
@@ -40,12 +40,12 @@
       <div class="px-6 py-5 border-b border-gray-200">
         <nav class="text-sm mb-3">
           <%= link_to "Help Centre",
-              help_centre_path(project_slug: @project.slug),
+              help_centre_path,
               class: "text-brand hover:opacity-80 transition-colors" %>
           <% if @section %>
             <span class="mx-2 text-gray-400">/</span>
             <%= link_to @section.name,
-                help_centre_section_path(project_slug: @project.slug, section_slug: @section.slug),
+                help_centre_section_path(section_slug: @section.slug),
                 class: "text-brand hover:opacity-80 transition-colors" %>
           <% end %>
         </nav>

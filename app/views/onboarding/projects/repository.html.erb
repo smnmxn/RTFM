@@ -7,7 +7,7 @@
   </div>
 
   <%= turbo_frame_tag "repository_list",
-      src: repositories_projects_path(onboarding_project_id: @project.id),
+      src: repositories_projects_path(onboarding_project_slug: @project.slug),
       loading: :lazy do %>
     <div class="p-8 text-center">
       <div class="h-8 w-8 rounded-full border-2 border-slate-200 border-t-violet-600 animate-spin mx-auto"></div>
