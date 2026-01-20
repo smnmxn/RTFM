@@ -1,8 +1,8 @@
-<%= tag.div id: dom_id(article, :row),
-    data: { controller: "inbox-row", inbox_row_selected_value: selected },
+<%= tag.div id: "article_#{article.id}_row",
+    data: { controller: "inbox-row", inbox_row_selected_value: selected, article_id: article.id },
     class: "group" do %>
-  <%= link_to select_article_project_path(article.project, article_id: article.id),
-      data: { turbo_frame: "inbox-editor", action: "click->inbox-row#select" },
+  <%= link_to select_article_project_path(article.project, article_id: article.id, selected: "article_#{article.id}"),
+      data: { turbo_frame: "inbox-editor", turbo_action: "replace", action: "click->inbox-row#select" },
       class: class_names(
         "block px-4 py-3 hover:bg-gray-50 transition-colors border-l-4",
         "border-indigo-500 bg-indigo-50" => selected,

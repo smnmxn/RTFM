@@ -64,6 +64,7 @@ Rails.application.routes.draw do
       post "pull_requests/:pr_number/analyze", to: "projects#analyze_pull_request", as: :analyze_pull_request
       post "commits/:commit_sha/analyze", to: "projects#analyze_commit", as: :analyze_commit
       # Inbox actions (article review)
+      get :inbox_articles
       get :select_article
       post :approve_article
       post :reject_article

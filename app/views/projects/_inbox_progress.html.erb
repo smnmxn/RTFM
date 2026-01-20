@@ -1,0 +1,20 @@
+<div id="inbox-progress" class="flex items-center gap-3">
+  <% total = project.articles.where(generation_status: :generation_completed).count %>
+  <% approved = project.articles.approved.count %>
+  <% pending_recs = project.recommendations.pending.count %>
+  <% pending_articles_count = project.articles.where(review_status: :unreviewed, generation_status: :generation_completed).count %>
+  <span class="text-sm text-gray-600">
+    <% if pending_recs > 0 || pending_articles_count > 0 %>
+      <%= pending_recs + pending_articles_count %> pending
+    <% elsif total > 0 %>
+      <%= approved %>/<%= total %> approved
+    <% else %>
+      No items
+    <% end %>
+  </span>
+  <% if total > 0 %>
+    <div class="w-24 bg-gray-200 rounded-full h-2">
+      <div class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width: <%= (approved * 100 / total) %>%"></div>
+    </div>
+  <% end %>
+</div>

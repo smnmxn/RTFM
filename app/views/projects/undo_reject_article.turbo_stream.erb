@@ -1,5 +1,5 @@
 <%# Update the article row to show unreviewed status and select it %>
-<%= turbo_stream.replace dom_id(@article, :row) do %>
+<%= turbo_stream.replace "article_#{@article.id}_row" do %>
   <%= render "projects/article_row",
       article: @article,
       selected: true %>
@@ -12,22 +12,5 @@
 
 <%# Update progress %>
 <%= turbo_stream.replace "inbox-progress" do %>
-  <% total = @project.articles.where(generation_status: :generation_completed).count %>
-  <% approved = @project.articles.approved.count %>
-  <% pending_recs = @pending_recommendations.count %>
-  <% pending_articles = @inbox_articles.where(generation_status: :generation_completed).count %>
-  <span class="text-sm text-gray-600">
-    <% if pending_recs > 0 || pending_articles > 0 %>
-      <%= pending_recs + pending_articles %> pending
-    <% elsif total > 0 %>
-      <%= approved %>/<%= total %> approved
-    <% else %>
-      No items
-    <% end %>
-  </span>
-  <% if total > 0 %>
-    <div class="w-24 bg-gray-200 rounded-full h-2">
-      <div class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width: <%= (approved * 100 / total) %>%"></div>
-    </div>
-  <% end %>
+  <%= render "projects/inbox_progress", project: @project %>
 <% end %>

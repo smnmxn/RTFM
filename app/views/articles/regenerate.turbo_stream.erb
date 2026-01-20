@@ -4,7 +4,7 @@
     locals: { article: @article } %>
 
 <%# Update article row in inbox list (if present) %>
-<%= turbo_stream.replace dom_id(@article, :row),
+<%= turbo_stream.replace "article_#{@article.id}_row",
     partial: "projects/article_row",
     locals: { article: @article, selected: true } %>
 

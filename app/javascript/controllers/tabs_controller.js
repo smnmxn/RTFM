@@ -20,7 +20,9 @@ export default class extends Controller {
   switch(event) {
     event.preventDefault()
     const tabName = event.currentTarget.dataset.tabsName
+    const previousTab = this.activeValue
     this.activeValue = tabName
+    this._previousTab = previousTab
   }
 
   activeValueChanged() {
@@ -28,6 +30,14 @@ export default class extends Controller {
     if (this.hashValue) {
       history.replaceState(null, null, `#${this.activeValue}`)
     }
+
+    // Dispatch event so panels can refresh their content if needed
+    this.dispatch("changed", {
+      detail: {
+        tab: this.activeValue,
+        previousTab: this._previousTab
+      }
+    })
   }
 
   showActiveTab() {

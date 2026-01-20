@@ -17,9 +17,22 @@ class ProjectsController < ApplicationController
       .includes(:section)
       .order(created_at: :asc)
 
-    # Select first completed article (higher priority), or first recommendation
-    @selected_article = @inbox_articles.where(generation_status: :generation_completed).first
-    @selected_recommendation = @selected_article.nil? ? @pending_recommendations.first : nil
+    # Use URL param for selection persistence, fallback to first item
+    @selected_article = nil
+    @selected_recommendation = nil
+
+    if params[:selected].present?
+      type, id = params[:selected].split("_", 2)
+      if type == "article" && id.present?
+        @selected_article = @inbox_articles.find_by(id: id)
+      elsif type == "recommendation" && id.present?
+        @selected_recommendation = @pending_recommendations.find_by(id: id)
+      end
+    end
+
+    # Fallback to default selection if param invalid or not provided
+    @selected_article ||= @inbox_articles.where(generation_status: :generation_completed).first
+    @selected_recommendation ||= @selected_article.nil? ? @pending_recommendations.first : nil
 
     @inbox_empty = @pending_recommendations.empty? && @inbox_articles.empty?
 
@@ -27,6 +40,22 @@ class ProjectsController < ApplicationController
     @articles_sections = @project.sections.visible.ordered
     @uncategorized_articles_count = @project.articles.for_help_centre.where(section: nil).count
     @total_published_articles = @project.articles.for_help_centre.count
+  end
+
+  def inbox_articles
+    @inbox_articles = @project.articles
+      .where(review_status: :unreviewed)
+      .where(generation_status: [:generation_running, :generation_completed])
+      .includes(:section)
+      .order(created_at: :asc)
+
+    @pending_recommendations = @project.recommendations.pending
+      .includes(:section)
+      .order(created_at: :asc)
+
+    respond_to do |format|
+      format.turbo_stream
+    end
   end
 
   def select_article

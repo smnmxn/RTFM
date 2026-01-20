@@ -19,6 +19,9 @@ export default class extends Controller {
     this.formTarget.classList.remove("hidden")
     this.inputTarget.focus()
     this.inputTarget.select()
+
+    // Notify inbox controller that editing has started
+    this.dispatch("editstart", { bubbles: true })
   }
 
   async save() {
@@ -69,6 +72,9 @@ export default class extends Controller {
     this.inputTarget.value = this.originalValue
     this.formTarget.classList.add("hidden")
     this.displayTarget.classList.remove("hidden")
+
+    // Notify inbox controller that editing has stopped
+    this.dispatch("editend", { bubbles: true })
   }
 
   handleKeydown(event) {

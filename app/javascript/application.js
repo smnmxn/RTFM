@@ -18,6 +18,7 @@ import ContextualQuestionsController from "controllers/contextual_questions_cont
 import FeedbackController from "controllers/feedback_controller"
 import StepImageController from "controllers/step_image_controller"
 import LogoUploadController from "controllers/logo_upload_controller"
+import InboxController from "controllers/inbox_controller"
 
 application.register("inline-edit", InlineEditController)
 application.register("array-edit", ArrayEditController)
@@ -32,3 +33,4 @@ application.register("contextual-questions", ContextualQuestionsController)
 application.register("feedback", FeedbackController)
 application.register("step-image", StepImageController)
 application.register("logo-upload", LogoUploadController)
+application.register("inbox", InboxController)

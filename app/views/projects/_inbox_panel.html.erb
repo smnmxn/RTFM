@@ -1,104 +1,118 @@
-<!-- Generation Status Banner -->
-<% if project.sections_being_generated? %>
-<div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center flex-shrink-0">
-    <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2") %>
-    Generating topic suggestions...
-  </div>
-<% elsif project.sections.accepted.where(recommendations_status: "running").any? %>
-  <div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center flex-shrink-0">
-    <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2") %>
-    Generating article suggestions...
-  </div>
-<% end %>
+<div data-controller="inbox"
+     data-project-id="<%= project.id %>"
+     data-inbox-selected-type-value="<%= selected_article ? 'article' : (selected_recommendation ? 'recommendation' : '') %>"
+     data-inbox-selected-id-value="<%= selected_article&.id || selected_recommendation&.id %>"
+     class="flex-1 flex flex-col min-h-0">
 
-<!-- Inbox Header -->
-<div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
-  <div class="flex items-center justify-between">
-    <div>
-      <h2 class="text-xl font-semibold text-gray-900">Inbox</h2>
-      <p class="mt-1 text-sm text-gray-500">
-        Review suggestions and articles for your Help Centre.
-      </p>
+  <!-- Hidden container for broadcast notifications -->
+  <div id="inbox-notifications" data-inbox-target="notificationContainer" class="hidden"></div>
+
+  <!-- Generation Status Banner -->
+  <% if project.sections_being_generated? %>
+    <div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center flex-shrink-0">
+      <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2") %>
+      Generating topic suggestions...
     </div>
-    <div id="inbox-progress" class="flex items-center gap-3">
-      <% total = project.articles.where(generation_status: :generation_completed).count %>
-      <% approved = project.articles.approved.count %>
-      <% pending_recs = pending_recommendations.count %>
-      <% pending_articles_count = inbox_articles.where(generation_status: :generation_completed).count %>
-      <span class="text-sm text-gray-600">
-        <% if pending_recs > 0 || pending_articles_count > 0 %>
-          <%= pending_recs + pending_articles_count %> pending
-        <% elsif total > 0 %>
-          <%= approved %>/<%= total %> approved
-        <% else %>
-          No items
-        <% end %>
-      </span>
-      <% if total > 0 %>
-        <div class="w-24 bg-gray-200 rounded-full h-2">
-          <div class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width: <%= (approved * 100 / total) %>%"></div>
-        </div>
-      <% end %>
+  <% elsif project.sections.accepted.where(recommendations_status: "running").any? %>
+    <div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center flex-shrink-0">
+      <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2") %>
+      Generating article suggestions...
     </div>
+  <% end %>
+
+  <!-- Update Notification Banner (hidden by default) -->
+  <div data-inbox-target="notification"
+       class="hidden px-4 py-2 bg-blue-50 border-b border-blue-100 text-blue-700 text-sm flex items-center justify-between flex-shrink-0">
+    <span class="flex items-center gap-2">
+      <%= heroicon "arrow-path", options: { class: "h-4 w-4" } %>
+      Article content has been updated.
+    </span>
+    <button data-action="inbox#refreshEditor"
+            class="text-blue-600 hover:text-blue-800 font-medium underline">
+      Refresh
+    </button>
   </div>
-</div>
 
-<!-- Split View -->
-<div class="flex-1 flex overflow-hidden">
-  <!-- Left Panel: Inbox List -->
-  <div class="w-80 flex-shrink-0 border-r border-gray-200 flex flex-col bg-gray-50">
-    <div id="inbox-list" class="flex-1 overflow-y-auto">
-      <% if inbox_empty %>
-<div class="p-6 text-center text-gray-500">
-          <%= heroicon "check", options: { class: "mx-auto h-12 w-12 text-gray-300" } %>
-          <p class="mt-2 text-sm font-medium text-gray-900">All done!</p>
-          <p class="mt-1 text-xs text-gray-400">No pending items to review.</p>
-        </div>
-      <% else %>
-        <!-- Articles Section (higher priority, always render wrapper for turbo stream updates) -->
-        <div id="articles-section">
-          <% if inbox_articles.any? %>
-            <div class="px-4 py-2 bg-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wide sticky top-0">
-              Articles (<%= inbox_articles.count %>)
-            </div>
-            <div id="articles-list" class="divide-y divide-gray-200">
-              <% inbox_articles.each do |article| %>
-                <%= render "projects/article_row",
-                    article: article,
-                    selected: selected_article&.id == article.id %>
-              <% end %>
-            </div>
-          <% end %>
-        </div>
-
-        <!-- Suggestions Section -->
-        <%= render "projects/recommendations_section",
-            pending_recommendations: pending_recommendations,
-            selected_recommendation_id: (selected_recommendation&.id if selected_article.nil?) %>
-      <% end %>
+  <!-- Inbox Header -->
+  <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-900">Inbox</h2>
+        <p class="mt-1 text-sm text-gray-500">
+          Review suggestions and articles for your Help Centre.
+        </p>
+      </div>
+      <%= render "projects/inbox_progress", project: project %>
     </div>
   </div>
 
-  <!-- Right Panel: Editor -->
-  <div class="flex-1 flex flex-col overflow-hidden bg-gray-50">
-    <% if inbox_empty %>
-      <%= render "projects/all_reviewed", project: project %>
-    <% elsif selected_article %>
-      <%= render "projects/article_editor", article: selected_article %>
-    <% elsif selected_recommendation %>
-      <%= render "projects/recommendation_editor", recommendation: selected_recommendation %>
-    <% else %>
-      <%= turbo_frame_tag "inbox-editor", class: "h-full block" do %>
-<div class="h-full flex items-center justify-center bg-white">
-          <div class="text-center px-6">
-            <%= heroicon "document-text", options: { class: "mx-auto h-16 w-16 text-gray-300" } %>
-            <h3 class="mt-4 text-lg font-medium text-gray-900">Select an item</h3>
-            <p class="mt-2 text-sm text-gray-500">
-              Choose an item from the list to review.
-            </p>
+  <!-- Split View -->
+  <div class="flex-1 flex overflow-hidden">
+    <!-- Left Panel: Inbox List -->
+    <div class="w-80 flex-shrink-0 border-r border-gray-200 flex flex-col bg-gray-50">
+      <div id="inbox-list" class="flex-1 overflow-y-auto">
+        <% if inbox_empty %>
+          <!-- Empty state message -->
+          <div id="inbox-empty-state" class="p-6 text-center text-gray-500">
+            <%= heroicon "check", options: { class: "mx-auto h-12 w-12 text-gray-300" } %>
+            <p class="mt-2 text-sm font-medium text-gray-900">All done!</p>
+            <p class="mt-1 text-xs text-gray-400">No pending items to review.</p>
           </div>
-        </div>
+          <!-- Always render section wrappers for broadcast targets -->
+          <div id="articles-section" class="hidden"></div>
+          <div id="recommendations-section" class="hidden"></div>
+        <% else %>
+          <!-- Empty state (hidden, for broadcast updates) -->
+          <div id="inbox-empty-state" class="hidden p-6 text-center text-gray-500">
+            <%= heroicon "check", options: { class: "mx-auto h-12 w-12 text-gray-300" } %>
+            <p class="mt-2 text-sm font-medium text-gray-900">All done!</p>
+            <p class="mt-1 text-xs text-gray-400">No pending items to review.</p>
+          </div>
+          <!-- Articles Section (higher priority) -->
+          <div id="articles-section">
+            <% if inbox_articles.any? %>
+              <div class="px-4 py-2 bg-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wide sticky top-0">
+                Articles (<%= inbox_articles.count %>)
+              </div>
+              <div id="articles-list" class="divide-y divide-gray-200">
+                <% inbox_articles.each do |article| %>
+                  <%= render "projects/article_row",
+                      article: article,
+                      selected: selected_article&.id == article.id %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+
+          <!-- Suggestions Section -->
+          <%= render "projects/recommendations_section",
+              pending_recommendations: pending_recommendations,
+              selected_recommendation_id: (selected_recommendation&.id if selected_article.nil?) %>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Right Panel: Editor -->
+    <div data-inbox-target="editor" class="flex-1 flex flex-col overflow-hidden bg-gray-50">
+      <% if inbox_empty %>
+        <%= render "projects/all_reviewed", project: project %>
+      <% elsif selected_article %>
+        <%= render "projects/article_editor", article: selected_article %>
+      <% elsif selected_recommendation %>
+        <%= render "projects/recommendation_editor", recommendation: selected_recommendation %>
+      <% else %>
+        <%= turbo_frame_tag "inbox-editor", class: "h-full block" do %>
+          <div class="h-full flex items-center justify-center bg-white">
+            <div class="text-center px-6">
+              <%= heroicon "document-text", options: { class: "mx-auto h-16 w-16 text-gray-300" } %>
+              <h3 class="mt-4 text-lg font-medium text-gray-900">Select an item</h3>
+              <p class="mt-2 text-sm text-gray-500">
+                Choose an item from the list to review.
+              </p>
+            </div>
+          </div>
+        <% end %>
       <% end %>
-    <% end %>
+    </div>
   </div>
 </div>

@@ -135,7 +135,57 @@ class Article < ApplicationRecord
   private
 
   def broadcast_refreshes
+    # Only broadcast for relevant status changes
+    return unless saved_change_to_generation_status? || saved_change_to_review_status?
+
+    # Determine if article is entering inbox (wasn't unreviewed before, now is)
+    entering_inbox = saved_change_to_review_status? &&
+                     review_status_before_last_save != "unreviewed" &&
+                     unreviewed?
+
+    # For inbox: add or update the article row
+    if unreviewed? && (generation_running? || generation_completed?)
+      if entering_inbox
+        # Article is newly entering inbox (e.g., regeneration from Articles tab)
+        # Use full refresh since we may need to update empty state, section headers, etc.
+        Turbo::StreamsChannel.broadcast_refresh_to([project, :inbox])
+      else
+        # Article already in inbox - just update the row
+        broadcast_replace_to(
+          [project, :inbox],
+          target: "article_#{id}_row",
+          partial: "projects/article_row",
+          locals: { article: self, selected: false }
+        )
+
+        # Update progress counter
+        broadcast_replace_to(
+          [project, :inbox],
+          target: "inbox-progress",
+          partial: "projects/inbox_progress",
+          locals: { project: project }
+        )
+      end
+    else
+      # Article leaving inbox or other status change - update progress
+      broadcast_replace_to(
+        [project, :inbox],
+        target: "inbox-progress",
+        partial: "projects/inbox_progress",
+        locals: { project: project }
+      )
+    end
+
+    # Notify any user viewing this article that it has been updated
+    if generation_completed? && saved_change_to_generation_status?
+      broadcast_append_to(
+        [project, :inbox],
+        target: "inbox-notifications",
+        html: "<div data-article-updated-id=\"#{id}\" data-status=\"#{generation_status}\" class=\"hidden\"></div>"
+      )
+    end
+
+    # Keep articles tab refresh for now (less critical)
     Turbo::StreamsChannel.broadcast_refresh_to([project, :articles])
-    Turbo::StreamsChannel.broadcast_refresh_to([project, :inbox])
   end
 end
