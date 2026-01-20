@@ -5,6 +5,7 @@ set -e
 # - ANTHROPIC_API_KEY: Anthropic API key for Claude Code
 # - GITHUB_REPO: owner/repo format
 # - GITHUB_TOKEN: GitHub access token
+# - CLAUDE_MODEL: Claude model to use (e.g., claude-sonnet-4-5)
 
 # Required input files (mounted at /input):
 # - context.json: Project context and article details
@@ -63,9 +64,13 @@ fi
 echo "Running Claude Code article generation..."
 echo "API Key set: ${ANTHROPIC_API_KEY:+yes}"
 
+# Use default model if not specified
+CLAUDE_MODEL="${CLAUDE_MODEL:-claude-sonnet-4-5}"
+echo "Using model: ${CLAUDE_MODEL}"
+
 # Run Claude and capture exit status (don't fail on error due to set -e)
 set +e
-cat <<'PROMPT' | claude -p --output-format json --allowedTools "Read,Glob,Grep,Bash" > /tmp/claude_output.json
+cat <<'PROMPT' | claude -p --model "${CLAUDE_MODEL}" --output-format json --allowedTools "Read,Glob,Grep,Bash" > /tmp/claude_output.json
 You are a technical writer creating a how-to guide article for end users of a software product.
 
 STEP 1: Read the context file to understand what article you need to write:

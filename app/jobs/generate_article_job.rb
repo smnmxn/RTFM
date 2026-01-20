@@ -114,6 +114,7 @@ class GenerateArticleJob < ApplicationJob
         "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
         "-e", "GITHUB_TOKEN=#{github_token}",
         "-e", "GITHUB_REPO=#{project.github_repo}",
+        "-e", "CLAUDE_MODEL=#{project.claude_model_id}",
         "-v", "#{host_volume_path(input_dir)}:/input:ro",
         "-v", "#{host_volume_path(output_dir)}:/output",
         "--network", "host",

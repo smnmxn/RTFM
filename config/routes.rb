@@ -82,6 +82,8 @@ Rails.application.routes.draw do
       patch :update_branding
       post :upload_logo
       delete :remove_logo
+      # AI settings
+      patch :update_ai_settings
     end
     resources :recommendations, only: [] do
       member do

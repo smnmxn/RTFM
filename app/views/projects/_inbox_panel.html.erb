@@ -69,20 +69,9 @@
             <p class="mt-1 text-xs text-gray-400">No pending items to review.</p>
           </div>
           <!-- Articles Section (higher priority) -->
-          <div id="articles-section">
-            <% if inbox_articles.any? %>
-              <div class="px-4 py-2 bg-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wide sticky top-0">
-                Articles (<%= inbox_articles.count %>)
-              </div>
-              <div id="articles-list" class="divide-y divide-gray-200">
-                <% inbox_articles.each do |article| %>
-                  <%= render "projects/article_row",
-                      article: article,
-                      selected: selected_article&.id == article.id %>
-                <% end %>
-              </div>
-            <% end %>
-          </div>
+          <%= render "projects/inbox_articles_section",
+              inbox_articles: inbox_articles,
+              selected_article_id: selected_article&.id %>
 
           <!-- Suggestions Section -->
           <%= render "projects/recommendations_section",

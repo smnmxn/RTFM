@@ -1,0 +1,16 @@
+<div id="articles-section">
+  <% if inbox_articles.any? %>
+    <div class="px-4 py-2 bg-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wide sticky top-0">
+      Articles (<%= inbox_articles.count %>)
+    </div>
+    <div id="articles-list" class="divide-y divide-gray-200">
+      <% inbox_articles.each do |article| %>
+        <%# Support both selected_article_id (initial render) and next_item (turbo_stream actions) %>
+        <% is_selected = local_assigns[:next_item] == article || local_assigns[:selected_article_id] == article.id %>
+        <%= render "projects/article_row",
+            article: article,
+            selected: is_selected %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

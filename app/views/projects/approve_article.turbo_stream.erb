@@ -1,23 +1,8 @@
 <%# Update articles section (update count, or render empty wrapper if no articles) %>
-<% if @inbox_articles.empty? %>
-  <%= turbo_stream.replace "articles-section" do %>
-    <div id="articles-section"></div>
-  <% end %>
-<% else %>
-  <%= turbo_stream.replace "articles-section" do %>
-    <div id="articles-section">
-      <div class="px-4 py-2 bg-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wide sticky top-0">
-        Articles (<%= @inbox_articles.count %>)
-      </div>
-      <div id="articles-list" class="divide-y divide-gray-200">
-        <% @inbox_articles.each do |article| %>
-          <%= render "projects/article_row",
-              article: article,
-              selected: @next_item == article %>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
+<%= turbo_stream.replace "articles-section" do %>
+  <%= render "projects/inbox_articles_section",
+      inbox_articles: @inbox_articles,
+      next_item: @next_item %>
 <% end %>
 
 <%# Update recommendations section to show selection %>

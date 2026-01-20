@@ -36,6 +36,19 @@ class Project < ApplicationRecord
     :help_centre_tagline
   ], coder: JSON
 
+  # AI settings
+  store :ai_settings, accessors: [
+    :claude_model
+  ], coder: JSON
+
+  CLAUDE_MODELS = [
+    [ "Claude Opus 4.5 (Most capable)", "claude-opus-4-5" ],
+    [ "Claude Sonnet 4.5 (Balanced)", "claude-sonnet-4-5" ],
+    [ "Claude Haiku 4.5 (Fastest)", "claude-haiku-4-5" ]
+  ].freeze
+
+  DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-5".freeze
+
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true, format: { with: /\A[a-z0-9-]+\z/, message: "only allows lowercase letters, numbers, and hyphens" }
   validates :github_repo, presence: true,
@@ -165,6 +178,11 @@ class Project < ApplicationRecord
 
   def help_centre_tagline_or_default
     help_centre_tagline.presence || "How can we help you?"
+  end
+
+  # AI settings helper methods
+  def claude_model_id
+    claude_model.presence || DEFAULT_CLAUDE_MODEL
   end
 
   # Subdomain helper methods

@@ -426,6 +426,37 @@ class ProjectsController < ApplicationController
     end
   end
 
+  # AI settings
+  def update_ai_settings
+    current_ai_settings = @project.ai_settings || {}
+    new_ai_settings = current_ai_settings.merge(ai_settings_params.to_h.stringify_keys)
+
+    if @project.update(ai_settings: new_ai_settings)
+      @project.reload
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            "ai_settings_form",
+            partial: "projects/ai_settings_form",
+            locals: { project: @project, saved: true }
+          )
+        end
+        format.html { redirect_to project_path(@project, anchor: "settings"), notice: "AI settings updated." }
+      end
+    else
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            "ai_settings_form",
+            partial: "projects/ai_settings_form",
+            locals: { project: @project, saved: false }
+          )
+        end
+        format.html { redirect_to project_path(@project, anchor: "settings"), alert: "Failed to update AI settings." }
+      end
+    end
+  end
+
   def destroy
     @project.destroy
     redirect_to dashboard_path, notice: "Project '#{@project.name}' disconnected."
@@ -439,6 +470,10 @@ class ProjectsController < ApplicationController
 
   def branding_params
     params.require(:project).permit(:primary_color, :accent_color, :title_text_color, :help_centre_title, :help_centre_tagline)
+  end
+
+  def ai_settings_params
+    params.require(:project).permit(:claude_model)
   end
 
   def load_inbox_items
