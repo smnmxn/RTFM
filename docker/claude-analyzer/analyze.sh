@@ -32,7 +32,7 @@ echo "${COMMIT_SHA}" > /output/commit_sha.txt
 echo "Running Claude Code analysis..."
 echo "API Key set: ${ANTHROPIC_API_KEY:+yes}"
 
-cat <<'PROMPT' | claude -p --allowedTools "Read,Glob,Grep,Bash" > /output/analysis_raw.txt
+cat <<'PROMPT' | claude -p --output-format json --allowedTools "Read,Glob,Grep,Bash" > /tmp/claude_main_output.json
 Analyze this codebase and provide:
 
 1. FIRST, output a CLAUDE.md-style project summary in markdown format including:
@@ -123,6 +123,12 @@ Make questions SPECIFIC to this codebase - reference actual components, APIs, or
 Be thorough but concise. Focus on what would help someone understand this codebase quickly.
 PROMPT
 
+# Extract the result content from JSON output
+jq -r 'if .result then (if .result | type == "string" then .result else (.result // "") end) else "" end' /tmp/claude_main_output.json > /output/analysis_raw.txt
+
+# Extract usage data for main analysis
+jq '{session_id, total_cost_usd, duration_ms, num_turns, usage}' /tmp/claude_main_output.json > /output/usage_main.json
+
 # Parse the output into separate files
 echo "Parsing analysis output..."
 
@@ -146,7 +152,7 @@ echo "Main analysis complete!"
 # Extract style context for UI mockup generation
 echo "Extracting style context..."
 
-cat <<'STYLE_PROMPT' | claude -p --allowedTools "Read,Glob,Grep" > /output/style_context.json
+cat <<'STYLE_PROMPT' | claude -p --output-format json --allowedTools "Read,Glob,Grep" > /tmp/claude_style_output.json
 Analyze this codebase and extract a comprehensive visual style context for generating accurate UI mockups.
 
 STEP 1: Determine the application type:
@@ -279,6 +285,12 @@ CRITICAL: Use ACTUAL values extracted from the codebase.
 
 Output ONLY valid JSON, no markdown or commentary.
 STYLE_PROMPT
+
+# Extract the result content from JSON output
+jq -r 'if .result then (if .result | type == "string" then .result else (.result // "") end) else "" end' /tmp/claude_style_output.json > /output/style_context.json
+
+# Extract usage data for style analysis
+jq '{session_id, total_cost_usd, duration_ms, num_turns, usage}' /tmp/claude_style_output.json > /output/usage_style.json
 
 echo "Style context extraction complete!"
 

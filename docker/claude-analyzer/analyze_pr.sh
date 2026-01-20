@@ -46,7 +46,7 @@ echo "Analyzing PR #${PR_NUMBER}"
 echo "Running Claude Code analysis..."
 echo "API Key set: ${ANTHROPIC_API_KEY:+yes}"
 
-cat <<'PROMPT' | claude -p --allowedTools "Read,Glob,Grep,Bash" > /output/analysis_raw.txt
+cat <<'PROMPT' | claude -p --output-format json --allowedTools "Read,Glob,Grep,Bash" > /tmp/claude_output.json
 You are a changelog writer for a software product. Your job is to convert technical code changes into user-facing release notes that help users understand what's new and how it benefits them.
 
 STEP 1: Read the project context file to understand what this project does:
@@ -101,6 +101,12 @@ Remember: Your audience is END USERS, not developers. Focus on VALUE and BENEFIT
 PROMPT
 
 echo "Parsing analysis output..."
+
+# Extract the result content from JSON output
+jq -r 'if .result then (if .result | type == "string" then .result else (.result // "") end) else "" end' /tmp/claude_output.json > /output/analysis_raw.txt
+
+# Extract usage data for tracking
+jq '{session_id, total_cost_usd, duration_ms, num_turns, usage}' /tmp/claude_output.json > /output/usage.json
 
 # Check if analysis produced output
 if [ ! -s /output/analysis_raw.txt ]; then

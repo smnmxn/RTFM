@@ -5,6 +5,7 @@ require "timeout"
 
 class AnalyzeCodebaseJob < ApplicationJob
   include DockerVolumeHelper
+  include ClaudeUsageTracker
 
   queue_as :analysis
 
@@ -102,6 +103,28 @@ class AnalyzeCodebaseJob < ApplicationJob
         files = Dir.entries(output_dir) - [".", ".."]
         Rails.logger.info "[AnalyzeCodebaseJob] Output files: #{files.join(', ')}"
       end
+
+      # Record usage for main analysis
+      record_claude_usage(
+        output_dir: output_dir,
+        job_type: "analyze_codebase",
+        project: project,
+        metadata: { phase: "main_analysis" },
+        success: status.success?,
+        error_message: status.success? ? nil : stderr,
+        usage_filename: "usage_main.json"
+      )
+
+      # Record usage for style analysis
+      record_claude_usage(
+        output_dir: output_dir,
+        job_type: "analyze_codebase",
+        project: project,
+        metadata: { phase: "style_analysis" },
+        success: status.success?,
+        error_message: status.success? ? nil : stderr,
+        usage_filename: "usage_style.json"
+      )
 
       unless status.success?
         Rails.logger.error "[AnalyzeCodebaseJob] Docker command failed with exit status #{status.exitstatus}"

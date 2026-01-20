@@ -6,6 +6,7 @@ require "timeout"
 
 class AnalyzePullRequestJob < ApplicationJob
   include DockerVolumeHelper
+  include ClaudeUsageTracker
 
   queue_as :analysis
 
@@ -120,6 +121,16 @@ class AnalyzePullRequestJob < ApplicationJob
         files = Dir.entries(output_dir) - [ ".", ".." ]
         Rails.logger.info "[AnalyzePullRequestJob] Output files: #{files.join(', ')}"
       end
+
+      # Record usage regardless of success/failure
+      record_claude_usage(
+        output_dir: output_dir,
+        job_type: "analyze_pr",
+        project: project,
+        metadata: { update_id: update.id, pull_request_number: update.pull_request_number },
+        success: status.success?,
+        error_message: status.success? ? nil : stderr
+      )
 
       if status.success?
         title = read_output_file(output_dir, "title.txt")

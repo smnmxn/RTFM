@@ -16,6 +16,7 @@ require "timeout"
 #   (via SectionsController#generate_recommendations)
 class GenerateSectionRecommendationsJob < ApplicationJob
   include DockerVolumeHelper
+  include ClaudeUsageTracker
 
   queue_as :analysis
 
@@ -98,6 +99,16 @@ class GenerateSectionRecommendationsJob < ApplicationJob
       Rails.logger.info "[GenerateSectionRecommendationsJob] Exit status: #{status.exitstatus}"
       Rails.logger.debug "[GenerateSectionRecommendationsJob] Stdout: #{stdout[0..500]}" if stdout.present?
       Rails.logger.debug "[GenerateSectionRecommendationsJob] Stderr: #{stderr[0..500]}" if stderr.present?
+
+      # Record usage regardless of success/failure
+      record_claude_usage(
+        output_dir: output_dir,
+        job_type: "generate_section_recommendations",
+        project: project,
+        metadata: { section_id: section.id, section_slug: section.slug },
+        success: status.success?,
+        error_message: status.success? ? nil : stderr
+      )
 
       if status.success?
         json_content = read_output_file(output_dir, "recommendations.json")

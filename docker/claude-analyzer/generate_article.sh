@@ -63,7 +63,9 @@ fi
 echo "Running Claude Code article generation..."
 echo "API Key set: ${ANTHROPIC_API_KEY:+yes}"
 
-cat <<'PROMPT' | claude -p --allowedTools "Read,Glob,Grep,Bash" > /output/article_raw.json
+# Run Claude and capture exit status (don't fail on error due to set -e)
+set +e
+cat <<'PROMPT' | claude -p --output-format json --allowedTools "Read,Glob,Grep,Bash" > /tmp/claude_output.json
 You are a technical writer creating a how-to guide article for end users of a software product.
 
 STEP 1: Read the context file to understand what article you need to write:
@@ -368,11 +370,31 @@ CONTENT GUIDELINES:
 
 Output ONLY the JSON object. No markdown, no commentary, no explanations - just valid JSON.
 PROMPT
+CLAUDE_EXIT_STATUS=$?
+set -e
+
+echo "Claude exit status: ${CLAUDE_EXIT_STATUS}"
+
+# Check if output file exists and has content
+if [ ! -f /tmp/claude_output.json ] || [ ! -s /tmp/claude_output.json ]; then
+    echo "ERROR: Claude did not produce output"
+    exit 1
+fi
 
 echo "Article generation complete!"
 
-# Move the output to the expected location
-mv /output/article_raw.json /output/article.json
+# Debug: show the structure of the JSON output
+echo "JSON output structure:"
+jq 'keys' /tmp/claude_output.json 2>/dev/null || echo "Failed to parse JSON"
+echo "Result type:"
+jq -r '.result | type' /tmp/claude_output.json 2>/dev/null || echo "No result field"
+
+# Extract the result content from JSON output
+# The result field contains the text output from Claude
+jq -r '.result // empty' /tmp/claude_output.json > /output/article.json
+
+# Extract usage data for tracking
+jq '{session_id, total_cost_usd, duration_ms, num_turns, usage}' /tmp/claude_output.json > /output/usage.json
 
 # Log size for debugging
 echo "Article length: $(wc -c < /output/article.json) chars"

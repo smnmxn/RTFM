@@ -1,8 +1,9 @@
 FROM node:20-slim
 
-# Install git, Chromium, fonts, and dependencies for Puppeteer
+# Install git, jq, Chromium, fonts, and dependencies for Puppeteer
 RUN apt-get update && apt-get install -y \
     git \
+    jq \
     ca-certificates \
     chromium \
     fonts-recommended \

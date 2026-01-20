@@ -26,7 +26,7 @@ cd /repo
 echo "Analyzing codebase and generating CSS..."
 echo "API Key set: ${ANTHROPIC_API_KEY:+yes}"
 
-cat <<'CSS_PROMPT' | claude -p --allowedTools "Read,Glob,Grep" > /output/compiled_css.txt
+cat <<'CSS_PROMPT' | claude -p --output-format json --allowedTools "Read,Glob,Grep" > /tmp/claude_output.json
 Analyze this codebase and generate comprehensive CSS for accurate UI mockup rendering.
 
 === STEP 1: DETECT THE CSS FRAMEWORK ===
@@ -164,6 +164,12 @@ OUTPUT FORMAT - Valid CSS only, no markdown, no explanations:
 - Include responsive prefixes if found: .md\:flex { display: flex; } at appropriate breakpoint
 - Output ONLY valid CSS - no markdown code fences, no comments, no explanations
 CSS_PROMPT
+
+# Extract the result content from JSON output
+jq -r 'if .result then (if .result | type == "string" then .result else (.result // "") end) else "" end' /tmp/claude_output.json > /output/compiled_css.txt
+
+# Extract usage data for tracking
+jq '{session_id, total_cost_usd, duration_ms, num_turns, usage}' /tmp/claude_output.json > /output/usage.json
 
 CSS_SIZE=$(wc -c < /output/compiled_css.txt 2>/dev/null || echo "0")
 echo "Generated CSS: ${CSS_SIZE} bytes"

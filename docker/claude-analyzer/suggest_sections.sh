@@ -34,7 +34,7 @@ echo "Suggesting sections for: ${PROJECT_NAME}"
 echo "Running Claude Code analysis..."
 echo "API Key set: ${ANTHROPIC_API_KEY:+yes}"
 
-cat <<'PROMPT' | claude -p --allowedTools "Read,Glob,Grep,Bash" > /output/sections_raw.json
+cat <<'PROMPT' | claude -p --output-format json --allowedTools "Read,Glob,Grep,Bash" > /tmp/claude_output.json
 You are a help centre strategist. Analyze this project and suggest the COMPLETE set of help centre sections for END USERS.
 
 CRITICAL: These sections are for END USERS, not developers.
@@ -96,8 +96,11 @@ PROMPT
 
 echo "Section suggestion complete!"
 
-# Move output to final location
-mv /output/sections_raw.json /output/sections.json
+# Extract the result content from JSON output
+jq -r 'if .result then (if .result | type == "string" then .result else (.result // "") end) else "" end' /tmp/claude_output.json > /output/sections.json
+
+# Extract usage data for tracking
+jq '{session_id, total_cost_usd, duration_ms, num_turns, usage}' /tmp/claude_output.json > /output/usage.json
 
 echo "Output files:"
 ls -la /output/

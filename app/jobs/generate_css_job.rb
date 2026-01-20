@@ -4,6 +4,7 @@ require "timeout"
 
 class GenerateCssJob < ApplicationJob
   include DockerVolumeHelper
+  include ClaudeUsageTracker
 
   queue_as :analysis
 
@@ -45,6 +46,16 @@ class GenerateCssJob < ApplicationJob
       Rails.logger.info "[GenerateCssJob] Exit status: #{status.exitstatus}"
       Rails.logger.debug "[GenerateCssJob] Stdout: #{stdout[0..500]}" if stdout.present?
       Rails.logger.debug "[GenerateCssJob] Stderr: #{stderr[0..500]}" if stderr.present?
+
+      # Record usage regardless of success/failure
+      record_claude_usage(
+        output_dir: output_dir,
+        job_type: "generate_css",
+        project: project,
+        metadata: {},
+        success: status.success?,
+        error_message: status.success? ? nil : stderr
+      )
 
       if status.success?
         css_path = File.join(output_dir, "compiled_css.txt")

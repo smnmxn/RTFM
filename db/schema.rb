@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_19_153905) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_19_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -62,6 +62,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_19_153905) do
     t.index ["review_status"], name: "index_articles_on_review_status"
     t.index ["section_id", "position"], name: "index_articles_on_section_id_and_position"
     t.index ["section_id"], name: "index_articles_on_section_id"
+  end
+
+  create_table "claude_usages", force: :cascade do |t|
+    t.integer "cache_creation_tokens", default: 0, null: false
+    t.integer "cache_read_tokens", default: 0, null: false
+    t.decimal "cost_usd", precision: 10, scale: 6
+    t.datetime "created_at", null: false
+    t.integer "duration_ms"
+    t.text "error_message"
+    t.integer "input_tokens", default: 0, null: false
+    t.string "job_type", null: false
+    t.json "metadata"
+    t.integer "num_turns"
+    t.integer "output_tokens", default: 0, null: false
+    t.bigint "project_id"
+    t.string "session_id"
+    t.boolean "success", default: true, null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_claude_usages_on_created_at"
+    t.index ["job_type"], name: "index_claude_usages_on_job_type"
+    t.index ["project_id", "created_at"], name: "index_claude_usages_on_project_id_and_created_at"
+    t.index ["project_id"], name: "index_claude_usages_on_project_id"
   end
 
   create_table "github_app_installations", force: :cascade do |t|
@@ -191,6 +213,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_19_153905) do
   add_foreign_key "articles", "projects"
   add_foreign_key "articles", "recommendations"
   add_foreign_key "articles", "sections"
+  add_foreign_key "claude_usages", "projects"
   add_foreign_key "github_app_installations", "users"
   add_foreign_key "projects", "github_app_installations"
   add_foreign_key "projects", "users"

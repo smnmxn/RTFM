@@ -5,6 +5,7 @@ require "timeout"
 
 class GenerateProjectRecommendationsJob < ApplicationJob
   include DockerVolumeHelper
+  include ClaudeUsageTracker
 
   queue_as :analysis
 
@@ -66,6 +67,16 @@ class GenerateProjectRecommendationsJob < ApplicationJob
       Rails.logger.info "[GenerateProjectRecommendationsJob] Exit status: #{status.exitstatus}"
       Rails.logger.debug "[GenerateProjectRecommendationsJob] Stdout: #{stdout[0..500]}" if stdout.present?
       Rails.logger.debug "[GenerateProjectRecommendationsJob] Stderr: #{stderr[0..500]}" if stderr.present?
+
+      # Record usage regardless of success/failure
+      record_claude_usage(
+        output_dir: output_dir,
+        job_type: "generate_project_recommendations",
+        project: project,
+        metadata: {},
+        success: status.success?,
+        error_message: status.success? ? nil : stderr
+      )
 
       if status.success?
         json_content = read_output_file(output_dir, "recommendations.json")

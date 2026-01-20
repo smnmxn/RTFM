@@ -31,7 +31,7 @@ cd /repo
 echo "Running Claude Code analysis for all accepted sections..."
 echo "API Key set: ${ANTHROPIC_API_KEY:+yes}"
 
-cat <<'PROMPT' | claude -p --allowedTools "Read,Glob,Grep,Bash" > /output/recommendations_raw.json
+cat <<'PROMPT' | claude -p --output-format json --allowedTools "Read,Glob,Grep,Bash" > /tmp/claude_output.json
 You are a help centre content strategist. Your job is to suggest how-to guide articles for END USERS.
 
 CRITICAL: These articles are for END USERS, not developers.
@@ -113,8 +113,11 @@ PROMPT
 
 echo "Recommendation generation complete!"
 
-# Move output to final location
-mv /output/recommendations_raw.json /output/recommendations.json
+# Extract the result content from JSON output
+jq -r 'if .result then (if .result | type == "string" then .result else (.result // "") end) else "" end' /tmp/claude_output.json > /output/recommendations.json
+
+# Extract usage data for tracking
+jq '{session_id, total_cost_usd, duration_ms, num_turns, usage}' /tmp/claude_output.json > /output/usage.json
 
 echo "Output files:"
 ls -la /output/

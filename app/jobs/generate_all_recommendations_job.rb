@@ -11,6 +11,7 @@ require "timeout"
 # For post-onboarding custom sections, use GenerateSectionRecommendationsJob instead.
 class GenerateAllRecommendationsJob < ApplicationJob
   include DockerVolumeHelper
+  include ClaudeUsageTracker
 
   queue_as :analysis
 
@@ -109,6 +110,16 @@ class GenerateAllRecommendationsJob < ApplicationJob
       Rails.logger.info "[GenerateAllRecommendationsJob] Exit status: #{status.exitstatus}"
       Rails.logger.debug "[GenerateAllRecommendationsJob] Stdout: #{stdout[0..500]}" if stdout.present?
       Rails.logger.debug "[GenerateAllRecommendationsJob] Stderr: #{stderr[0..500]}" if stderr.present?
+
+      # Record usage regardless of success/failure
+      record_claude_usage(
+        output_dir: output_dir,
+        job_type: "generate_all_recommendations",
+        project: project,
+        metadata: { section_count: accepted_sections.size },
+        success: status.success?,
+        error_message: status.success? ? nil : stderr
+      )
 
       if status.success?
         json_content = read_output_file(output_dir, "recommendations.json")

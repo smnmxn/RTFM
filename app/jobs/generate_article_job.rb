@@ -5,6 +5,7 @@ require "timeout"
 
 class GenerateArticleJob < ApplicationJob
   include DockerVolumeHelper
+  include ClaudeUsageTracker
 
   queue_as :analysis
 
@@ -129,6 +130,16 @@ class GenerateArticleJob < ApplicationJob
       Rails.logger.info "[GenerateArticleJob] Exit status: #{status.exitstatus}"
       Rails.logger.debug "[GenerateArticleJob] Stdout: #{stdout[0..500]}" if stdout.present?
       Rails.logger.debug "[GenerateArticleJob] Stderr: #{stderr[0..500]}" if stderr.present?
+
+      # Record usage regardless of success/failure
+      record_claude_usage(
+        output_dir: output_dir,
+        job_type: "generate_article",
+        project: project,
+        metadata: { article_id: recommendation.article&.id, recommendation_id: recommendation.id },
+        success: status.success?,
+        error_message: status.success? ? nil : stderr
+      )
 
       if status.success?
         json_content = read_output_file(output_dir, "article.json")

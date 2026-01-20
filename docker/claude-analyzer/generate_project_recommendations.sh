@@ -34,7 +34,7 @@ echo "Generating recommendations for: ${PROJECT_NAME}"
 echo "Running Claude Code analysis..."
 echo "API Key set: ${ANTHROPIC_API_KEY:+yes}"
 
-cat <<'PROMPT' | claude -p --allowedTools "Read,Glob,Grep,Bash" > /output/recommendations_raw.json
+cat <<'PROMPT' | claude -p --output-format json --allowedTools "Read,Glob,Grep,Bash" > /tmp/claude_output.json
 You are a technical documentation strategist. Your job is to suggest how-to guide articles that would help users of a software product.
 
 STEP 1: Read the project context file:
@@ -83,8 +83,11 @@ PROMPT
 
 echo "Recommendation generation complete!"
 
-# Move output to final location
-mv /output/recommendations_raw.json /output/recommendations.json
+# Extract the result content from JSON output
+jq -r 'if .result then (if .result | type == "string" then .result else (.result // "") end) else "" end' /tmp/claude_output.json > /output/recommendations.json
+
+# Extract usage data for tracking
+jq '{session_id, total_cost_usd, duration_ms, num_turns, usage}' /tmp/claude_output.json > /output/usage.json
 
 echo "Output files:"
 ls -la /output/
