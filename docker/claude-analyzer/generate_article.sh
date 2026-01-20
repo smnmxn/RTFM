@@ -60,6 +60,14 @@ if [ -f /input/diff.patch ] && [ -s /input/diff.patch ]; then
     echo "Source PR diff available"
 fi
 
+# Check for existing articles corpus
+if [ -f /input/existing_articles/manifest.json ]; then
+    ARTICLE_COUNT=$(jq -r '.total_count // 0' /input/existing_articles/manifest.json 2>/dev/null || echo "0")
+    echo "Existing articles corpus found (${ARTICLE_COUNT} articles)"
+else
+    echo "No existing articles corpus"
+fi
+
 # Run Claude Code to generate the article
 echo "Running Claude Code article generation..."
 echo "API Key set: ${ANTHROPIC_API_KEY:+yes}"
@@ -92,6 +100,16 @@ STEP 3: Check for compiled CSS (preferred) and style context (fallback):
 - /input/style_context.json - Extracted style values as fallback
 
 STEP 4: Explore the full codebase at /repo to understand the feature in detail. Use Glob, Grep, and Read tools to find relevant code, UI components, configuration, and related functionality. This will help you write accurate, specific instructions.
+
+STEP 4.5: Check for existing articles to reference for consistency:
+/input/existing_articles/manifest.json - Lists all completed articles for this project
+/input/existing_articles/{slug}/content.json - Article structured content
+/input/existing_articles/{slug}/images/step_N.html - Mockup HTML source
+
+If existing articles are available:
+- Match their writing tone and style for consistency
+- Reuse HTML patterns from existing mockups for similar UI elements
+- Use consistent terminology across articles
 
 STEP 5: Write a comprehensive how-to guide article as a JSON object.
 
@@ -171,6 +189,9 @@ Angular:
 CRITICAL: The goal is VISUAL FIDELITY. Include ALL styling classes from every element.
 If you see class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
 You MUST include EVERY class, not just some of them.
+
+CRITICAL: Do NOT replace icons with emojis. If you see <i class="fas fa-camera">, do NOT replace it with 📷.
+Icons must be rendered using the proper icon library CSS/JS (see ICON LIBRARIES section below).
 
 === APPROACH A: CSS EMBEDDING (PREFERRED) ===
 Use this when /input/compiled_css.txt has content.
@@ -304,6 +325,54 @@ Use terminal styling with terminal viewport:
 </body>
 </html>
 ```
+
+=== ICON LIBRARIES ===
+
+CRITICAL: Do NOT replace icon elements with emojis. Icons must render using the proper icon library.
+
+STEP: Detect which icon library the project uses by searching for:
+- Heroicons: Look for imports from "@heroicons/react" or "heroicons" in package.json, or SVG icons with heroicon class names
+- Bootstrap Icons: Look for "bootstrap-icons" in package.json or classes like "bi bi-*"
+- FontAwesome: Look for "@fortawesome" in package.json or classes like "fa fa-*", "fas fa-*", "far fa-*"
+- Lucide: Look for "lucide-react" or "lucide" in package.json
+- Tabler Icons: Look for "@tabler/icons" in package.json
+- Material Icons: Look for "material-icons" class or "@mui/icons-material"
+- Phosphor Icons: Look for "phosphor-react" or "@phosphor-icons"
+
+Include the appropriate CDN in your mockup HTML <head>:
+
+```html
+<!-- FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+<!-- Material Icons -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+<!-- Heroicons (use inline SVG - no CDN, copy SVGs from https://heroicons.com) -->
+
+<!-- Lucide (use inline SVG or) -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>lucide.createIcons();</script>
+
+<!-- Tabler Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+```
+
+ICON USAGE EXAMPLES:
+- FontAwesome: <i class="fas fa-check"></i> or <i class="fa-solid fa-check"></i>
+- Bootstrap Icons: <i class="bi bi-check"></i>
+- Material Icons: <span class="material-icons">check</span>
+- Heroicons: Use inline SVG copied from the project or heroicons.com
+- Lucide: <i data-lucide="check"></i> (with lucide.createIcons() call)
+- Tabler: <i class="ti ti-check"></i>
+
+If the project uses Heroicons or another SVG-based library without a CDN:
+1. Find the actual SVG code in the project's node_modules or components
+2. Inline the SVG directly in your HTML mockup
+3. Example: <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">...</svg>
 
 === HANDLING IMAGES IN MOCKUPS ===
 

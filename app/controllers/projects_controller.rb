@@ -70,7 +70,11 @@ class ProjectsController < ApplicationController
   def select_article
     @article = @project.articles.find(params[:article_id])
 
-    render partial: "projects/article_editor", locals: { article: @article }
+    if turbo_frame_request?
+      render partial: "projects/article_editor", locals: { article: @article }
+    else
+      redirect_to project_path(@project, selected: params[:selected])
+    end
   end
 
   def approve_article
@@ -118,7 +122,11 @@ class ProjectsController < ApplicationController
   def select_recommendation
     @recommendation = @project.recommendations.find(params[:recommendation_id])
 
-    render partial: "projects/recommendation_editor", locals: { recommendation: @recommendation }
+    if turbo_frame_request?
+      render partial: "projects/recommendation_editor", locals: { recommendation: @recommendation }
+    else
+      redirect_to project_path(@project, selected: "recommendation_#{@recommendation.id}")
+    end
   end
 
   def accept_recommendation
@@ -188,11 +196,15 @@ class ProjectsController < ApplicationController
     @article = @project.articles.for_help_centre.find(params[:article_id])
     @sections = @project.sections.visible.ordered
 
-    render partial: "projects/articles_editor", locals: {
-      article: @article,
-      project: @project,
-      sections: @sections
-    }
+    if turbo_frame_request?
+      render partial: "projects/articles_editor", locals: {
+        article: @article,
+        project: @project,
+        sections: @sections
+      }
+    else
+      redirect_to project_path(@project, article: @article.id)
+    end
   end
 
   def pull_requests

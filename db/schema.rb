@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_20_142346) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_20_144534) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -174,6 +174,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_20_142346) do
     t.integer "render_attempts", default: 0
     t.json "render_metadata"
     t.string "render_status", default: "pending"
+    t.text "source_html"
     t.integer "step_index", null: false
     t.datetime "updated_at", null: false
     t.index ["article_id", "step_index"], name: "index_step_images_on_article_id_and_step_index", unique: true

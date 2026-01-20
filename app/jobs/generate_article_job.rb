@@ -104,6 +104,10 @@ class GenerateArticleJob < ApplicationJob
         File.write(File.join(input_dir, "diff.patch"), diff.to_s) if diff.present?
       end
 
+      # Write existing articles for context
+      current_article = recommendation.article
+      write_existing_articles_corpus(input_dir, project, current_article) if current_article
+
       github_token = get_github_token(project)
       return { success: false, error: "No GitHub token available" } unless github_token
 
@@ -197,11 +201,13 @@ class GenerateArticleJob < ApplicationJob
     steps.each_with_index do |step, index|
       image_path = File.join(images_dir, "step_#{index}.png")
       if File.exist?(image_path)
+        # Attach any image that exists, regardless of has_image flag
+        # Claude sometimes renders images but forgets to set has_image: true
+        images[index] = image_path
         if step["has_image"]
-          images[index] = image_path
           Rails.logger.info "[GenerateArticleJob] Found generated image for step #{index}: #{image_path}"
         else
-          Rails.logger.warn "[GenerateArticleJob] Image exists for step #{index} but has_image is false"
+          Rails.logger.warn "[GenerateArticleJob] Found image for step #{index} (has_image was false, attaching anyway): #{image_path}"
         end
       end
     end
@@ -230,6 +236,11 @@ class GenerateArticleJob < ApplicationJob
           end
         end
 
+        # Read source HTML if available
+        output_dir = File.dirname(File.dirname(image_path))
+        html_path = File.join(output_dir, "html", "step_#{step_index}.html")
+        source_html = File.exist?(html_path) ? File.read(html_path) : nil
+
         # Determine render status from diagnostics
         render_status = determine_render_status(diagnostics)
 
@@ -239,7 +250,8 @@ class GenerateArticleJob < ApplicationJob
         step_image.assign_attributes(
           render_metadata: diagnostics,
           render_status: render_status,
-          render_attempts: (step_image.render_attempts || 0) + 1
+          render_attempts: (step_image.render_attempts || 0) + 1,
+          source_html: source_html
         )
 
         step_image.image.attach(
@@ -426,5 +438,70 @@ class GenerateArticleJob < ApplicationJob
   rescue => e
     Rails.logger.error "[GenerateArticleJob] Failed to get GitHub token: #{e.message}"
     nil
+  end
+
+  def write_existing_articles_corpus(input_dir, project, current_article)
+    # Get completed articles (exclude the one being generated)
+    completed_articles = project.articles
+      .where(generation_status: :generation_completed)
+      .where.not(id: current_article.id)
+      .includes(:section, :step_images)
+
+    return if completed_articles.empty?
+
+    # Create the directory structure
+    articles_dir = File.join(input_dir, "existing_articles")
+    FileUtils.mkdir_p(articles_dir)
+
+    # Build manifest with metadata
+    manifest = {
+      total_count: completed_articles.count,
+      articles: []
+    }
+
+    completed_articles.find_each do |article|
+      article_slug = article.slug
+      article_path = File.join(articles_dir, article_slug)
+      FileUtils.mkdir_p(article_path)
+
+      # Write structured content
+      if article.structured_content.present?
+        File.write(
+          File.join(article_path, "content.json"),
+          article.structured_content.to_json
+        )
+      end
+
+      # Write step HTML files (only if source_html is populated)
+      images_with_html = article.step_images.select { |si| si.source_html.present? }
+      if images_with_html.any?
+        images_dir = File.join(article_path, "images")
+        FileUtils.mkdir_p(images_dir)
+
+        images_with_html.each do |step_image|
+          File.write(
+            File.join(images_dir, "step_#{step_image.step_index}.html"),
+            step_image.source_html
+          )
+        end
+      end
+
+      # Add to manifest
+      manifest[:articles] << {
+        slug: article_slug,
+        title: article.title,
+        section: article.section&.name,
+        step_count: article.structured_content&.dig("steps")&.count || 0,
+        image_count: images_with_html.count
+      }
+    end
+
+    # Write manifest
+    File.write(
+      File.join(articles_dir, "manifest.json"),
+      JSON.pretty_generate(manifest)
+    )
+
+    Rails.logger.info "[GenerateArticleJob] Wrote #{manifest[:total_count]} existing articles to corpus"
   end
 end
