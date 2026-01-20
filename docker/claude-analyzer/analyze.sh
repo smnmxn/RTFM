@@ -157,7 +157,14 @@ Analyze this codebase and extract a comprehensive visual style context for gener
 
 STEP 1: Determine the application type:
 - "web": Has routes, views/templates, CSS files, web framework (Rails, React, Vue, Django, etc.)
-- "cli": Has command parsers (argparse, commander, clap), outputs to stdout, no web UI
+- "tui": Has TUI (Text User Interface) framework for interactive terminal apps with rich UI
+  * Python: textual, rich (with Live/Layout), urwid, blessed, npyscreen
+  * Go: bubbletea, lipgloss, tview, gocui, termui
+  * Rust: ratatui, crossterm (with UI), cursive, tui-rs
+  * Node.js: ink, blessed, neo-blessed
+  * Ruby: tty-prompt (interactive), curses
+  * Check: package.json, go.mod, Cargo.toml, pyproject.toml, requirements.txt, Gemfile
+- "cli": Simple command-line tool with argument parsing, outputs to stdout, no interactive UI
 - "desktop": Has Electron, Qt, GTK, Tauri, or native UI framework
 
 STEP 2: Extract styling information based on app type.
@@ -180,6 +187,27 @@ Extract:
 8. INPUTS: Input field styles including background, border, radius, padding, focus states
 9. CDN LINKS: Any external stylesheets or fonts to include
 
+FOR TUI APPS:
+- Set app_type to "tui"
+- Identify the specific TUI framework used
+- Extract theme/colors if available:
+  * Textual (Python): Parse .tcss files for CSS variables and colors
+  * Lipgloss (Go): Find lipgloss.NewStyle() calls, extract .Foreground(), .Background(), .Border() values
+  * Ratatui (Rust): Find Style::default().fg() patterns, Color::Rgb() definitions
+  * Ink (Node.js): Parse JSX color props from components
+- Add tui_context object with:
+  * framework: The detected TUI framework name
+  * language: python|go|rust|nodejs|ruby
+  * has_custom_theme: true if custom colors found
+  * layout_style: full_screen|list_view|form|dashboard|split_pane (based on component usage)
+  * components_detected: Array of UI components found (DataTable, ListView, Input, Button, etc.)
+- Use TUI-appropriate colors (defaults if no theme found):
+  - Dark background (#161b22)
+  - Light foreground (#c9d1d9)
+  - Primary accent (#388bfd)
+  - Border color (#30363d)
+  - Selection background (#388bfd33)
+
 FOR CLI APPS:
 - Set app_type to "cli"
 - Use standard terminal styling:
@@ -196,8 +224,15 @@ FOR DESKTOP APPS:
 
 STEP 3: Output a JSON object matching this structure exactly:
 {
-  "app_type": "web|cli|desktop",
+  "app_type": "web|tui|cli|desktop",
   "framework": "tailwind|bootstrap|none",
+  "tui_context": {
+    "framework": "textual|bubbletea|ratatui|ink|tview|blessed|null",
+    "language": "python|go|rust|nodejs|ruby|null",
+    "has_custom_theme": false,
+    "layout_style": "full_screen|list_view|form|dashboard|split_pane|null",
+    "components_detected": ["component names or empty array"]
+  },
   "colors": {
     "primary": "#hex",
     "primary_hover": "#hex",

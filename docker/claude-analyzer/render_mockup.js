@@ -15,7 +15,8 @@ const VIEWPORTS = {
     tablet: { width: 768, height: 1024 },
     desktop: { width: 800, height: 600 },
     wide: { width: 1200, height: 800 },
-    terminal: { width: 600, height: 400 }
+    terminal: { width: 600, height: 400 },
+    tui: { width: 720, height: 480 }
 };
 
 // Fallback CSS for fonts and icons when CDNs fail
@@ -69,6 +70,14 @@ const FALLBACK_CSS = `
 .fa-file::before { content: "\\1F4C4" !important; }
 .fa-folder::before { content: "\\1F4C1" !important; }
 .fa-github::before { content: "\\1F4BB" !important; }
+
+/* TUI monospace font support */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap');
+
+.tui-app, .tui-container, [data-viewport="tui"] body {
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, 'Cascadia Code', monospace !important;
+}
 `;
 
 function getViewportFromHtml(html) {

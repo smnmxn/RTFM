@@ -1,6 +1,8 @@
 FROM node:20-slim
 
 # Install git, jq, Chromium, fonts, and dependencies for Puppeteer
+# Note: TUI-specific monospace fonts (JetBrains Mono, Fira Code) are loaded via
+# Google Fonts in render_mockup.js for better cross-platform compatibility
 RUN apt-get update && apt-get install -y \
     git \
     jq \
@@ -9,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     fonts-recommended \
     fonts-liberation \
     fonts-noto-core \
+    fonts-dejavu-core \
     libatk-bridge2.0-0 \
     libatk1.0-0 \
     libcups2 \

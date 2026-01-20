@@ -337,6 +337,146 @@ Use terminal styling with terminal viewport:
 </html>
 ```
 
+=== FOR TUI (Text User Interface) APPLICATIONS ===
+
+If style_context.json shows app_type: "tui", create mockups that accurately replicate the TUI framework's appearance.
+
+Use viewport: <html data-viewport="tui">
+
+Check tui_context.framework to determine the specific TUI framework and adapt styling accordingly:
+
+TEXTUAL (Python):
+- Modern look with rounded corners, subtle gradients
+- Uses CSS-like styling (.tcss files)
+- Common components: DataTable, ListView, Button, Input, Footer, Header
+- Default colors: Dark background, bright accents
+
+BUBBLETEA/LIPGLOSS (Go):
+- Bold, vibrant colors (often pink/purple accents like #ff69b4, #7e57c2)
+- Clean borders, modern aesthetic
+- Common patterns: List with selection indicator, viewport scrolling, help text footer
+- Charm branding style
+
+RATATUI (Rust):
+- Heavy use of Unicode box-drawing characters (─ │ ┌ ┐ └ ┘ ├ ┤ ┬ ┴ ┼)
+- Split panes, tabs, status bars
+- Often uses terminal default colors
+- Block-style widgets
+
+INK (Node.js):
+- React-like component structure
+- Colorful output, often with emoji support
+- Flexbox-like layouts
+- Interactive prompts and spinners
+
+Base TUI template:
+```html
+<!DOCTYPE html>
+<html data-viewport="tui">
+<head>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+    body { margin: 0; padding: 16px; background: #0d1117; min-height: 100vh; }
+    .tui-app {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #c9d1d9;
+      overflow: hidden;
+      max-width: 700px;
+    }
+    .tui-header {
+      background: #21262d;
+      padding: 8px 16px;
+      border-bottom: 1px solid #30363d;
+      font-weight: 600;
+      color: #f0f6fc;
+    }
+    .tui-content { padding: 16px; }
+    .tui-footer {
+      background: #21262d;
+      padding: 6px 16px;
+      border-top: 1px solid #30363d;
+      font-size: 12px;
+      color: #8b949e;
+    }
+    /* Selection highlighting */
+    .tui-selected {
+      background: #388bfd33;
+      border-left: 2px solid #388bfd;
+      padding-left: 14px;
+    }
+    .tui-item { padding: 4px 16px; }
+    /* Keybinding hints */
+    .tui-key {
+      background: #30363d;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 11px;
+      margin-right: 8px;
+      color: #c9d1d9;
+    }
+    .tui-key-label { color: #8b949e; margin-right: 16px; }
+    /* Box drawing for ratatui-style borders */
+    .tui-box {
+      border: 1px solid #30363d;
+      border-radius: 4px;
+      margin: 8px 0;
+    }
+    .tui-box-title {
+      background: #21262d;
+      padding: 4px 12px;
+      border-bottom: 1px solid #30363d;
+      font-weight: 500;
+    }
+    .tui-box-content { padding: 12px; }
+    /* Status indicators */
+    .tui-success { color: #3fb950; }
+    .tui-error { color: #f85149; }
+    .tui-warning { color: #d29922; }
+    .tui-info { color: #58a6ff; }
+    /* Progress bar */
+    .tui-progress {
+      background: #21262d;
+      border-radius: 4px;
+      height: 8px;
+      overflow: hidden;
+    }
+    .tui-progress-bar {
+      background: #388bfd;
+      height: 100%;
+      transition: width 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <div class="tui-app">
+    <div class="tui-header">Application Title</div>
+    <div class="tui-content">
+      <div class="tui-item tui-selected">Selected item</div>
+      <div class="tui-item">Another item</div>
+      <div class="tui-item">Third item</div>
+    </div>
+    <div class="tui-footer">
+      <span class="tui-key">↑↓</span><span class="tui-key-label">Navigate</span>
+      <span class="tui-key">Enter</span><span class="tui-key-label">Select</span>
+      <span class="tui-key">q</span><span class="tui-key-label">Quit</span>
+    </div>
+  </div>
+</body>
+</html>
+```
+
+IMPORTANT FOR TUI MOCKUPS:
+- Always use monospace fonts exclusively
+- Include keyboard shortcut hints in footer
+- Show selection state for interactive elements (highlighted row, cursor position)
+- Use the tui_context.colors if custom theme was detected
+- Match the specific framework's visual style when known
+
 === ICON LIBRARIES ===
 
 CRITICAL: Do NOT replace icon elements with emojis. Icons must render using the proper icon library.
