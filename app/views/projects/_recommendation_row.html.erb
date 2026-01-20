@@ -8,17 +8,15 @@
         "border-indigo-500 bg-indigo-50" => selected,
         "border-transparent bg-white" => !selected
       ) do %>
-    <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="flex-shrink-0">
+        <%= heroicon "light-bulb", options: { class: "w-5 h-5 text-amber-800" } %>
+      </div>
       <div class="min-w-0 flex-1">
         <p class="text-sm font-medium text-gray-900 truncate"><%= recommendation.title %></p>
         <% if recommendation.section %>
           <p class="text-xs text-gray-500 truncate"><%= recommendation.section.name %></p>
         <% end %>
-      </div>
-      <div class="ml-3 flex-shrink-0">
-        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
-          Suggestion
-        </span>
       </div>
     </div>
   <% end %>
