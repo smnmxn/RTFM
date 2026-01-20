@@ -40,6 +40,15 @@ class ProjectsController < ApplicationController
     @articles_sections = @project.sections.visible.ordered
     @uncategorized_articles_count = @project.articles.for_help_centre.where(section: nil).count
     @total_published_articles = @project.articles.for_help_centre.count
+
+    # Article preselection (from ?article=:id param, used by help centre Edit link)
+    if params[:article].present?
+      @preselected_article = @project.articles.for_help_centre.find_by(id: params[:article])
+      @preselected_section = @preselected_article&.section
+      @active_tab = "articles" if @preselected_article
+    end
+
+    @active_tab ||= "inbox"
   end
 
   def inbox_articles

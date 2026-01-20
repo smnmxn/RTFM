@@ -52,10 +52,12 @@ class HelpCentreController < ApplicationController
 
   def set_project
     @project = if subdomain_request?
-      Project.find_by_subdomain!(current_subdomain)
+      Project.find_by(subdomain: current_subdomain)
     else
       Project.find_by!(slug: params[:project_slug])
     end
+
+    redirect_to_app if @project.nil?
   end
 
   def subdomain_request?
@@ -64,5 +66,11 @@ class HelpCentreController < ApplicationController
 
   def current_subdomain
     @current_subdomain ||= SubdomainConstraint.extract_subdomain(request)
+  end
+
+  def redirect_to_app
+    base_domain = Rails.application.config.x.base_domain
+    protocol = Rails.env.production? ? "https" : "http"
+    redirect_to "#{protocol}://app.#{base_domain}", allow_other_host: true
   end
 end

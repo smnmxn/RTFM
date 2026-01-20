@@ -3,6 +3,8 @@ class ArticlesController < ApplicationController
   before_action :set_article
 
   def show
+    # Redirect to dashboard with article preselected
+    redirect_to project_path(@article.project, article: @article.id)
   end
 
   def regenerate
@@ -100,10 +102,10 @@ class ArticlesController < ApplicationController
       @article.publish!
       respond_to do |format|
         format.turbo_stream
-        format.html { redirect_to project_article_path(@article.project, @article), notice: "Article published." }
+        format.html { redirect_to project_path(@article.project, article: @article.id), notice: "Article published." }
       end
     else
-      redirect_to project_article_path(@article.project, @article), alert: "Cannot publish incomplete article."
+      redirect_to project_path(@article.project, article: @article.id), alert: "Cannot publish incomplete article."
     end
   end
 
@@ -111,7 +113,7 @@ class ArticlesController < ApplicationController
     @article.unpublish!
     respond_to do |format|
       format.turbo_stream
-      format.html { redirect_to project_article_path(@article.project, @article), notice: "Article unpublished." }
+      format.html { redirect_to project_path(@article.project, article: @article.id), notice: "Article unpublished." }
     end
   end
 

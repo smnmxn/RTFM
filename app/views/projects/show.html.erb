@@ -25,7 +25,7 @@
   <main class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
     <div class="bg-white shadow rounded-lg overflow-hidden flex flex-col" style="height: calc(100vh - 160px); min-height: 500px;"
          data-controller="tabs"
-         data-tabs-active-value="inbox"
+         data-tabs-active-value="<%= @active_tab %>"
          data-tabs-hash-value="true">
 
       <!-- Tab Navigation -->
@@ -97,7 +97,9 @@
         <%= render "projects/articles_panel",
             project: @project,
             sections: @articles_sections,
-            uncategorized_count: @uncategorized_articles_count %>
+            uncategorized_count: @uncategorized_articles_count,
+            preselected_article: @preselected_article,
+            preselected_section: @preselected_section %>
       </div>
 
       <!-- Settings Panel -->
