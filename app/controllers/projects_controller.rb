@@ -505,7 +505,8 @@ class ProjectsController < ApplicationController
   # Find the next inbox item after an article (by created_at order)
   # Articles appear above recommendations, so after an article we check:
   # 1. Next completed article (created after this one)
-  # 2. First recommendation (if no more articles)
+  # 2. First recommendation (if no more articles after)
+  # 3. First completed article (wrap around)
   def find_next_item_after_article(article_created_at)
     next_article = @inbox_articles
       .where(generation_status: :generation_completed)
@@ -514,8 +515,11 @@ class ProjectsController < ApplicationController
 
     return next_article if next_article
 
-    # No more articles after this one, get first recommendation
-    @pending_recommendations.first
+    # No more articles after this one, try first recommendation
+    return @pending_recommendations.first if @pending_recommendations.any?
+
+    # No recommendations, wrap to first completed article
+    @inbox_articles.where(generation_status: :generation_completed).first
   end
 
   # Find the next inbox item after a recommendation (by created_at order)

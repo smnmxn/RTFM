@@ -110,9 +110,19 @@ export default class extends Controller {
 
   // Handle broadcast notification that article was updated
   handleArticleUpdate(articleId, status) {
-    // If viewing this article and it just completed, show refresh prompt
+    // If viewing this article and it just completed
     if (this.selectedIdValue === articleId && status === "generation_completed") {
-      this.showRefreshPrompt()
+      // Check if we're currently showing the "generating" state
+      const editorContent = this.hasEditorTarget ? this.editorTarget.querySelector("[data-article-generation-status]") : null
+      const wasGenerating = editorContent?.dataset.articleGenerationStatus === "generation_running"
+
+      if (wasGenerating) {
+        // Auto-refresh since user is waiting for content
+        this.refreshEditor()
+      } else {
+        // Show prompt since user may be reviewing/editing
+        this.showRefreshPrompt()
+      }
     }
   }
 
