@@ -52,6 +52,7 @@ COPY --chmod=755 generate_css.sh /generate_css.sh
 COPY --chmod=755 render_mockup.sh /render_mockup.sh
 COPY --chmod=644 render_mockup.js /render_mockup.js
 COPY --chmod=755 validate_html.js /validate_html.js
+COPY --chmod=755 entrypoint.sh /entrypoint.sh
 
 # Switch to non-root user
 USER analyzer
@@ -59,4 +60,6 @@ USER analyzer
 # Set working directory
 WORKDIR /repo
 
-ENTRYPOINT ["/analyze.sh"]
+# Use entrypoint script to handle OAuth setup before running commands
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["/analyze.sh"]

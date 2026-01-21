@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_20_160034) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_21_110106) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -68,6 +68,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_20_160034) do
   end
 
   create_table "claude_usages", force: :cascade do |t|
+    t.string "auth_method"
     t.integer "cache_creation_tokens", default: 0, null: false
     t.integer "cache_read_tokens", default: 0, null: false
     t.decimal "cost_usd", precision: 10, scale: 6
@@ -80,6 +81,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_20_160034) do
     t.integer "num_turns"
     t.integer "output_tokens", default: 0, null: false
     t.bigint "project_id"
+    t.string "service_tier"
     t.string "session_id"
     t.boolean "success", default: true, null: false
     t.datetime "updated_at", null: false
@@ -87,6 +89,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_20_160034) do
     t.index ["job_type"], name: "index_claude_usages_on_job_type"
     t.index ["project_id", "created_at"], name: "index_claude_usages_on_project_id_and_created_at"
     t.index ["project_id"], name: "index_claude_usages_on_project_id"
+    t.index ["service_tier"], name: "index_claude_usages_on_service_tier"
   end
 
   create_table "github_app_installations", force: :cascade do |t|

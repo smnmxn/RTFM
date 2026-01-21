@@ -11,6 +11,7 @@ class ClaudeUsage < ApplicationRecord
   # Scopes
   scope :for_project, ->(project) { where(project: project) }
   scope :for_job_type, ->(job_type) { where(job_type: job_type) }
+  scope :for_service_tier, ->(tier) { where(service_tier: tier) }
   scope :successful, -> { where(success: true) }
   scope :failed, -> { where(success: false) }
   scope :recent, ->(limit = 100) { order(created_at: :desc).limit(limit) }
@@ -30,6 +31,7 @@ class ClaudeUsage < ApplicationRecord
       cost_usd: json_data["total_cost_usd"],
       duration_ms: json_data["duration_ms"],
       num_turns: json_data["num_turns"],
+      service_tier: usage["service_tier"],
       metadata: metadata.presence,
       success: success,
       error_message: error_message

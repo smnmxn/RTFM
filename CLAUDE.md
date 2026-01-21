@@ -80,6 +80,41 @@ The application follows a **Webhook → Worker → Service** pattern:
 
 Required in `.env`:
 - `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` - OAuth for GitHub App
-- `ANTHROPIC_API_KEY` - Claude API access
 - `REDIS_URL` - For Sidekiq (default: `redis://localhost:6379/1`)
 - `HOST_URL` - Webhook callback URL (use ngrok for local dev)
+
+### Claude Code Authentication
+
+The Docker analyzer container needs Claude API access. You have two options:
+
+**Option 1: Max Subscription (recommended for development)**
+
+Use your Claude Max subscription credits instead of API credits:
+
+```bash
+# 1. Set up a long-lived token on your host machine
+claude setup-token
+
+# 2. Extract the token from macOS Keychain
+security find-generic-password -s "claude-code" -w
+
+# 3. Add to .env.docker
+CLAUDE_CODE_OAUTH_TOKEN=<token-from-step-2>
+```
+
+**Option 2: API Key**
+
+Use a standard Anthropic API key (uses API credits):
+
+```bash
+# Add to .env or .env.docker
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+**Testing authentication:**
+
+```bash
+docker-compose run --rm web bin/rails claude:test_auth
+```
+
+The system uses `CLAUDE_CODE_OAUTH_TOKEN` if present, otherwise falls back to `ANTHROPIC_API_KEY`.

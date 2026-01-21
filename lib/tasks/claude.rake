@@ -36,6 +36,21 @@ namespace :claude do
       end
     end
 
+    # First, check which env vars are actually set in the container
+    puts "Checking env vars in container..."
+    check_cmd = [
+      "docker", "run",
+      "--rm",
+      *auth_args,
+      "--network", "host",
+      "--entrypoint", "/bin/bash",
+      "rtfm/claude-analyzer:latest",
+      "-c", "echo 'CLAUDE_CODE_OAUTH_TOKEN set:' ${CLAUDE_CODE_OAUTH_TOKEN:+YES}${CLAUDE_CODE_OAUTH_TOKEN:-NO}; echo 'ANTHROPIC_API_KEY set:' ${ANTHROPIC_API_KEY:+YES}${ANTHROPIC_API_KEY:-NO}; echo '~/.claude/:'; ls -la ~/.claude/ 2>/dev/null || echo 'not found'; echo '~/.claude.json:'; cat ~/.claude.json 2>/dev/null || echo 'not found'"
+    ]
+    env_stdout, _, _ = Open3.capture3(*check_cmd)
+    puts env_stdout
+    puts
+
     # Run a simple Claude command to test auth
     cmd = [
       "docker", "run",
@@ -49,7 +64,6 @@ namespace :claude do
     ]
 
     puts "Running test command..."
-    puts "Command: docker run --rm [auth_args] --network host --entrypoint claude rtfm/claude-analyzer:latest -p ..."
     puts
 
     stdout, stderr, status = Open3.capture3(*cmd)
@@ -64,12 +78,14 @@ namespace :claude do
           puts "Response: #{response}"
 
           # Show usage info if available
-          if result["total_cost_usd"]
-            puts
-            puts "Usage info:"
-            puts "  Cost: $#{result['total_cost_usd']}"
-            puts "  Duration: #{result['duration_ms']}ms"
-          end
+          usage = result["usage"] || {}
+          puts
+          puts "Usage info:"
+          puts "  Cost: $#{result['total_cost_usd']}"
+          puts "  Duration: #{result['duration_ms']}ms"
+          puts "  Service tier: #{usage['service_tier'] || 'not reported'}"
+          puts "  Input tokens: #{usage['input_tokens']}"
+          puts "  Output tokens: #{usage['output_tokens']}"
         else
           puts "WARNING: Got response but not expected output"
           puts "Response: #{response}"
