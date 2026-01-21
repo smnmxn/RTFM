@@ -93,7 +93,15 @@ class Section < ApplicationRecord
   end
 
   def broadcast_refreshes
-    Turbo::StreamsChannel.broadcast_refresh_to([project, :onboarding])
+    # Skip onboarding broadcast during section generation - the job handles
+    # its own broadcast at the end. Broadcasting here causes race conditions
+    # where the page refreshes and questions disappear mid-answer.
+    if project.sections_being_generated?
+      Rails.logger.info "[Section#broadcast_refreshes] SKIPPING broadcast - sections being generated"
+    else
+      Rails.logger.info "[Section#broadcast_refreshes] Broadcasting refresh for section #{id}"
+      Turbo::StreamsChannel.broadcast_refresh_to([project, :onboarding])
+    end
     # Also broadcast to inbox when recommendations_status changes
     if saved_change_to_recommendations_status?
       Turbo::StreamsChannel.broadcast_refresh_to([project, :inbox])

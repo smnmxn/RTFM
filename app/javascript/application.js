@@ -2,6 +2,29 @@
 import "@hotwired/turbo-rails"
 import { Application } from "@hotwired/stimulus"
 
+// DEBUG: Log all Turbo Stream events to track what's causing page updates
+document.addEventListener("turbo:before-stream-render", (event) => {
+  const action = event.target.getAttribute("action")
+  const target = event.target.getAttribute("target")
+  console.log(`[Turbo Stream] action=${action} target=${target}`)
+})
+
+document.addEventListener("turbo:before-render", (event) => {
+  console.log("[Turbo] before-render - page is about to be replaced")
+})
+
+document.addEventListener("turbo:render", (event) => {
+  console.log("[Turbo] render - page was replaced")
+})
+
+document.addEventListener("turbo:before-cache", (event) => {
+  console.log("[Turbo] before-cache")
+})
+
+document.addEventListener("turbo:before-fetch-request", (event) => {
+  console.log("[Turbo] before-fetch-request:", event.detail.url?.toString())
+})
+
 const application = Application.start()
 
 // Import and register controllers

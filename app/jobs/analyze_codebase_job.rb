@@ -292,6 +292,7 @@ class AnalyzeCodebaseJob < ApplicationJob
 
   def broadcast_onboarding_update(project)
     # Broadcast to the onboarding channel to refresh the analyze status
+    Rails.logger.info "[AnalyzeCodebaseJob] Broadcasting targeted update to onboarding_analyze"
     Turbo::StreamsChannel.broadcast_update_to(
       [project, :onboarding],
       target: ActionView::RecordIdentifier.dom_id(project, :onboarding_analyze),

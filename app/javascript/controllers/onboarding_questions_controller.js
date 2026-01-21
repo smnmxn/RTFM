@@ -8,8 +8,13 @@ export default class extends Controller {
   }
 
   connect() {
+    console.log('[onboarding-questions] Controller connected')
     this.totalCards = this.cardTargets.length
     this.updateUI()
+  }
+
+  disconnect() {
+    console.log('[onboarding-questions] Controller DISCONNECTED - DOM was replaced!')
   }
 
   selectOption(event) {

@@ -23,9 +23,16 @@ module Onboarding
       # Placeholder repo until they select one
       @project.github_repo = "placeholder/placeholder"
 
-      if @project.save(validate: false)
+      # Validate name and subdomain before saving (skip github_repo validation during onboarding)
+      @project.validate
+      errors_to_check = @project.errors.select { |e| e.attribute.in?([:name, :subdomain, :slug]) }
+
+      if errors_to_check.empty? && @project.save(validate: false)
         redirect_to repository_onboarding_project_path(@project)
       else
+        # Copy relevant errors back for display
+        @project.errors.clear
+        errors_to_check.each { |e| @project.errors.add(e.attribute, e.message) }
         render :new, status: :unprocessable_entity
       end
     end

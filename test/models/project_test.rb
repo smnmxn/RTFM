@@ -112,4 +112,99 @@ class ProjectTest < ActiveSupport::TestCase
     project.webhook_secret = nil
     assert_not project.verify_webhook_signature('{"test": "data"}', "sha256=something")
   end
+
+  # Subdomain validation tests
+  test "accepts valid subdomain" do
+    project = Project.new(user: @user, name: "Test", github_repo: "user/repo", subdomain: "my-company")
+    assert project.valid?
+  end
+
+  test "accepts subdomain with numbers" do
+    project = Project.new(user: @user, name: "Test", github_repo: "user/repo", subdomain: "company123")
+    assert project.valid?
+  end
+
+  test "rejects subdomain that starts with hyphen" do
+    project = Project.new(user: @user, name: "Test", github_repo: "user/repo", subdomain: "-invalid")
+    assert_not project.valid?
+    assert project.errors[:subdomain].any? { |e| e.include?("cannot start or end with hyphen") }
+  end
+
+  test "rejects subdomain that ends with hyphen" do
+    project = Project.new(user: @user, name: "Test", github_repo: "user/repo", subdomain: "invalid-")
+    assert_not project.valid?
+    assert project.errors[:subdomain].any? { |e| e.include?("cannot start or end with hyphen") }
+  end
+
+  test "rejects subdomain with uppercase letters" do
+    project = Project.new(user: @user, name: "Test", github_repo: "user/repo", subdomain: "MyCompany")
+    assert_not project.valid?
+    assert project.errors[:subdomain].any?
+  end
+
+  test "rejects subdomain shorter than 3 characters" do
+    project = Project.new(user: @user, name: "Test", github_repo: "user/repo", subdomain: "ab")
+    assert_not project.valid?
+    assert project.errors[:subdomain].any? { |e| e.include?("too short") }
+  end
+
+  test "rejects reserved subdomain www" do
+    project = Project.new(user: @user, name: "Test", github_repo: "user/repo", subdomain: "www")
+    assert_not project.valid?
+    assert_includes project.errors[:subdomain], "is reserved and cannot be used"
+  end
+
+  test "rejects reserved subdomain admin" do
+    project = Project.new(user: @user, name: "Test", github_repo: "user/repo", subdomain: "admin")
+    assert_not project.valid?
+    assert_includes project.errors[:subdomain], "is reserved and cannot be used"
+  end
+
+  test "rejects reserved subdomain login" do
+    project = Project.new(user: @user, name: "Test", github_repo: "user/repo", subdomain: "login")
+    assert_not project.valid?
+    assert_includes project.errors[:subdomain], "is reserved and cannot be used"
+  end
+
+  test "rejects reserved subdomain billing" do
+    project = Project.new(user: @user, name: "Test", github_repo: "user/repo", subdomain: "billing")
+    assert_not project.valid?
+    assert_includes project.errors[:subdomain], "is reserved and cannot be used"
+  end
+
+  test "requires unique subdomain" do
+    Project.create!(user: @user, name: "First", github_repo: "user/first", subdomain: "taken")
+    project = Project.new(user: users(:two), name: "Second", github_repo: "user/second", subdomain: "taken")
+    assert_not project.valid?
+    assert_includes project.errors[:subdomain], "has already been taken"
+  end
+
+  test "rejects subdomain that conflicts with existing slug" do
+    Project.create!(user: @user, name: "First", slug: "existing-slug", github_repo: "user/first")
+    project = Project.new(user: users(:two), name: "Second", github_repo: "user/second", subdomain: "existing-slug")
+    assert_not project.valid?
+    assert_includes project.errors[:subdomain], "conflicts with an existing project URL"
+  end
+
+  test "rejects slug that conflicts with existing subdomain" do
+    Project.create!(user: @user, name: "First", github_repo: "user/first", subdomain: "taken-subdomain")
+    project = Project.new(user: users(:two), name: "Second", github_repo: "user/second", slug: "taken-subdomain")
+    assert_not project.valid?
+    assert_includes project.errors[:slug], "conflicts with an existing subdomain"
+  end
+
+  test "allows blank subdomain" do
+    project = Project.new(user: @user, name: "Test", github_repo: "user/repo", subdomain: "")
+    assert project.valid?
+  end
+
+  test "effective_subdomain returns subdomain when set" do
+    project = Project.new(user: @user, name: "Test", github_repo: "user/repo", subdomain: "custom", slug: "test-slug")
+    assert_equal "custom", project.effective_subdomain
+  end
+
+  test "effective_subdomain falls back to slug when subdomain blank" do
+    project = Project.new(user: @user, name: "Test", github_repo: "user/repo", subdomain: "", slug: "test-slug")
+    assert_equal "test-slug", project.effective_subdomain
+  end
 end

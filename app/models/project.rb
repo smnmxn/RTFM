@@ -65,7 +65,17 @@ class Project < ApplicationRecord
   RESERVED_SUBDOMAINS = %w[
     www api admin app mail smtp ftp cdn assets static
     help support docs blog status dashboard
-    dev staging test demo
+    dev staging test demo preview sandbox
+    login signin signup register logout signout auth oauth sso
+    account profile settings preferences user users me
+    billing payment payments subscribe subscription pricing plans
+    home index about contact terms privacy legal security
+    download downloads install setup update updates
+    news newsletter announcements
+    search feedback report reports analytics metrics
+    embed widget widgets integration integrations
+    graphql rest webhook webhooks callback callbacks
+    internal system root null undefined localhost
   ].freeze
 
   validates :subdomain,
@@ -208,6 +218,8 @@ class Project < ApplicationRecord
   def broadcast_refreshes
     return unless status_fields_changed?
 
+    Rails.logger.info "[Project#broadcast_refreshes] Broadcasting refresh for project #{id}"
+    Rails.logger.info "[Project#broadcast_refreshes] Changed: analysis_status=#{saved_change_to_analysis_status?}"
     Turbo::StreamsChannel.broadcast_refresh_to([self, :onboarding])
     Turbo::StreamsChannel.broadcast_refresh_to([self, :analysis])
     Turbo::StreamsChannel.broadcast_refresh_to([self, :updates])
@@ -215,11 +227,11 @@ class Project < ApplicationRecord
   end
 
   def status_fields_changed?
-    # Note: sections_generation_status is excluded because the jobs
-    # handle their own broadcasts. Including it here causes race conditions
-    # where the checklist appears before contextual questions are answered.
-    saved_change_to_analysis_status? ||
-      saved_change_to_onboarding_step?
+    # Note: All status fields are excluded because the jobs handle their own
+    # targeted broadcasts. Including them here causes race conditions where
+    # full page refreshes happen and questions disappear mid-answer.
+    # The jobs use broadcast_update_to for targeted partial updates instead.
+    false
   end
 
   def subdomain_not_reserved

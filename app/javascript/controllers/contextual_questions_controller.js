@@ -9,8 +9,13 @@ export default class extends Controller {
   }
 
   connect() {
+    console.log('[contextual-questions] Controller connected')
     this.answers = {}
     this.updateUI()
+  }
+
+  disconnect() {
+    console.log('[contextual-questions] Controller DISCONNECTED - DOM was replaced!')
   }
 
   selectOption(event) {
