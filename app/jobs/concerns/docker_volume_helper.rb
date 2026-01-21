@@ -65,4 +65,16 @@ module DockerVolumeHelper
       container_path
     end
   end
+
+  # Returns Docker arguments for Claude authentication.
+  # Supports (in priority order):
+  # - CLAUDE_CODE_OAUTH_TOKEN: Token from `claude setup-token` (Max subscription)
+  # - ANTHROPIC_API_KEY: Standard API key
+  def claude_auth_docker_args
+    if ENV["CLAUDE_CODE_OAUTH_TOKEN"].present?
+      ["-e", "CLAUDE_CODE_OAUTH_TOKEN=#{ENV['CLAUDE_CODE_OAUTH_TOKEN']}"]
+    else
+      ["-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}"]
+    end
+  end
 end

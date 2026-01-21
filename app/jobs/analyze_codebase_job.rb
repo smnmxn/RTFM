@@ -81,7 +81,7 @@ class AnalyzeCodebaseJob < ApplicationJob
         "--rm",
         "-e", "GITHUB_REPO=#{project.github_repo}",
         "-e", "GITHUB_TOKEN=#{github_token}",
-        "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
+        *claude_auth_docker_args,
         "-v", "#{host_volume_path(output_dir)}:/output",
         "--network", "host",
         docker_image

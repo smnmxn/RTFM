@@ -117,7 +117,7 @@ class GenerateArticleJob < ApplicationJob
       cmd = [
         "docker", "run",
         "--rm",
-        "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
+        *claude_auth_docker_args,
         "-e", "GITHUB_TOKEN=#{github_token}",
         "-e", "GITHUB_REPO=#{project.github_repo}",
         "-e", "CLAUDE_MODEL=#{project.claude_model_id}",
