@@ -6,7 +6,7 @@ a, button, [role="button"], input[type="button"], input[type="submit"], input[ty
 }
 
 /* Brand gradient utilities */
-.bg-gradient-brand {
+@utility bg-gradient-brand {
   background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
 }
 
@@ -27,7 +27,7 @@ a, button, [role="button"], input[type="button"], input[type="submit"], input[ty
 }
 
 /* Smooth transitions */
-.transition-smooth {
+@utility transition-smooth {
   transition: all 0.2s ease-out;
 }
 
