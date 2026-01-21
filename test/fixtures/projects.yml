@@ -5,6 +5,13 @@ one:
   github_repo: alice/rtfm
   webhook_secret: secret123
 
+one_second:
+  user: one
+  name: Second Project
+  slug: second-project
+  github_repo: alice/second-project
+  webhook_secret: secret789
+
 two:
   user: two
   name: Another Project

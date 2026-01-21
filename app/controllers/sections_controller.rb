@@ -132,7 +132,7 @@ class SectionsController < ApplicationController
   def set_project
     @project = current_user.projects.find_by(slug: params[:project_slug])
     unless @project
-      redirect_to dashboard_path, alert: "Project not found."
+      redirect_to projects_path, alert: "Project not found."
     end
   end
 

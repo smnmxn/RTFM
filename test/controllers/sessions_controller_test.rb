@@ -24,10 +24,17 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "span", text: /Sign in with GitHub/
   end
 
-  test "login page redirects to dashboard if already logged in" do
+  test "login page redirects to single project if already logged in with one project" do
+    sign_in_as(@user)
+    projects(:one_second).destroy  # Leave only one project
+    get login_path
+    assert_redirected_to project_path(projects(:one))
+  end
+
+  test "login page redirects to projects list if already logged in with multiple projects" do
     sign_in_as(@user)
     get login_path
-    assert_redirected_to dashboard_path
+    assert_redirected_to projects_path
   end
 
   test "successful OAuth creates new user and redirects to onboarding" do
@@ -36,15 +43,11 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
       follow_redirect!
     end
 
-    # New users are redirected to onboarding wizard
-    assert_redirected_to dashboard_path
-    follow_redirect!
+    # New users (no projects) are redirected to onboarding
     assert_redirected_to new_onboarding_project_path
-    follow_redirect!
-    assert_select "h2", text: /Welcome to RTFM/
   end
 
-  test "successful OAuth for existing user updates token" do
+  test "successful OAuth for existing user with multiple projects redirects to projects list" do
     OmniAuth.config.mock_auth[:github] = OmniAuth::AuthHash.new({
       provider: "github",
       uid: @user.github_uid,
@@ -66,7 +69,28 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     @user.reload
     assert_equal "updated_token", @user.github_token
     assert_equal "Updated Name", @user.name
-    assert_redirected_to dashboard_path
+    assert_redirected_to projects_path
+  end
+
+  test "successful OAuth for existing user with one project redirects to that project" do
+    projects(:one_second).destroy  # Leave only one project
+
+    OmniAuth.config.mock_auth[:github] = OmniAuth::AuthHash.new({
+      provider: "github",
+      uid: @user.github_uid,
+      info: {
+        email: @user.email,
+        name: @user.name,
+        nickname: @user.github_username
+      },
+      credentials: {
+        token: "updated_token"
+      }
+    })
+
+    post "/auth/github"
+    follow_redirect!
+    assert_redirected_to project_path(projects(:one))
   end
 
   test "OAuth failure redirects to login with error message" do
@@ -82,7 +106,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
 
     # Verify logged out
-    get dashboard_path
+    get projects_path
     assert_redirected_to login_path
   end
 end

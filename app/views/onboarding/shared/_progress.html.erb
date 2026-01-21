@@ -1,9 +1,10 @@
 <nav aria-label="Progress">
   <ol class="flex items-center justify-between">
     <% steps = [
-      { num: 1, name: "Connect" },
-      { num: 2, name: "Analyze" },
-      { num: 3, name: "Review" }
+      { num: 1, name: "Setup" },
+      { num: 2, name: "Connect" },
+      { num: 3, name: "Analyze" },
+      { num: 4, name: "Review" }
     ] %>
     <% steps.each_with_index do |step, index| %>
       <li class="relative flex flex-col items-center <%= 'flex-1' unless index == steps.length - 1 %>">

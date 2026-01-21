@@ -31,13 +31,15 @@ Rails.application.routes.draw do
   get "/github_app/install", to: "github_app#install", as: :github_app_install
   get "/github_app/callback", to: "github_app#callback", as: :github_app_callback
 
-  # Dashboard
-  get "/dashboard", to: "dashboard#show", as: :dashboard
+  # Projects (list)
+  get "/projects", to: "projects#index", as: :projects
 
   # Onboarding Wizard
   namespace :onboarding do
     resources :projects, only: [ :new, :create ], param: :slug do
       member do
+        get :basics
+        patch :update_basics
         get :repository
         post :connect
         get :analyze

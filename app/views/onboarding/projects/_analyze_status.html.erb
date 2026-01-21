@@ -1,5 +1,5 @@
 <%
-  # Activity stages for codebase analysis (3-4 min total, ~25s per stage)
+  # Activity stages for codebase analysis
   analysis_stages = [
     "Scanning repository structure...",
     "Reading configuration files...",
@@ -11,7 +11,7 @@
     "Building documentation outline..."
   ]
 
-  # Activity stages for section generation (1-2 min total, ~15s per stage)
+  # Activity stages for section generation
   section_stages = [
     "Understanding your product...",
     "Identifying user-facing features...",
@@ -55,7 +55,6 @@
           stages: analysis_stages,
           stage_duration: 25,
           start_time: project.analysis_started_at,
-          time_estimate: "3-4 minutes",
           variant: "checklist" %>
     <% else %>
       <%# Questions not answered - show questions %>
@@ -108,7 +107,6 @@
           stages: section_stages,
           stage_duration: 15,
           start_time: project.sections_generation_started_at,
-          time_estimate: "1-2 minutes",
           variant: "checklist" %>
       <%= render "onboarding/shared/page_warning" %>
     </div>
@@ -143,7 +141,6 @@
           stages: section_stages,
           stage_duration: 15,
           start_time: project.sections_generation_started_at,
-          time_estimate: "1-2 minutes",
           variant: "checklist" %>
       <%= render "onboarding/shared/page_warning" %>
     </div>

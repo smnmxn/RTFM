@@ -3,7 +3,7 @@ class GithubAppController < ApplicationController
 
   def install
     # Store return path for after installation
-    session[:github_app_return_to] = params[:return_to] || dashboard_path
+    session[:github_app_return_to] = params[:return_to] || projects_path
 
     # Redirect to GitHub App installation page
     install_url = "https://github.com/apps/#{github_app_slug}/installations/new"
@@ -14,7 +14,7 @@ class GithubAppController < ApplicationController
     installation_id = params[:installation_id]
     setup_action = params[:setup_action]
 
-    return_path = session.delete(:github_app_return_to) || dashboard_path
+    return_path = session.delete(:github_app_return_to) || projects_path
 
     if installation_id.blank?
       redirect_to return_path, alert: "GitHub App installation was cancelled."

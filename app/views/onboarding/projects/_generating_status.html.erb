@@ -1,5 +1,5 @@
 <%
-  # Activity stages for recommendation generation (1-2 min total, ~15s per stage)
+  # Activity stages for recommendation generation
   recommendation_stages = [
     "Reviewing your sections...",
     "Identifying common questions...",
@@ -35,7 +35,6 @@
         start_time: recommendations_start,
         variant: "checklist" %>
 
-    <%= render "onboarding/shared/page_warning",
-        message: "This usually takes a minute or two. Please don't close this page." %>
+    <%= render "onboarding/shared/page_warning" %>
   </div>
 <% end %>

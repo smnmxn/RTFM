@@ -6,30 +6,48 @@ module Onboarding
     before_action :ensure_onboarding_active, except: [ :new, :create ]
     before_action :ensure_correct_step, except: [ :new, :create ]
 
-    # Step 0: Start onboarding - auto-creates project and goes to repository selection
+    # Step 0: Show form for project name and subdomain
     def new
-      # If there's already an onboarding in progress, resume it
-      if current_user.onboarding_in_progress?
-        project = current_user.current_onboarding_project
-        if Project::ONBOARDING_STEPS.include?(project.onboarding_step)
-          redirect_to send("#{project.onboarding_step}_onboarding_project_path", project)
-        else
-          # Invalid step - complete onboarding and go to project
-          project.complete_onboarding!
-          redirect_to project_path(project)
-        end
-        return
-      end
+      # Clean up any incomplete onboarding projects so user starts fresh
+      current_user.projects.onboarding_incomplete.destroy_all
 
-      # Auto-create project and start onboarding immediately
-      create_and_start_onboarding
+      @project = Project.new
     end
 
     def create
-      create_and_start_onboarding
+      @project = current_user.projects.build(basics_params)
+      @project.onboarding_step = "repository"
+      @project.onboarding_started_at = Time.current
+      # Use subdomain as slug, or generate from name
+      @project.slug = @project.subdomain.presence || @project.name.parameterize
+      # Placeholder repo until they select one
+      @project.github_repo = "placeholder/placeholder"
+
+      if @project.save(validate: false)
+        redirect_to repository_onboarding_project_path(@project)
+      else
+        render :new, status: :unprocessable_entity
+      end
     end
 
-    # Step 1: Connect Repository
+    # Step 1: Edit project basics (name and subdomain)
+    def basics
+    end
+
+    def update_basics
+      if @project.update(basics_params)
+        # Update slug to match subdomain if provided
+        new_slug = @project.subdomain.presence || @project.name.parameterize
+        @project.update_column(:slug, new_slug) if new_slug != @project.slug
+
+        @project.advance_onboarding!("repository")
+        redirect_to repository_onboarding_project_path(@project)
+      else
+        render :basics, status: :unprocessable_entity
+      end
+    end
+
+    # Step 2: Connect Repository
     def repository
       @repositories = [] # Loaded via Turbo Frame
     end
@@ -37,7 +55,6 @@ module Onboarding
     def connect
       repo_full_name = params[:github_repo]
       installation_id = params[:installation_id]
-      repo_name = repo_full_name&.split("/")&.last
 
       # Find the installation
       installation = GithubAppInstallation.find_by(github_installation_id: installation_id)
@@ -47,10 +64,9 @@ module Onboarding
         return
       end
 
+      # Only update github_repo and installation - preserve user's name and subdomain
       @project.assign_attributes(
-        name: repo_name&.titleize&.tr("-", " "),
         github_repo: repo_full_name,
-        slug: repo_name&.parameterize,
         github_app_installation: installation
       )
 
@@ -95,7 +111,10 @@ module Onboarding
 
     def save_context
       current_context = @project.user_context || {}
-      @project.update!(user_context: current_context.merge(context_params.to_h))
+      # Use update_column to avoid triggering after_update_commit callbacks
+      # This prevents broadcast_refreshes from being called, which would
+      # cause a race condition with the analysis job and make questions disappear
+      @project.update_column(:user_context, current_context.merge(context_params.to_h))
       head :ok
     end
 
@@ -146,7 +165,7 @@ module Onboarding
     def set_project
       @project = current_user.projects.find_by(slug: params[:slug])
       unless @project
-        redirect_to dashboard_path, alert: "Project not found."
+        redirect_to projects_path, alert: "Project not found."
       end
     end
 
@@ -164,7 +183,7 @@ module Onboarding
       if @project.save(validate: false)
         redirect_to repository_onboarding_project_path(@project)
       else
-        redirect_to dashboard_path, alert: "Could not start onboarding"
+        redirect_to projects_path, alert: "Could not start onboarding"
       end
     end
 
@@ -189,6 +208,7 @@ module Onboarding
 
       # Map action names to step names
       action_to_step = {
+        "basics" => "basics",
         "repository" => "repository",
         "analyze" => "analyze",
         "sections" => "sections",
@@ -200,6 +220,10 @@ module Onboarding
 
       # Redirect to correct step
       redirect_to send("#{expected_step}_onboarding_project_path", @project)
+    end
+
+    def basics_params
+      params.require(:project).permit(:name, :subdomain)
     end
 
     def context_params

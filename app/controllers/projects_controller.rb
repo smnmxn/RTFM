@@ -1,5 +1,9 @@
 class ProjectsController < ApplicationController
-  before_action :set_project, except: [ :new, :create, :repositories ]
+  before_action :set_project, except: [ :index, :new, :create, :repositories ]
+
+  def index
+    @projects = current_user.projects.where(onboarding_step: nil).order(updated_at: :desc)
+  end
 
   def new
     # All new projects should go through onboarding
@@ -471,7 +475,7 @@ class ProjectsController < ApplicationController
 
   def destroy
     @project.destroy
-    redirect_to dashboard_path, notice: "Project '#{@project.name}' disconnected."
+    redirect_to projects_path, notice: "Project '#{@project.name}' disconnected."
   end
 
   private
@@ -479,7 +483,7 @@ class ProjectsController < ApplicationController
   def set_project
     @project = current_user.projects.find_by(slug: params[:slug])
     unless @project
-      redirect_to dashboard_path, alert: "Project not found."
+      redirect_to projects_path, alert: "Project not found."
     end
   end
 

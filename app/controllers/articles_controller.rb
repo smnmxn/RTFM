@@ -3,7 +3,7 @@ class ArticlesController < ApplicationController
   before_action :set_article
 
   def show
-    # Redirect to dashboard with article preselected
+    # Redirect to project page with article preselected
     redirect_to project_path(@article.project, article: @article.id)
   end
 

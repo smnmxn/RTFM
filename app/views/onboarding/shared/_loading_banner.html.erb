@@ -1,7 +1,6 @@
 <%# Standard loading banner for onboarding %>
 <%# Parameters:
     message: - Static message to display
-    time_estimate: (optional) - e.g., "3-4 minutes"
     stages: (optional) - Array of stage messages to cycle through
     stage_duration: (optional) - Seconds per stage, default 20
     start_time: (optional) - Unix timestamp when operation started
@@ -45,9 +44,6 @@
       <% end %>
     </div>
 
-    <% if local_assigns[:time_estimate] %>
-      <p class="text-xs text-slate-400 mt-3 text-center">Estimated time: <%= time_estimate %></p>
-    <% end %>
   </div>
 
 <% elsif local_assigns[:stages].present? %>
@@ -60,9 +56,6 @@
     <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2 flex-shrink-0") %>
     <span data-activity-stages-target="message"
           class="transition-opacity duration-150"><%= stages.first %></span>
-    <% if local_assigns[:time_estimate] %>
-      <span class="ml-2 opacity-80 flex-shrink-0">(<%= time_estimate %>)</span>
-    <% end %>
   </div>
 
 <% else %>
@@ -70,8 +63,5 @@
   <div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center">
     <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2") %>
     <span><%= message %></span>
-    <% if local_assigns[:time_estimate] %>
-      <span class="ml-2 opacity-80">(<%= time_estimate %>)</span>
-    <% end %>
   </div>
 <% end %>

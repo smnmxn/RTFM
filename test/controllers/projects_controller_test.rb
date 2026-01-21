@@ -33,15 +33,18 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to login_path
   end
 
-  test "destroy removes project" do
+  test "destroy removes project and redirects to remaining project" do
     sign_in_as(@user)
-    project = projects(:one)
+    project = projects(:one_second)
 
     assert_difference -> { Project.count }, -1 do
       delete project_path(project)
     end
 
-    assert_redirected_to dashboard_path
+    # After deletion, user has one project left, so redirects to it
+    assert_redirected_to projects_path
+    follow_redirect!
+    assert_redirected_to project_path(projects(:one))
   end
 
   test "destroy cannot delete other user's project" do
