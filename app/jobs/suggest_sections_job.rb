@@ -32,11 +32,17 @@ class SuggestSectionsJob < ApplicationJob
         project.reload.update!(sections_generation_status: "completed")
         Rails.logger.info "[SuggestSectionsJob] Suggested #{result[:sections]&.size || 0} sections for project #{project.id}"
 
+        # Broadcast update to refresh the onboarding view
+        broadcast_onboarding_update(project)
+
         # Trigger CSS generation for mockup styling
         GenerateCssJob.perform_later(project_id: project.id)
       else
         project.reload.update!(sections_generation_status: "failed")
         Rails.logger.warn "[SuggestSectionsJob] Suggestion failed for project #{project.id}: #{result[:error]}"
+
+        # Broadcast update to show error state
+        broadcast_onboarding_update(project)
       end
     rescue ActiveRecord::RecordNotFound, ActiveRecord::InvalidForeignKey => e
       # Project was deleted while job was running - this is expected, just log and exit
@@ -215,5 +221,15 @@ class SuggestSectionsJob < ApplicationJob
   rescue => e
     Rails.logger.error "[SuggestSectionsJob] Failed to get GitHub token: #{e.message}"
     nil
+  end
+
+  def broadcast_onboarding_update(project)
+    # Broadcast to the onboarding channel to refresh the analyze status
+    Turbo::StreamsChannel.broadcast_update_to(
+      [project, :onboarding],
+      target: ActionView::RecordIdentifier.dom_id(project, :onboarding_analyze),
+      partial: "onboarding/projects/analyze_status",
+      locals: { project: project }
+    )
   end
 end

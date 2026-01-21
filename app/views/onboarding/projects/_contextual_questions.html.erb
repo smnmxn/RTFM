@@ -3,27 +3,13 @@
 
 <% contextual_answers = project.user_context&.dig("contextual_answers") || {} %>
 <% if contextual_answers.any? %>
-  <!-- Already answered - show completion state -->
-  <div class="bg-slate-50 rounded-lg p-6 text-center">
-    <%= heroicon "check-circle", options: { class: "h-8 w-8 text-emerald-500 mx-auto mb-3" } %>
-    <p class="text-slate-900 font-medium mb-1">Thanks for your answers!</p>
-    <p class="text-slate-500 text-sm">We're generating help topic suggestions based on your project. This usually takes 1–2 minutes.</p>
-  </div>
+  <!-- Already answered - show completed questions -->
+  <%= render "onboarding/shared/completed_questions",
+      questions: completed_contextual_questions(project) %>
 <% else %>
 <div data-controller="contextual-questions"
      data-contextual-questions-save-url-value="<%= save_context_onboarding_project_path(project) %>"
      data-contextual-questions-total-value="<%= questions.size %>">
-
-  <div class="mb-4">
-    <h3 class="text-base font-semibold text-slate-900 mb-1">
-      A few questions about your project
-    </h3>
-    <p class="text-sm text-slate-500">
-      We spotted a few things in your codebase we'd love to know more about.
-      Your answers help us write more relevant help content. Skip any you're not sure about.
-    </p>
-  </div>
-
   <div class="bg-slate-50 rounded-lg p-4">
     <div class="relative overflow-hidden" style="min-height: 400px;">
       <% questions.each_with_index do |question, index| %>
@@ -69,9 +55,11 @@
     <!-- Completion Card -->
     <div data-contextual-questions-target="completionCard"
          class="absolute inset-0 transition-transform duration-300 ease-in-out translate-x-full flex flex-col items-center justify-center text-center">
-      <%= spinner_icon(size: "h-8 w-8", color: "text-violet-600", extra_class: "mb-4") %>
+      <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-4">
+        <%= heroicon "check-circle", variant: :solid, options: { class: "w-6 h-6 text-green-600" } %>
+      </div>
       <p class="text-slate-900 font-medium mb-1">Thanks for that!</p>
-      <p class="text-slate-500 text-sm">We're generating help topic suggestions based on your project. This usually takes 1–2 minutes.</p>
+      <p class="text-slate-500 text-sm">We're generating help topic suggestions based on your project.</p>
     </div>
     </div>
 
@@ -94,7 +82,7 @@
     <button type="button"
             data-action="click->contextual-questions#next"
             data-contextual-questions-target="nextButton"
-            class="px-4 py-2 text-sm font-medium text-white bg-gradient-brand rounded-lg hover:opacity-90 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+            class="btn-primary-sm disabled:opacity-50 disabled:cursor-not-allowed"
             disabled>
         Next
       </button>

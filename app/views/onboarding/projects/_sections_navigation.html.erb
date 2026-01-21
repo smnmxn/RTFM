@@ -2,13 +2,13 @@
   <div class="px-6 py-4 bg-emerald-50 border-t border-emerald-100">
     <div class="flex items-center justify-between">
       <div class="flex items-center text-emerald-700">
-<%= heroicon "check-circle", variant: :solid, options: { class: "h-5 w-5 mr-2" } %>
+        <%= heroicon "check-circle", variant: :solid, options: { class: "h-5 w-5 mr-2" } %>
         <span class="font-medium">All topics reviewed!</span>
       </div>
       <%= button_to "View my Inbox",
           complete_sections_onboarding_project_path(project),
           method: :post,
-          class: "px-5 py-2 bg-gradient-brand text-white font-medium rounded-lg hover:opacity-90 transition-smooth" %>
+          class: "btn-primary-md" %>
     </div>
   </div>
 <% end %>

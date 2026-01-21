@@ -55,3 +55,81 @@ a, button, [role="button"], input[type="button"], input[type="submit"], input[ty
 .bg-gradient-connector {
   background: linear-gradient(90deg, #7c3aed 0%, #a855f7 100%);
 }
+
+/* ===== ONBOARDING BUTTON HIERARCHY ===== */
+
+/* Primary buttons - main CTAs */
+.btn-primary-lg {
+  @apply px-6 py-3 bg-gradient-brand text-white font-medium rounded-lg hover:opacity-90 transition-smooth;
+}
+
+.btn-primary-md {
+  @apply px-5 py-2 bg-gradient-brand text-white font-medium rounded-lg hover:opacity-90 transition-smooth;
+}
+
+.btn-primary-sm {
+  @apply px-3 py-1.5 text-sm bg-gradient-brand text-white font-medium rounded-lg hover:opacity-90 transition-smooth;
+}
+
+/* Secondary buttons - alternative actions */
+.btn-secondary-lg {
+  @apply px-6 py-3 bg-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-300 transition-smooth;
+}
+
+.btn-secondary-md {
+  @apply px-5 py-2 bg-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-300 transition-smooth;
+}
+
+.btn-secondary-sm {
+  @apply px-3 py-1.5 text-sm bg-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-300 transition-smooth;
+}
+
+/* Success buttons - accept/approve actions */
+.btn-success-sm {
+  @apply px-3 py-1.5 text-sm bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 transition-smooth;
+}
+
+/* Danger buttons - error/retry actions */
+.btn-danger-md {
+  @apply px-5 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-smooth;
+}
+
+.btn-danger-sm {
+  @apply px-3 py-1.5 text-sm bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-smooth;
+}
+
+/* Ghost buttons - subtle actions */
+.btn-ghost-sm {
+  @apply px-3 py-1.5 text-sm bg-white text-slate-500 border border-slate-200 font-medium rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-smooth;
+}
+
+/* ===== ONBOARDING CARD STYLES ===== */
+
+.onboarding-card {
+  @apply bg-white shadow-sm rounded-xl border border-slate-200 overflow-hidden;
+}
+
+.onboarding-card-header {
+  @apply px-6 py-5 border-b border-slate-100;
+}
+
+.onboarding-card-title {
+  @apply text-xl font-semibold text-slate-900;
+}
+
+.onboarding-card-subtitle {
+  @apply mt-1 text-sm text-slate-500;
+}
+
+.onboarding-card-body {
+  @apply p-6;
+}
+
+/* ===== LOADING STATES ===== */
+
+.loading-banner {
+  @apply px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center;
+}
+
+/* ===== ACTIVITY STAGES CHECKLIST ===== */
+/* Icon visibility and text styling are controlled by JavaScript in activity_stages_controller.js */

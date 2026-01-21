@@ -1,70 +1,159 @@
-<div id="<%= dom_id(project, :onboarding_analyze) %>" class="p-6">
+<%
+  # Activity stages for codebase analysis (3-4 min total, ~25s per stage)
+  analysis_stages = [
+    "Scanning repository structure...",
+    "Reading configuration files...",
+    "Identifying key components...",
+    "Analyzing code patterns...",
+    "Mapping dependencies...",
+    "Detecting frameworks and libraries...",
+    "Understanding your architecture...",
+    "Building documentation outline..."
+  ]
+
+  # Activity stages for section generation (1-2 min total, ~15s per stage)
+  section_stages = [
+    "Understanding your product...",
+    "Identifying user-facing features...",
+    "Analyzing common use cases...",
+    "Grouping related functionality...",
+    "Prioritizing documentation topics...",
+    "Finalizing section structure..."
+  ]
+%>
+
+<div id="<%= dom_id(project, :onboarding_analyze) %>">
 <% case project.analysis_status %>
 <% when nil, "" %>
-  <div class="text-center py-8">
-    <p class="text-slate-600 mb-4">Ready to analyze your codebase.</p>
-    <%= button_to "Start Analysis",
-        start_analysis_onboarding_project_path(project),
-        method: :post,
-        class: "px-6 py-3 bg-gradient-brand text-white font-medium rounded-lg hover:opacity-90 transition-smooth" %>
+  <div class="p-6">
+    <%= render "onboarding/shared/step_header",
+        title: "Analyze your codebase",
+        subtitle: "We'll scan your repository to understand your project." %>
+    <div class="text-center py-8">
+      <p class="text-slate-600 mb-4">Ready to analyze your codebase.</p>
+      <%= button_to "Start Analysis",
+          start_analysis_onboarding_project_path(project),
+          method: :post,
+          class: "btn-primary-lg" %>
+    </div>
   </div>
 
 <% when "pending", "running" %>
-<div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center rounded-t-lg -mt-6 -mx-6 mb-6">
-    <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2") %>
-    Analyzing your codebase...
-  </div>
-  <%= render "onboarding/projects/analysis_questions", project: project %>
-
-<% when "completed" %> 
-  <% if project.sections_being_generated? %>
-<div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center rounded-t-lg -mt-6 -mx-6 mb-6">
-      <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2") %>
-      Generating help topic suggestions...
-    </div>
-    <% if project.contextual_questions.present? %>
-      <%= render "onboarding/projects/contextual_questions", project: project %>
+  <div class="p-6">
+    <% if project.target_audience.present? %>
+      <%# Questions answered - show progress checklist %>
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
+          <%= heroicon "magnifying-glass", variant: :outline, options: { class: "w-8 h-8 text-violet-600 animate-pulse" } %>
+        </div>
+        <h3 class="text-xl font-semibold text-slate-900 mb-2">Analyzing your codebase</h3>
+        <p class="text-slate-500 text-sm max-w-md mx-auto">
+          We're scanning your repository to understand your project structure.
+        </p>
+      </div>
+      <%= render "onboarding/shared/loading_banner",
+          stages: analysis_stages,
+          stage_duration: 25,
+          start_time: project.analysis_started_at,
+          time_estimate: "3-4 minutes",
+          variant: "checklist" %>
     <% else %>
-      <div class="py-8 text-center text-slate-500">Almost there...</div>
+      <%# Questions not answered - show questions %>
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
+          <%= heroicon "chat-bubble-left-right", variant: :outline, options: { class: "w-8 h-8 text-violet-600" } %>
+        </div>
+        <h3 class="text-xl font-semibold text-slate-900 mb-2">Help us tailor your docs</h3>
+        <p class="text-slate-500 text-sm max-w-md mx-auto">
+          Answer a few quick questions while we analyze your codebase.
+        </p>
+      </div>
+      <%= render "onboarding/projects/analysis_questions", project: project %>
     <% end %>
+    <%= render "onboarding/shared/page_warning" %>
+  </div>
+
+<% when "completed" %>
+  <% contextual_answers = project.user_context&.dig("contextual_answers") || {} %>
+  <% has_unanswered_contextual_questions = project.contextual_questions.present? && contextual_answers.empty? %>
+
+  <% if has_unanswered_contextual_questions %>
+    <%# Contextual questions not answered - show questions (regardless of sections status) %>
+    <div class="p-6">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
+          <%= heroicon "chat-bubble-left-right", variant: :outline, options: { class: "w-8 h-8 text-violet-600" } %>
+        </div>
+        <h3 class="text-xl font-semibold text-slate-900 mb-2">A few more questions</h3>
+        <p class="text-slate-500 text-sm max-w-md mx-auto">
+          Help us understand your product better while we generate topics.
+        </p>
+      </div>
+      <%= render "onboarding/projects/contextual_questions", project: project %>
+      <%= render "onboarding/shared/page_warning" %>
+    </div>
+  <% elsif project.sections_being_generated? %>
+    <%# Sections still generating - show progress checklist %>
+    <div class="p-6">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
+          <%= heroicon "rectangle-stack", variant: :outline, options: { class: "w-8 h-8 text-violet-600 animate-pulse" } %>
+        </div>
+        <h3 class="text-xl font-semibold text-slate-900 mb-2">Generating topics</h3>
+        <p class="text-slate-500 text-sm max-w-md mx-auto">
+          We're identifying the best documentation topics for your project.
+        </p>
+      </div>
+      <%= render "onboarding/shared/loading_banner",
+          stages: section_stages,
+          stage_duration: 15,
+          start_time: project.sections_generation_started_at,
+          time_estimate: "1-2 minutes",
+          variant: "checklist" %>
+      <%= render "onboarding/shared/page_warning" %>
+    </div>
   <% elsif project.sections.pending.any? || project.sections.accepted.any? %>
-    <div class="text-center py-8"
-         data-controller="redirect"
-         data-redirect-url-value="<%= sections_onboarding_project_path(project) %>">
-      <p class="text-slate-600">Redirecting...</p>
+    <div class="p-6">
+      <%= render "onboarding/shared/completion_state",
+          title: "Analysis complete!",
+          message: "Redirecting to review your topics...",
+          redirect_url: sections_onboarding_project_path(project) %>
     </div>
   <% elsif project.sections_generation_status == "failed" %>
-    <div class="text-center py-8">
-      <p class="text-amber-600 mb-4">Couldn't generate suggestions automatically.</p>
-      <div class="flex justify-center gap-3">
-        <%= button_to "Retry",
-            retry_sections_onboarding_project_path(project),
-            method: :post,
-            class: "px-6 py-3 bg-amber-600 text-white font-medium rounded-lg hover:bg-amber-700 transition-smooth" %>
-        <%= link_to "Continue Manually",
-            sections_onboarding_project_path(project),
-            class: "px-6 py-3 bg-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-300 transition-smooth" %>
-      </div>
+    <div class="p-6">
+      <%= render "onboarding/shared/error_state",
+          message: "Couldn't generate suggestions automatically.",
+          retry_path: retry_sections_onboarding_project_path(project),
+          retry_text: "Retry",
+          secondary_path: sections_onboarding_project_path(project),
+          secondary_text: "Continue Manually" %>
     </div>
   <% else %>
-<div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center rounded-t-lg -mt-6 -mx-6 mb-6">
-      <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2") %>
-      Preparing suggestions...
+    <div class="p-6">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
+          <%= heroicon "rectangle-stack", variant: :outline, options: { class: "w-8 h-8 text-violet-600 animate-pulse" } %>
+        </div>
+        <h3 class="text-xl font-semibold text-slate-900 mb-2">Generating topics</h3>
+        <p class="text-slate-500 text-sm max-w-md mx-auto">
+          We're identifying the best documentation topics for your project.
+        </p>
+      </div>
+      <%= render "onboarding/shared/loading_banner",
+          stages: section_stages,
+          stage_duration: 15,
+          start_time: project.sections_generation_started_at,
+          time_estimate: "1-2 minutes",
+          variant: "checklist" %>
+      <%= render "onboarding/shared/page_warning" %>
     </div>
-    <% if project.contextual_questions.present? %>
-      <%= render "onboarding/projects/contextual_questions", project: project %>
-    <% else %>
-      <div class="py-8 text-center text-slate-500">Almost there...</div>
-    <% end %>
   <% end %>
 
 <% when "failed" %>
-  <div class="text-center py-8">
-    <p class="text-red-600 mb-4">Analysis failed. Please try again.</p>
-    <%= button_to "Retry",
-        start_analysis_onboarding_project_path(project),
-        method: :post,
-        class: "px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-smooth" %>
+  <div class="p-6">
+    <%= render "onboarding/shared/error_state",
+        message: "Analysis failed. Please try again.",
+        retry_path: start_analysis_onboarding_project_path(project) %>
   </div>
 <% end %>
 </div>

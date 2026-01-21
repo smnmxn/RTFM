@@ -477,7 +477,10 @@ class ProjectsController < ApplicationController
   private
 
   def set_project
-    @project = current_user.projects.find_by!(slug: params[:slug])
+    @project = current_user.projects.find_by(slug: params[:slug])
+    unless @project
+      redirect_to dashboard_path, alert: "Project not found."
+    end
   end
 
   def branding_params

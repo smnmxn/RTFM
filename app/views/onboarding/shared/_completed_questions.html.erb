@@ -1,0 +1,28 @@
+<%# Display completed questions with their answers %>
+<%# Parameters: questions - Array of {question:, answer:, skipped:} hashes %>
+
+<div class="bg-slate-50 rounded-lg overflow-hidden">
+  <div class="max-h-80 overflow-y-auto divide-y divide-slate-200">
+    <% questions.each do |q| %>
+      <div class="px-4 py-3 flex items-start gap-3">
+        <% if q[:skipped] %>
+          <div class="flex-shrink-0 mt-0.5">
+            <%= heroicon "minus", variant: :mini, options: { class: "h-4 w-4 text-slate-400" } %>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-slate-400"><%= q[:question] %></p>
+            <p class="text-sm text-slate-400 italic">Skipped</p>
+          </div>
+        <% else %>
+          <div class="flex-shrink-0 mt-0.5">
+            <%= heroicon "check", variant: :mini, options: { class: "h-4 w-4 text-green-500" } %>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-slate-500"><%= q[:question] %></p>
+            <p class="text-sm text-slate-900 font-medium"><%= q[:answer] %></p>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

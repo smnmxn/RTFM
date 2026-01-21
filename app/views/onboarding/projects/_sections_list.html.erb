@@ -1,27 +1,62 @@
-  <div class="px-6 py-5 border-b border-slate-100">
-    <h2 class="text-xl font-semibold text-slate-900">We found these topics</h2>
-    <p class="mt-1 text-sm text-slate-500">
-      Accept the sections you'd like to generate documentation for.
-    </p>
-  </div>
+<%
+  # Activity stages for section generation (1-2 min total, ~15s per stage)
+  section_stages = [
+    "Understanding your product...",
+    "Identifying user-facing features...",
+    "Analyzing common use cases...",
+    "Grouping related functionality...",
+    "Prioritizing documentation topics...",
+    "Finalizing section structure..."
+  ]
+%>
+
 <div id="pending-sections-list">
 <% if project.sections_being_generated? %>
-    <div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center">
-      <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2") %>
-      Generating suggestions...
+  <div class="p-6">
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
+        <%= heroicon "rectangle-stack", variant: :outline, options: { class: "w-8 h-8 text-violet-600 animate-pulse" } %>
+      </div>
+      <h3 class="text-xl font-semibold text-slate-900 mb-2">Generating topics</h3>
+      <p class="text-slate-500 text-sm max-w-md mx-auto">
+        We're identifying the best documentation topics for your project.
+      </p>
     </div>
-    <div class="p-6">
-      <% if project.contextual_questions.present? %>
-        <%= render "onboarding/projects/contextual_questions", project: project %>
-      <% else %>
-        <div class="py-8 text-center text-slate-500">Almost there...</div>
-      <% end %>
+    <%= render "onboarding/shared/loading_banner",
+        stages: section_stages,
+        stage_duration: 15,
+        start_time: project.sections_generation_started_at,
+        time_estimate: "1-2 minutes",
+        variant: "checklist" %>
+    <%= render "onboarding/shared/page_warning" %>
+  </div>
+<% elsif sections.any? %>
+  <div class="p-6 pb-0">
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
+        <%= heroicon "check-circle", variant: :outline, options: { class: "w-8 h-8 text-violet-600" } %>
+      </div>
+      <h3 class="text-xl font-semibold text-slate-900 mb-2">Review your topics</h3>
+      <p class="text-slate-500 text-sm max-w-md mx-auto">
+        Accept the sections you'd like to generate documentation for.
+      </p>
     </div>
-  <% elsif sections.any? %>
-    <div class="divide-y divide-slate-100">
-      <% sections.each do |section| %>
-        <%= render "sections/pending_card", section: section %>
-      <% end %>
+  </div>
+  <div class="divide-y divide-slate-100">
+    <% sections.each do |section| %>
+      <%= render "sections/pending_card", section: section %>
+    <% end %>
+  </div>
+<% else %>
+  <%# All sections reviewed - show completion state %>
+  <div class="p-8 text-center">
+    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
+      <%= heroicon "check", variant: :outline, options: { class: "w-8 h-8 text-emerald-600" } %>
     </div>
-  <% end %>
+    <h3 class="text-lg font-semibold text-slate-900 mb-2">All topics reviewed!</h3>
+    <p class="text-slate-500 text-sm max-w-sm mx-auto">
+      You've reviewed all the suggested topics. Click below to continue and we'll start generating article recommendations.
+    </p>
+  </div>
+<% end %>
 </div>

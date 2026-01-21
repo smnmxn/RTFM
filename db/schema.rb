@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_21_110106) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_21_130923) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -110,6 +110,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_21_110106) do
     t.json "ai_settings"
     t.string "analysis_commit_sha"
     t.json "analysis_metadata"
+    t.datetime "analysis_started_at"
     t.string "analysis_status"
     t.text "analysis_summary"
     t.datetime "analyzed_at"

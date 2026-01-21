@@ -1,16 +1,13 @@
-<div class="bg-white shadow-sm rounded-xl border border-slate-200">
-  <div class="px-6 py-5 border-b border-slate-100">
-    <h2 class="text-xl font-semibold text-slate-900">Choose your repository</h2>
-    <p class="mt-1 text-sm text-slate-500">
-      We'll analyze the code and suggest what to document.
-    </p>
-  </div>
+<div class="bg-white shadow-sm rounded-xl border border-slate-200 overflow-hidden">
+  <%= render "onboarding/shared/step_header",
+      title: "Choose your repository",
+      subtitle: "We'll analyze the code and suggest what to document." %>
 
   <%= turbo_frame_tag "repository_list",
       src: repositories_projects_path(onboarding_project_slug: @project.slug),
       loading: :lazy do %>
     <div class="p-8 text-center">
-      <div class="h-8 w-8 rounded-full border-2 border-slate-200 border-t-violet-600 animate-spin mx-auto"></div>
+      <%= spinner_icon(size: "h-8 w-8", color: "text-violet-600", extra_class: "mx-auto") %>
       <p class="mt-3 text-sm text-slate-500">Loading your repositories...</p>
     </div>
   <% end %>

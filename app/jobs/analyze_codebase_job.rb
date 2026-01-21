@@ -38,15 +38,25 @@ class AnalyzeCodebaseJob < ApplicationJob
         end
 
         # Trigger section suggestions after successful analysis
+        project.update!(
+          sections_generation_status: "pending",
+          sections_generation_started_at: Time.current
+        )
         SuggestSectionsJob.perform_later(project_id: project.id)
 
         # Auto-advance onboarding if in wizard
         if project.in_onboarding? && project.onboarding_step == "analyze"
           project.advance_onboarding!("sections")
         end
+
+        # Broadcast update to show contextual questions
+        broadcast_onboarding_update(project)
       else
         project.update!(analysis_status: "failed")
         Rails.logger.error "[AnalyzeCodebaseJob] Analysis failed for project #{project.id}: #{result[:error]}"
+
+        # Broadcast update to show error state
+        broadcast_onboarding_update(project)
       end
 
       # Reload to ensure we have the latest data (including contextual_questions)
@@ -278,5 +288,15 @@ class AnalyzeCodebaseJob < ApplicationJob
   rescue => e
     Rails.logger.error "[AnalyzeCodebaseJob] Failed to get GitHub App token: #{e.message}"
     nil
+  end
+
+  def broadcast_onboarding_update(project)
+    # Broadcast to the onboarding channel to refresh the analyze status
+    Turbo::StreamsChannel.broadcast_update_to(
+      [project, :onboarding],
+      target: ActionView::RecordIdentifier.dom_id(project, :onboarding_analyze),
+      partial: "onboarding/projects/analyze_status",
+      locals: { project: project }
+    )
   end
 end

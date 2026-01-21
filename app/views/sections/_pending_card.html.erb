@@ -3,12 +3,12 @@
     <p class="font-medium text-slate-900"><%= section.name %></p>
     <p class="text-sm text-slate-500 mt-1"><%= section.description %></p>
   </div>
-  <div class="ml-4 flex gap-3">
-    <%= button_to "Accept", accept_project_section_path(section.project, section),
-        method: :post,
-        class: "px-3 py-1.5 text-sm bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 transition-smooth cursor-pointer" %>
+  <div class="ml-4 flex items-center gap-2">
     <%= button_to "Skip", reject_project_section_path(section.project, section),
         method: :post,
-        class: "px-3 py-1.5 text-sm bg-white text-slate-500 border border-slate-200 font-medium rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-smooth cursor-pointer" %>
+        class: "px-3 py-1.5 text-sm border border-red-300 text-red-700 font-medium rounded-lg hover:bg-red-50 cursor-pointer" %>
+    <%= button_to "Accept", accept_project_section_path(section.project, section),
+        method: :post,
+        class: "px-4 py-1.5 text-sm bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 cursor-pointer" %>
   </div>
 <% end %>

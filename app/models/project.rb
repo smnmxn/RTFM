@@ -14,6 +14,7 @@ class Project < ApplicationRecord
   has_many :articles, dependent: :destroy
   has_many :recommendations, dependent: :destroy
   has_many :sections, dependent: :destroy
+  has_many :claude_usages, dependent: :destroy
 
   # Logo upload via Active Storage
   has_one_attached :logo
@@ -105,7 +106,7 @@ class Project < ApplicationRecord
 
   # Job status tracking
   def sections_being_generated?
-    sections_generation_status == "running"
+    sections_generation_status.in?(%w[pending running])
   end
 
   def sections_generation_complete?
@@ -211,9 +212,11 @@ class Project < ApplicationRecord
   end
 
   def status_fields_changed?
+    # Note: sections_generation_status is excluded because the jobs
+    # handle their own broadcasts. Including it here causes race conditions
+    # where the checklist appears before contextual questions are answered.
     saved_change_to_analysis_status? ||
-      saved_change_to_onboarding_step? ||
-      saved_change_to_sections_generation_status?
+      saved_change_to_onboarding_step?
   end
 
   def subdomain_not_reserved

@@ -63,14 +63,20 @@ module Onboarding
     def analyze
       # Auto-start analysis if not already running
       if @project.analysis_status.nil? || @project.analysis_status.blank?
-        @project.update!(analysis_status: "pending")
+        @project.update!(
+          analysis_status: "pending",
+          analysis_started_at: Time.current
+        )
         AnalyzeCodebaseJob.perform_later(@project.id)
       end
     end
 
     def start_analysis
       unless @project.analysis_status == "running"
-        @project.update!(analysis_status: "pending")
+        @project.update!(
+          analysis_status: "pending",
+          analysis_started_at: Time.current
+        )
         AnalyzeCodebaseJob.perform_later(@project.id)
       end
       redirect_to analyze_onboarding_project_path(@project)
@@ -138,7 +144,10 @@ module Onboarding
     private
 
     def set_project
-      @project = current_user.projects.find_by!(slug: params[:slug])
+      @project = current_user.projects.find_by(slug: params[:slug])
+      unless @project
+        redirect_to dashboard_path, alert: "Project not found."
+      end
     end
 
     def create_and_start_onboarding

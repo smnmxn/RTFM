@@ -25,16 +25,24 @@ export default class extends Controller {
   }
 
   async next() {
+    // Show loading state
+    const originalText = this.nextButtonTarget.textContent
+    this.nextButtonTarget.disabled = true
+    this.nextButtonTarget.innerHTML = `<span class="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></span>Saving...`
+
     // Save current answer
     await this.saveCurrentAnswer()
 
-    // Move to next card
+    // Restore button
+    this.nextButtonTarget.innerHTML = originalText
+
+    // Move to next card or complete
     if (this.currentIndexValue < this.totalCards - 1) {
       this.currentIndexValue++
       this.updateUI()
     } else {
-      // Show completion card
-      this.showCompletion()
+      // Last question answered - reload to show checklist
+      window.location.reload()
     }
   }
 
@@ -44,7 +52,8 @@ export default class extends Controller {
       this.currentIndexValue++
       this.updateUI()
     } else {
-      this.showCompletion()
+      // Last question skipped - reload to show checklist
+      window.location.reload()
     }
   }
 

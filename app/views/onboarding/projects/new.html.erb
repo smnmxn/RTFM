@@ -1,7 +1,15 @@
-<div class="text-center py-16">
-  <h2 class="text-3xl font-bold text-slate-900 mb-8">Welcome to supportpages.io</h2>
+<div class="bg-white shadow-sm rounded-xl border border-slate-200 overflow-hidden">
+  <div class="text-center py-16 px-6">
+    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-violet-100 mb-6">
+      <%= heroicon "sparkles", variant: :solid, options: { class: "w-8 h-8 text-violet-600" } %>
+    </div>
+    <h2 class="text-xl font-semibold text-slate-900 mb-2">Welcome to supportpages.io</h2>
+    <p class="text-sm text-slate-500 mb-8 max-w-sm mx-auto">
+      We'll analyze your codebase and generate documentation tailored to your product.
+    </p>
 
-  <%= button_to "Get started", onboarding_projects_path,
-      method: :post,
-      class: "px-6 py-3 bg-gradient-brand text-white font-medium rounded-lg hover:opacity-90 transition-smooth" %>
+    <%= button_to "Get started", onboarding_projects_path,
+        method: :post,
+        class: "btn-primary-lg" %>
+  </div>
 </div>

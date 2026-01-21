@@ -1,0 +1,77 @@
+<%# Standard loading banner for onboarding %>
+<%# Parameters:
+    message: - Static message to display
+    time_estimate: (optional) - e.g., "3-4 minutes"
+    stages: (optional) - Array of stage messages to cycle through
+    stage_duration: (optional) - Seconds per stage, default 20
+    start_time: (optional) - Unix timestamp when operation started
+    variant: (optional) - "banner" (default) or "checklist"
+%>
+<% variant = local_assigns[:variant] || "banner" %>
+
+<% if local_assigns[:stages].present? && variant == "checklist" %>
+  <%# Checklist variant - shows all stages with completed/active/pending states %>
+  <div class="bg-slate-50 rounded-lg p-4"
+       data-controller="activity-stages"
+       data-activity-stages-stages-value="<%= stages.to_json %>"
+       data-activity-stages-duration-value="<%= local_assigns[:stage_duration] || 20 %>"
+       <%= "data-activity-stages-start-time-value=#{start_time.to_i}" if local_assigns[:start_time] %>>
+
+    <div class="space-y-2">
+      <% stages.each_with_index do |stage, index| %>
+        <div data-activity-stages-target="stage"
+             data-state="<%= index == 0 ? 'active' : 'pending' %>"
+             class="flex items-center gap-2 transition-all duration-300">
+
+          <%# Icon container %>
+          <div class="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+            <%# Completed: checkmark %>
+            <span class="stage-completed" style="display: none;">
+              <%= heroicon "check", variant: :mini, options: { class: "h-4 w-4 text-green-500" } %>
+            </span>
+            <%# Active: spinner (visible for first item by default) %>
+            <span class="stage-active" style="display: <%= index == 0 ? 'block' : 'none' %>;">
+              <span class="block w-4 h-4 border-2 border-slate-300 border-t-violet-600 rounded-full animate-spin"></span>
+            </span>
+            <%# Pending: empty circle (visible for non-first items by default) %>
+            <span class="stage-pending" style="display: <%= index == 0 ? 'none' : 'block' %>;">
+              <span class="block w-3 h-3 rounded-full border-2 border-slate-300"></span>
+            </span>
+          </div>
+
+          <%# Text %>
+          <span class="text-sm stage-text <%= index == 0 ? 'text-slate-900 font-medium' : 'text-slate-400' %>"><%= stage %></span>
+        </div>
+      <% end %>
+    </div>
+
+    <% if local_assigns[:time_estimate] %>
+      <p class="text-xs text-slate-400 mt-3 text-center">Estimated time: <%= time_estimate %></p>
+    <% end %>
+  </div>
+
+<% elsif local_assigns[:stages].present? %>
+  <%# Banner variant with rotating stages %>
+  <div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center"
+       data-controller="activity-stages"
+       data-activity-stages-stages-value="<%= stages.to_json %>"
+       data-activity-stages-duration-value="<%= local_assigns[:stage_duration] || 20 %>"
+       <%= "data-activity-stages-start-time-value=#{start_time.to_i}" if local_assigns[:start_time] %>>
+    <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2 flex-shrink-0") %>
+    <span data-activity-stages-target="message"
+          class="transition-opacity duration-150"><%= stages.first %></span>
+    <% if local_assigns[:time_estimate] %>
+      <span class="ml-2 opacity-80 flex-shrink-0">(<%= time_estimate %>)</span>
+    <% end %>
+  </div>
+
+<% else %>
+  <%# Static banner %>
+  <div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center">
+    <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2") %>
+    <span><%= message %></span>
+    <% if local_assigns[:time_estimate] %>
+      <span class="ml-2 opacity-80">(<%= time_estimate %>)</span>
+    <% end %>
+  </div>
+<% end %>

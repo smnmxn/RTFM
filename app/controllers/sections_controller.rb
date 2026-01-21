@@ -98,13 +98,12 @@ class SectionsController < ApplicationController
   def accept
     @section.update!(status: :accepted)
 
-    # Note: Recommendations are NOT generated here during onboarding.
-    # They are generated in bulk via GenerateAllRecommendationsJob when
-    # the user clicks "Complete" on the sections step. This prevents
-    # duplicate recommendations across sections.
-
-    # Check if all sections reviewed → can advance to articles step
-    check_sections_complete_for_onboarding
+    # Auto-progress to generating if all sections reviewed during onboarding
+    if should_auto_progress_to_generating?
+      start_generating_recommendations
+      redirect_to generating_onboarding_project_path(@project)
+      return
+    end
 
     respond_to do |format|
       format.turbo_stream { render_section_update_streams }
@@ -115,8 +114,12 @@ class SectionsController < ApplicationController
   def reject
     @section.update!(status: :rejected)
 
-    # Check if all sections reviewed → can advance to articles step
-    check_sections_complete_for_onboarding
+    # Auto-progress to generating if all sections reviewed during onboarding
+    if should_auto_progress_to_generating?
+      start_generating_recommendations
+      redirect_to generating_onboarding_project_path(@project)
+      return
+    end
 
     respond_to do |format|
       format.turbo_stream { render_section_update_streams }
@@ -127,7 +130,10 @@ class SectionsController < ApplicationController
   private
 
   def set_project
-    @project = current_user.projects.find_by!(slug: params[:project_slug])
+    @project = current_user.projects.find_by(slug: params[:project_slug])
+    unless @project
+      redirect_to dashboard_path, alert: "Project not found."
+    end
   end
 
   def set_section
@@ -138,9 +144,24 @@ class SectionsController < ApplicationController
     params.require(:section).permit(:name, :description, :visible)
   end
 
-  def check_sections_complete_for_onboarding
-    # No-op: User must click "Complete" to finish onboarding
-    # This method is kept for potential future use (e.g., enabling the complete button)
+  def should_auto_progress_to_generating?
+    @project.onboarding_step == "sections" &&
+      @project.sections.pending.empty? &&
+      !@project.sections_being_generated?
+  end
+
+  def start_generating_recommendations
+    # Mark all accepted sections as running
+    @project.sections.accepted.update_all(
+      recommendations_status: "running",
+      recommendations_started_at: Time.current
+    )
+
+    # Kick off the job to generate recommendations
+    GenerateAllRecommendationsJob.perform_later(project_id: @project.id)
+
+    # Advance onboarding step
+    @project.advance_onboarding!("generating")
   end
 
   def render_section_update_streams

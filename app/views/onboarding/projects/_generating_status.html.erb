@@ -1,44 +1,41 @@
+<%
+  # Activity stages for recommendation generation (1-2 min total, ~15s per stage)
+  recommendation_stages = [
+    "Reviewing your sections...",
+    "Identifying common questions...",
+    "Analyzing user needs...",
+    "Drafting article outlines...",
+    "Matching content to topics...",
+    "Finalizing recommendations..."
+  ]
+%>
+
 <% if project.all_recommendations_generated? %>
-  <div class="p-6 text-center"
-       data-controller="redirect"
-       data-redirect-url-value="<%= project_path(project) %>">
-    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-      <%= heroicon "check", variant: :solid, options: { class: "w-8 h-8 text-green-600" } %>
-    </div>
-    <h3 class="text-lg font-semibold text-slate-900 mb-2">All done!</h3>
-    <p class="text-slate-600">Redirecting to your help centre...</p>
-  </div>
+  <%= render "onboarding/shared/completion_state",
+      title: "All done!",
+      message: "Redirecting to your help centre...",
+      icon: "check",
+      redirect_url: project_path(project) %>
 <% else %>
-  <div class="px-4 py-3 bg-gradient-brand text-white text-sm flex items-center justify-center">
-    <%= spinner_icon(size: "h-4 w-4", extra_class: "mr-2") %>
-    Generating article recommendations...
-  </div>
-
-  <div class="p-8 text-center">
-    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-100 mb-6">
-      <%= heroicon "sparkles", variant: :outline, options: { class: "w-10 h-10 text-brand-600 animate-pulse" } %>
+  <% recommendations_start = project.sections.minimum(:recommendations_started_at) %>
+  <div class="p-6">
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
+        <%= heroicon "sparkles", variant: :outline, options: { class: "w-8 h-8 text-violet-600 animate-pulse" } %>
+      </div>
+      <h3 class="text-xl font-semibold text-slate-900 mb-2">Creating your help centre</h3>
+      <p class="text-slate-500 text-sm max-w-md mx-auto">
+        We're generating personalized article recommendations for each section.
+      </p>
     </div>
 
-    <h3 class="text-xl font-semibold text-slate-900 mb-2">Creating your help centre</h3>
-    <p class="text-slate-600 mb-6 max-w-md mx-auto">
-      We're analyzing your codebase and generating personalized article recommendations for each section.
-    </p>
+    <%= render "onboarding/shared/loading_banner",
+        stages: recommendation_stages,
+        stage_duration: 15,
+        start_time: recommendations_start,
+        variant: "checklist" %>
 
-    <% if progress[:total] > 0 %>
-      <div class="max-w-xs mx-auto">
-        <div class="flex justify-between text-sm text-slate-600 mb-2">
-          <span>Progress</span>
-          <span><%= progress[:done] %> of <%= progress[:total] %> sections</span>
-        </div>
-        <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
-          <div class="h-full bg-gradient-brand rounded-full transition-all duration-500"
-               style="width: <%= progress[:percent] %>%"></div>
-        </div>
-      </div>
-    <% end %>
-
-    <p class="text-sm text-slate-500 mt-6">
-      This usually takes a minute or two. Please don't close this page.
-    </p>
+    <%= render "onboarding/shared/page_warning",
+        message: "This usually takes a minute or two. Please don't close this page." %>
   </div>
 <% end %>
