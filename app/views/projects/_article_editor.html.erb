@@ -19,6 +19,13 @@
               Generating...
             </span>
           <% else %>
+            <% if article.generation_completed? || article.structured? %>
+              <%= render "articles/preview_modal",
+                  article: article,
+                  project: article.project,
+                  button_classes: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 cursor-pointer" %>
+            <% end %>
+
             <%= button_to "Reject",
                 reject_article_project_path(article.project, article_id: article.id),
                 method: :post,

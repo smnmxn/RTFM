@@ -8,6 +8,12 @@ class ArticlesController < ApplicationController
     redirect_to project_path(@article.project, article: @article.id)
   end
 
+  def preview
+    render partial: "articles/preview_content",
+           locals: { article: @article, project: @project },
+           layout: false
+  end
+
   def create_article
     # Parse JSON body
     data = if request.content_type&.include?("application/json")

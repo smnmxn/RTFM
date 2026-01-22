@@ -98,6 +98,7 @@ Rails.application.routes.draw do
         post :create_article
       end
       member do
+        get :preview
         post :regenerate
         patch :update_field
         post :add_array_item

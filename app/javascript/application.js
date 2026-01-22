@@ -45,6 +45,7 @@ import InboxController from "controllers/inbox_controller"
 import RegenerateModalController from "controllers/regenerate_modal_controller"
 import NewArticleModalController from "controllers/new_article_modal_controller"
 import ActivityStagesController from "controllers/activity_stages_controller"
+import ArticlePreviewController from "controllers/article_preview_controller"
 
 application.register("inline-edit", InlineEditController)
 application.register("array-edit", ArrayEditController)
@@ -63,3 +64,4 @@ application.register("inbox", InboxController)
 application.register("regenerate-modal", RegenerateModalController)
 application.register("new-article-modal", NewArticleModalController)
 application.register("activity-stages", ActivityStagesController)
+application.register("article-preview", ArticlePreviewController)

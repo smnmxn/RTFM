@@ -77,25 +77,6 @@
 
       <div class="flex-1"></div>
 
-      <!-- Publish/Unpublish -->
-      <% if article.published? %>
-        <%= button_to unpublish_project_article_path(project, article),
-            method: :post,
-            form: { data: { turbo_stream: true } },
-            class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 text-gray-700 cursor-pointer" do %>
-          <%= heroicon "eye-slash", options: { class: "w-4 h-4" } %>
-          Unpublish
-        <% end %>
-      <% else %>
-        <%= button_to publish_project_article_path(project, article),
-            method: :post,
-            form: { data: { turbo_stream: true } },
-            class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 cursor-pointer" do %>
-          <%= heroicon "eye", options: { class: "w-4 h-4" } %>
-          Publish
-        <% end %>
-      <% end %>
-
       <!-- Generate (for blank articles) or Regenerate (for articles with content) -->
       <% if article.draft? && article.generation_pending? %>
         <%= render "articles/regenerate_modal",
@@ -109,6 +90,28 @@
             button_classes: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 text-gray-700 cursor-pointer",
             show_icon: true,
             label: "Regenerate" %>
+      <% end %>
+
+      <!-- Preview -->
+      <%= render "articles/preview_modal", article: article, project: project %>
+
+      <!-- Publish/Unpublish -->
+      <% if article.published? %>
+        <%= button_to unpublish_project_article_path(project, article),
+            method: :post,
+            form: { data: { turbo_stream: true } },
+            class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 text-gray-700 cursor-pointer" do %>
+          <%= heroicon "globe-alt", options: { class: "w-4 h-4" } %>
+          Unpublish
+        <% end %>
+      <% else %>
+        <%= button_to publish_project_article_path(project, article),
+            method: :post,
+            form: { data: { turbo_stream: true } },
+            class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 cursor-pointer" do %>
+          <%= heroicon "globe-alt", options: { class: "w-4 h-4" } %>
+          Publish
+        <% end %>
       <% end %>
 
       <!-- Duplicate -->
