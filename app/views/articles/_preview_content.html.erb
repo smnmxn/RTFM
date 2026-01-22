@@ -1,0 +1,77 @@
+<%# locals: (article:, project:) %>
+<turbo-frame id="article-preview-<%= article.id %>">
+  <!-- Brand color CSS variables -->
+  <style>
+    :root {
+      --brand-primary: <%= project.primary_color_or_default %>;
+      --brand-accent: <%= project.accent_color_or_default %>;
+      --brand-title: <%= project.title_text_color_or_default %>;
+    }
+
+    /* Brand color utilities for preview */
+    .text-brand { color: var(--brand-primary); }
+    .text-brand-title { color: var(--brand-title); }
+    .bg-brand { background-color: var(--brand-primary); }
+    .border-brand { border-color: var(--brand-primary); }
+    .bg-brand-light { background-color: color-mix(in srgb, var(--brand-primary) 15%, white); }
+  </style>
+
+  <div class="bg-gray-50 min-h-full">
+    <!-- Simulated Help Centre Header -->
+    <div class="bg-white border-b border-gray-200 px-6 py-4">
+      <div class="flex items-center gap-3">
+        <% if project.logo.attached? %>
+          <%= image_tag project.logo, class: "h-8 object-contain", alt: project.name %>
+        <% else %>
+          <span class="text-lg font-bold" style="color: var(--brand-primary)"><%= project.name %></span>
+        <% end %>
+        <span class="text-sm text-gray-500"><%= project.help_centre_title_or_default %></span>
+      </div>
+    </div>
+
+    <!-- Article Content -->
+    <div class="max-w-3xl mx-auto px-6 py-8">
+      <div class="bg-white shadow rounded-xl">
+        <!-- Article Header -->
+        <div class="px-6 py-5 border-b border-gray-200">
+          <nav class="text-sm mb-3">
+            <span class="text-brand">Help Centre</span>
+            <% if article.section %>
+              <span class="mx-2 text-gray-400">/</span>
+              <span class="text-brand"><%= article.section.name %></span>
+            <% end %>
+          </nav>
+          <h1 class="text-2xl font-bold text-gray-900"><%= article.title %></h1>
+          <% if article.published_at.present? %>
+            <p class="mt-2 text-sm text-gray-500">
+              Updated <%= time_ago_in_words(article.published_at) %> ago
+            </p>
+          <% elsif article.draft? %>
+            <p class="mt-2 text-sm text-amber-600">
+              Draft - not yet published
+            </p>
+          <% end %>
+        </div>
+
+        <!-- Article Content -->
+        <div class="px-6 py-6">
+          <% if article.structured? %>
+            <%= render "help_centre/content/introduction", article: article %>
+            <%= render "help_centre/content/prerequisites", article: article %>
+            <%= render "help_centre/content/steps", article: article %>
+            <%= render "help_centre/content/tips", article: article %>
+            <%= render "help_centre/content/summary", article: article %>
+          <% elsif article.content.present? %>
+            <div class="prose prose-lg max-w-none">
+              <%= markdown(article.content) %>
+            </div>
+          <% else %>
+            <div class="text-center py-12 text-gray-500">
+              <p>No content to preview yet.</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</turbo-frame>

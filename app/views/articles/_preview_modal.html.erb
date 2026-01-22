@@ -1,0 +1,60 @@
+<%# locals: (article:, project:, button_classes: nil) %>
+<% button_classes ||= "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 text-gray-700 cursor-pointer" %>
+
+<div data-controller="article-preview"
+     data-article-preview-url-value="<%= preview_project_article_path(project, article) %>">
+
+  <!-- Trigger Button -->
+  <button type="button"
+          data-action="article-preview#open"
+          class="<%= button_classes %>">
+    <%= heroicon "eye", options: { class: "w-4 h-4" } %>
+    Preview
+  </button>
+
+  <!-- Backdrop -->
+  <div data-article-preview-target="backdrop"
+       data-action="click->article-preview#closeOnBackdrop"
+       class="hidden fixed inset-0 z-40 transition-opacity"
+       style="background-color: rgba(0, 0, 0, 0.5);">
+  </div>
+
+  <!-- Slide-over Panel -->
+  <div data-article-preview-target="dialog"
+       class="hidden fixed inset-y-0 right-0 z-50 w-full max-w-3xl"
+       data-action="click->article-preview#stopPropagation">
+    <div class="h-full flex flex-col bg-white shadow-xl">
+
+      <!-- Header -->
+      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+        <div>
+          <span class="text-xs text-gray-500 uppercase tracking-wide font-medium">Help Centre Preview</span>
+          <h2 class="text-lg font-semibold text-gray-900"><%= article.title %></h2>
+        </div>
+        <button type="button"
+                data-action="article-preview#close"
+                class="text-gray-400 hover:text-gray-600 p-1">
+          <%= heroicon "x-mark", options: { class: "h-6 w-6" } %>
+        </button>
+      </div>
+
+      <!-- Content Frame -->
+      <turbo-frame id="article-preview-<%= article.id %>"
+                   data-article-preview-target="frame"
+                   class="flex-1 overflow-y-auto">
+        <!-- Loading state -->
+        <div class="flex items-center justify-center h-full">
+          <div class="text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+            <p class="mt-3 text-sm text-gray-500">Loading preview...</p>
+          </div>
+        </div>
+      </turbo-frame>
+
+      <!-- Footer -->
+      <div class="px-6 py-3 border-t border-gray-200 bg-gray-50 text-center text-sm text-gray-500 flex-shrink-0">
+        This is a preview of how your article will appear in the Help Centre.
+      </div>
+    </div>
+  </div>
+</div>
