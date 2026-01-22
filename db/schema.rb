@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_21_130923) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_22_135847) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -104,6 +104,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_21_130923) do
     t.index ["account_login"], name: "index_github_app_installations_on_account_login"
     t.index ["github_installation_id"], name: "index_github_app_installations_on_github_installation_id", unique: true
     t.index ["user_id"], name: "index_github_app_installations_on_user_id"
+  end
+
+  create_table "invites", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email"
+    t.string "note"
+    t.string "token", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "used_at"
+    t.bigint "user_id"
+    t.index ["token"], name: "index_invites_on_token", unique: true
+    t.index ["user_id"], name: "index_invites_on_user_id"
   end
 
   create_table "projects", force: :cascade do |t|
@@ -226,6 +238,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_21_130923) do
   add_foreign_key "articles", "sections"
   add_foreign_key "claude_usages", "projects"
   add_foreign_key "github_app_installations", "users"
+  add_foreign_key "invites", "users"
   add_foreign_key "projects", "github_app_installations"
   add_foreign_key "projects", "users"
   add_foreign_key "recommendations", "projects"

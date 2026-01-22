@@ -1,5 +1,5 @@
 class SessionsController < ApplicationController
-  skip_before_action :require_authentication, only: [ :new, :create, :failure ]
+  skip_before_action :require_authentication, only: [ :new, :create, :failure, :destroy ]
 
   def new
     redirect_to default_landing_path if logged_in?
@@ -8,12 +8,54 @@ class SessionsController < ApplicationController
   def create
     auth = request.env["omniauth.auth"]
 
-    user = User.find_or_create_from_omniauth(auth)
-    session[:user_id] = user.id
+    user = User.find_by(github_uid: auth.uid)
 
-    redirect_to default_landing_path(user), notice: "Welcome, #{user.name || user.github_username}!"
+    if user
+      # Existing user - update credentials and log in
+      user.update!(
+        github_token: auth.credentials.token,
+        github_username: auth.info.nickname,
+        name: auth.info.name,
+        email: auth.info.email
+      )
+      session[:user_id] = user.id
+      session.delete(:invite_token)
+      redirect_to default_landing_path(user), notice: "Welcome back, #{user.name || user.github_username}!"
+    else
+      # New user - require valid invite
+      invite = Invite.available.find_by(token: session[:invite_token])
+
+      if invite.nil?
+        redirect_to login_path, alert: "Signup requires an invite. Please use an invite link to create an account."
+        return
+      end
+
+      user = User.create!(
+        github_uid: auth.uid,
+        github_token: auth.credentials.token,
+        github_username: auth.info.nickname,
+        name: auth.info.name,
+        email: auth.info.email
+      )
+
+      invite.redeem!(user)
+      session.delete(:invite_token)
+      session[:user_id] = user.id
+
+      redirect_to default_landing_path(user), notice: "Welcome, #{user.name || user.github_username}!"
+    end
   rescue ActiveRecord::RecordInvalid => e
     redirect_to login_path, alert: "Authentication failed: #{e.message}"
+  end
+
+  def failure
+    message = params[:message] || "Authentication failed"
+    redirect_to login_path, alert: "GitHub authentication failed: #{message}"
+  end
+
+  def destroy
+    session.delete(:user_id)
+    redirect_to root_path, notice: "You have been logged out."
   end
 
   private
@@ -43,15 +85,5 @@ class SessionsController < ApplicationController
     else
       projects_path
     end
-  end
-
-  def failure
-    message = params[:message] || "Authentication failed"
-    redirect_to login_path, alert: "GitHub authentication failed: #{message}"
-  end
-
-  def destroy
-    session.delete(:user_id)
-    redirect_to root_path, notice: "You have been logged out."
   end
 end

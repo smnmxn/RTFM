@@ -23,6 +23,9 @@ Rails.application.routes.draw do
   get  "/logout", to: "sessions#destroy", as: :logout
   delete "/logout", to: "sessions#destroy"
 
+  # Invites
+  get "/invite/:token", to: "invites#show", as: :invite
+
   # OmniAuth callbacks
   get "/auth/github/callback", to: "sessions#create"
   get "/auth/failure", to: "sessions#failure"
