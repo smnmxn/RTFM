@@ -156,7 +156,7 @@ class SectionsController < ApplicationController
   end
 
   def section_params
-    params.require(:section).permit(:name, :description, :visible)
+    params.require(:section).permit(:name, :description, :visible, :icon)
   end
 
   def should_auto_progress_to_generating?

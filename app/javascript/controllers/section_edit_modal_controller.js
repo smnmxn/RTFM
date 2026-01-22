@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["dialog", "backdrop", "name", "description", "visible", "submitButton"]
+  static targets = ["dialog", "backdrop", "name", "description", "visible", "submitButton", "icon", "iconGrid"]
   static values = { url: String }
 
   connect() {
@@ -24,6 +24,25 @@ export default class extends Controller {
     document.body.classList.remove("overflow-hidden")
   }
 
+  selectIcon(event) {
+    event.preventDefault()
+    const button = event.currentTarget
+    const iconName = button.dataset.icon
+
+    // Update hidden input
+    if (this.hasIconTarget) this.iconTarget.value = iconName
+
+    // Update visual selection
+    if (this.hasIconGridTarget) {
+      this.iconGridTarget.querySelectorAll("button").forEach(btn => {
+        btn.classList.remove("ring-2", "ring-indigo-500", "bg-indigo-50")
+        btn.classList.add("hover:bg-gray-100")
+      })
+    }
+    button.classList.remove("hover:bg-gray-100")
+    button.classList.add("ring-2", "ring-indigo-500", "bg-indigo-50")
+  }
+
   closeOnEscape(event) {
     if (event.key === "Escape") this.close()
   }
@@ -43,6 +62,7 @@ export default class extends Controller {
 
     const description = this.hasDescriptionTarget ? this.descriptionTarget.value.trim() : ""
     const visible = this.hasVisibleTarget ? this.visibleTarget.checked : true
+    const icon = this.hasIconTarget ? this.iconTarget.value : "document-text"
 
     if (this.hasSubmitButtonTarget) {
       this.submitButtonTarget.disabled = true
@@ -61,7 +81,8 @@ export default class extends Controller {
           section: {
             name: name,
             description: description,
-            visible: visible
+            visible: visible,
+            icon: icon
           }
         })
       })

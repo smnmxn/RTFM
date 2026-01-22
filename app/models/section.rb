@@ -35,7 +35,7 @@ class Section < ApplicationRecord
       slug: "getting-started",
       name: "Getting Started",
       description: "Set up and configure the basics to get up and running",
-      icon: "rocket-launch"
+      icon: "paper-airplane"
     },
     {
       slug: "daily-tasks",
@@ -59,6 +59,35 @@ class Section < ApplicationRecord
 
   # Default icon for custom sections
   DEFAULT_ICON = "document-text".freeze
+
+  # Curated icon options for the icon picker
+  ICON_OPTIONS = [
+    "document-text",           # Default
+    "paper-airplane",          # Getting started / Launch
+    "clipboard-document-list", # Tasks
+    "cog-6-tooth",             # Settings / Advanced
+    "wrench-screwdriver",      # Troubleshooting
+    "book-open",               # Documentation
+    "code-bracket",            # API / Code
+    "puzzle-piece",            # Integrations
+    "shield-check",            # Security
+    "chart-bar",               # Analytics
+    "users",                   # Team / Users
+    "credit-card",             # Billing
+    # Additional icons
+    "sparkles",                # New features / Highlights
+    "light-bulb",              # Ideas / Tips
+    "bolt",                    # Quick actions / Performance
+    "globe-alt",               # Web / International
+    "key",                     # Authentication / Access
+    "cube",                    # Components / Modules
+    "command-line",            # CLI / Terminal
+    "academic-cap",            # Learning / Tutorials
+    "megaphone",               # Announcements
+    "calendar",                # Scheduling / Events
+    "beaker",                  # Experiments / Beta
+    "bell"                     # Notifications / Alerts
+  ].freeze
 
   def self.create_templates_for(project)
     TEMPLATES.each_with_index do |template, index|

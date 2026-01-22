@@ -13,7 +13,12 @@
         "bg-white border-l-4 border-indigo-500" => selected,
         "border-l-4 border-transparent" => !selected
       ) do %>
-    <span class="text-sm font-medium truncate <%= selected ? 'text-indigo-700' : 'text-gray-700' %>">
+    <span class="flex items-center gap-2 text-sm font-medium truncate <%= selected ? 'text-indigo-700' : 'text-gray-700' %>">
+      <% if section %>
+        <%= heroicon section.icon_name, options: { class: "w-4 h-4 flex-shrink-0" } %>
+      <% else %>
+        <%= heroicon "folder", options: { class: "w-4 h-4 flex-shrink-0" } %>
+      <% end %>
       <%= section&.name || "Uncategorized" %>
     </span>
     <span class="ml-2 text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 <%= selected ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-200 text-gray-600' %>">
