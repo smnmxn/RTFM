@@ -3,7 +3,7 @@ class Article < ApplicationRecord
 
   belongs_to :project
   belongs_to :recommendation
-  belongs_to :section
+  belongs_to :section, optional: true
   has_many :step_images, dependent: :destroy
 
   # Turbo refresh broadcasts
@@ -137,13 +137,20 @@ class Article < ApplicationRecord
   private
 
   def generate_slug
-    return if slug.present? || title.blank? || section.blank?
+    return if slug.present? || title.blank?
 
     base_slug = title.parameterize
     candidate = base_slug
     counter = 2
 
-    while section.articles.where(slug: candidate).where.not(id: id).exists?
+    # Check uniqueness within the same section (or among uncategorized if section is nil)
+    scope = if section.present?
+      section.articles
+    else
+      project.articles.where(section: nil)
+    end
+
+    while scope.where(slug: candidate).where.not(id: id).exists?
       candidate = "#{base_slug}-#{counter}"
       counter += 1
     end
@@ -156,11 +163,11 @@ class Article < ApplicationRecord
     return unless saved_change_to_generation_status? || saved_change_to_review_status?
 
     # For inbox: add or update the article row
-    if unreviewed? && (generation_running? || generation_completed?)
+    if unreviewed? && (generation_pending? || generation_running? || generation_completed?)
       # Replace the entire articles section (handles new articles, count updates, empty state)
       inbox_articles = project.articles
         .where(review_status: :unreviewed)
-        .where(generation_status: [ :generation_running, :generation_completed ])
+        .where(generation_status: [ :generation_pending, :generation_running, :generation_completed ])
         .includes(:section)
         .order(created_at: :asc)
 

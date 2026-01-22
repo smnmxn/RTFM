@@ -1,14 +1,62 @@
 class ArticlesController < ApplicationController
   before_action :require_authentication
-  before_action :set_article
+  before_action :set_article, except: [ :create_article ]
+  before_action :set_project_for_collection, only: [ :create_article ]
 
   def show
     # Redirect to project page with article preselected
     redirect_to project_path(@article.project, article: @article.id)
   end
 
+  def create_article
+    # Parse JSON body
+    data = if request.content_type&.include?("application/json")
+      JSON.parse(request.body.read)
+    else
+      params
+    end
+
+    title = data["title"]
+    description = data["description"].presence
+    section_id = data["section_id"].presence
+
+    # Find the section (or nil for uncategorized)
+    section = section_id.present? ? @project.sections.find(section_id) : nil
+
+    # Create a synthetic recommendation to satisfy the data model
+    @recommendation = @project.recommendations.create!(
+      title: title,
+      description: description || "User-created article",
+      justification: "Manually created article",
+      section: section,
+      status: :generated
+    )
+
+    # Create blank article with scaffolding (approved so it stays in Articles tab for manual editing)
+    @article = @project.articles.create!(
+      recommendation: @recommendation,
+      section: section,
+      title: title,
+      content: "",
+      structured_content: {
+        "introduction" => "",
+        "prerequisites" => [],
+        "steps" => [],
+        "tips" => [],
+        "summary" => ""
+      },
+      generation_status: :generation_pending,
+      review_status: :approved
+    )
+
+    respond_to do |format|
+      format.json { render json: { redirect_url: project_path(@project, article: @article.id) } }
+      format.html { redirect_to project_path(@project, article: @article.id), notice: "Article created" }
+    end
+  end
+
   def regenerate
-    unless @article.generation_failed? || @article.generation_completed?
+    unless @article.generation_failed? || @article.generation_completed? || @article.generation_pending?
       redirect_to project_path(@article.project), alert: "Article cannot be regenerated while generation is in progress"
       return
     end
@@ -33,8 +81,8 @@ class ArticlesController < ApplicationController
     GenerateArticleJob.perform_later(article_id: @article.id)
 
     respond_to do |format|
-      format.turbo_stream
-      format.html { redirect_to project_path(@article.project), notice: "Article regeneration started" }
+      format.json { render json: { redirect_url: project_path(@article.project, selected: "article_#{@article.id}") } }
+      format.html { redirect_to project_path(@article.project, selected: "article_#{@article.id}"), notice: "Article generation started" }
     end
   end
 
@@ -230,6 +278,10 @@ class ArticlesController < ApplicationController
   def set_article
     @project = current_user.projects.find_by!(slug: params[:project_slug])
     @article = @project.articles.find(params[:id])
+  end
+
+  def set_project_for_collection
+    @project = current_user.projects.find_by!(slug: params[:project_slug])
   end
 
   def update_nested_field(content, path, value)

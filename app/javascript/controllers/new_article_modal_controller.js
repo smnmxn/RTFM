@@ -1,8 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["dialog", "backdrop", "textarea", "submitButton"]
-  static values = { url: String, label: { type: String, default: "Regenerate" } }
+  static targets = ["dialog", "backdrop", "title", "description", "section", "submitButton"]
+  static values = { url: String }
 
   connect() {
     this.closeOnEscape = this.closeOnEscape.bind(this)
@@ -14,7 +14,7 @@ export default class extends Controller {
     this.dialogTarget.classList.remove("hidden")
     document.addEventListener("keydown", this.closeOnEscape)
     document.body.classList.add("overflow-hidden")
-    this.textareaTarget?.focus()
+    this.titleTarget?.focus()
   }
 
   close() {
@@ -22,7 +22,10 @@ export default class extends Controller {
     this.dialogTarget.classList.add("hidden")
     document.removeEventListener("keydown", this.closeOnEscape)
     document.body.classList.remove("overflow-hidden")
-    if (this.hasTextareaTarget) this.textareaTarget.value = ""
+    // Reset form
+    if (this.hasTitleTarget) this.titleTarget.value = ""
+    if (this.hasDescriptionTarget) this.descriptionTarget.value = ""
+    if (this.hasSectionTarget) this.sectionTarget.value = ""
   }
 
   closeOnEscape(event) {
@@ -35,11 +38,19 @@ export default class extends Controller {
 
   async submit(event) {
     event.preventDefault()
-    const guidance = this.hasTextareaTarget ? this.textareaTarget.value.trim() : ""
+
+    const title = this.hasTitleTarget ? this.titleTarget.value.trim() : ""
+    if (!title) {
+      this.titleTarget?.focus()
+      return
+    }
+
+    const description = this.hasDescriptionTarget ? this.descriptionTarget.value.trim() : ""
+    const sectionId = this.hasSectionTarget ? this.sectionTarget.value : ""
 
     if (this.hasSubmitButtonTarget) {
       this.submitButtonTarget.disabled = true
-      this.submitButtonTarget.textContent = this.labelValue === "Generate" ? "Generating..." : "Regenerating..."
+      this.submitButtonTarget.textContent = "Creating..."
     }
 
     try {
@@ -50,7 +61,11 @@ export default class extends Controller {
           "Accept": "application/json",
           "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]')?.content
         },
-        body: JSON.stringify({ regeneration_guidance: guidance })
+        body: JSON.stringify({
+          title: title,
+          description: description,
+          section_id: sectionId
+        })
       })
 
       if (response.ok) {
@@ -60,11 +75,11 @@ export default class extends Controller {
           Turbo.visit(data.redirect_url)
         }
       } else {
-        console.error("Regeneration failed:", response.status)
+        console.error("Article creation failed:", response.status)
         this.resetSubmitButton()
       }
     } catch (error) {
-      console.error("Regeneration request failed:", error)
+      console.error("Article creation request failed:", error)
       this.resetSubmitButton()
     }
   }
@@ -72,7 +87,7 @@ export default class extends Controller {
   resetSubmitButton() {
     if (this.hasSubmitButtonTarget) {
       this.submitButtonTarget.disabled = false
-      this.submitButtonTarget.textContent = this.labelValue
+      this.submitButtonTarget.textContent = "Create Article"
     }
   }
 

@@ -28,6 +28,10 @@ class Recommendation < ApplicationRecord
   private
 
   def broadcast_to_inbox
+    # Skip broadcasting for generated recommendations (e.g., manually created articles)
+    # These don't need to appear in the inbox
+    return if generated? && previously_new_record?
+
     if destroyed?
       # Remove the specific recommendation row
       broadcast_remove_to(

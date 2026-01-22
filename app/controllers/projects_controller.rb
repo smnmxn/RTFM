@@ -17,7 +17,7 @@ class ProjectsController < ApplicationController
 
     @inbox_articles = @project.articles
       .where(review_status: :unreviewed)
-      .where(generation_status: [ :generation_running, :generation_completed ])
+      .where(generation_status: [ :generation_pending, :generation_running, :generation_completed ])
       .includes(:section)
       .order(created_at: :asc)
 
@@ -58,7 +58,7 @@ class ProjectsController < ApplicationController
   def inbox_articles
     @inbox_articles = @project.articles
       .where(review_status: :unreviewed)
-      .where(generation_status: [:generation_running, :generation_completed])
+      .where(generation_status: [ :generation_pending, :generation_running, :generation_completed ])
       .includes(:section)
       .order(created_at: :asc)
 
@@ -502,7 +502,7 @@ class ProjectsController < ApplicationController
 
     @inbox_articles = @project.articles
       .where(review_status: :unreviewed)
-      .where(generation_status: [ :generation_running, :generation_completed ])
+      .where(generation_status: [ :generation_pending, :generation_running, :generation_completed ])
       .includes(:section)
       .order(created_at: :asc)
 

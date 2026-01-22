@@ -25,7 +25,12 @@
                 form: { data: { turbo_stream: true } },
                 class: "px-3 py-1.5 text-sm border border-red-300 text-red-700 font-medium rounded-lg hover:bg-red-50 cursor-pointer" %>
 
-            <% if article.generation_completed? || article.generation_failed? %>
+            <% if article.generation_pending? %>
+              <%= render "articles/regenerate_modal",
+                  article: article,
+                  label: "Generate",
+                  button_classes: "px-3 py-1.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 cursor-pointer" %>
+            <% elsif article.generation_completed? || article.generation_failed? %>
               <%= render "articles/regenerate_modal",
                   article: article,
                   button_classes: "px-3 py-1.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 cursor-pointer" %>
@@ -61,7 +66,7 @@
     <!-- Article Content (Block Editor) -->
     <div class="flex-1 overflow-y-auto">
       <div class="px-6 py-6 max-w-3xl">
-        <% if article.generation_completed? %>
+        <% if article.generation_completed? || article.generation_pending? %>
           <% if article.structured? %>
             <!-- Structured Content Rendering (Editable) -->
             <%= render "articles/editable/introduction", article: article %>

@@ -43,6 +43,7 @@ import StepImageController from "controllers/step_image_controller"
 import LogoUploadController from "controllers/logo_upload_controller"
 import InboxController from "controllers/inbox_controller"
 import RegenerateModalController from "controllers/regenerate_modal_controller"
+import NewArticleModalController from "controllers/new_article_modal_controller"
 import ActivityStagesController from "controllers/activity_stages_controller"
 
 application.register("inline-edit", InlineEditController)
@@ -60,4 +61,5 @@ application.register("step-image", StepImageController)
 application.register("logo-upload", LogoUploadController)
 application.register("inbox", InboxController)
 application.register("regenerate-modal", RegenerateModalController)
+application.register("new-article-modal", NewArticleModalController)
 application.register("activity-stages", ActivityStagesController)

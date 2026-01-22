@@ -94,6 +94,9 @@ Rails.application.routes.draw do
       end
     end
     resources :articles, only: [ :show, :destroy ] do
+      collection do
+        post :create_article
+      end
       member do
         post :regenerate
         patch :update_field

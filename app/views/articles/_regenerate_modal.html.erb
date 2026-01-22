@@ -1,14 +1,17 @@
+<% button_label = local_assigns[:label].presence || "Regenerate" %>
+<% is_generate = button_label == "Generate" %>
 <div data-controller="regenerate-modal"
-     data-regenerate-modal-url-value="<%= regenerate_project_article_path(article.project, article) %>">
+     data-regenerate-modal-url-value="<%= regenerate_project_article_path(article.project, article) %>"
+     data-regenerate-modal-label-value="<%= button_label %>">
 
   <!-- Trigger Button -->
   <button type="button"
           data-action="regenerate-modal#open"
           class="<%= button_classes %>">
-    <% if defined?(show_icon) && show_icon %>
-      <%= heroicon "arrow-path", options: { class: "w-4 h-4" } %>
+    <% if local_assigns[:show_icon] %>
+      <%= heroicon is_generate ? "sparkles" : "arrow-path", options: { class: "w-4 h-4" } %>
     <% end %>
-    Regenerate
+    <%= button_label %>
   </button>
 
   <!-- Backdrop -->
@@ -29,7 +32,7 @@
         <div class="px-6 py-4 border-b border-gray-200">
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900">
-              Regenerate Article
+              <%= button_label %> Article
             </h3>
             <button type="button"
                     data-action="regenerate-modal#close"
@@ -38,7 +41,11 @@
             </button>
           </div>
           <p class="mt-1 text-sm text-gray-500">
-            Optionally provide guidance to steer the regeneration.
+            <% if is_generate %>
+              Provide guidance to help AI generate your article content.
+            <% else %>
+              Optionally provide guidance to steer the regeneration.
+            <% end %>
           </p>
         </div>
 
@@ -65,7 +72,7 @@
                   data-action="regenerate-modal#submit"
                   data-regenerate-modal-target="submitButton"
                   class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50">
-            Regenerate
+            <%= button_label %>
           </button>
         </div>
       </div>
