@@ -46,6 +46,9 @@ import RegenerateModalController from "controllers/regenerate_modal_controller"
 import NewArticleModalController from "controllers/new_article_modal_controller"
 import ActivityStagesController from "controllers/activity_stages_controller"
 import ArticlePreviewController from "controllers/article_preview_controller"
+import SectionModalController from "controllers/section_modal_controller"
+import SectionMenuController from "controllers/section_menu_controller"
+import SectionEditModalController from "controllers/section_edit_modal_controller"
 
 application.register("inline-edit", InlineEditController)
 application.register("array-edit", ArrayEditController)
@@ -65,3 +68,6 @@ application.register("regenerate-modal", RegenerateModalController)
 application.register("new-article-modal", NewArticleModalController)
 application.register("activity-stages", ActivityStagesController)
 application.register("article-preview", ArticlePreviewController)
+application.register("section-modal", SectionModalController)
+application.register("section-menu", SectionMenuController)
+application.register("section-edit-modal", SectionEditModalController)

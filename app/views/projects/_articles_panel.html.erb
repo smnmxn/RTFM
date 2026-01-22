@@ -21,8 +21,9 @@
 <div class="flex-1 flex overflow-hidden">
   <!-- Left: Sections Sidebar -->
   <div class="w-56 flex-shrink-0 border-r border-gray-200 flex flex-col bg-gray-50">
-    <div class="px-4 py-3 border-b border-gray-200 bg-gray-100">
+    <div class="px-4 py-3 border-b border-gray-200 bg-gray-100 flex items-center justify-between">
       <h3 class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Sections</h3>
+      <%= render "sections/new_section_modal", project: project %>
     </div>
     <div id="articles-sections-list" class="flex-1 overflow-y-auto">
       <% sections.each do |section| %>

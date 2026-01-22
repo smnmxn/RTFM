@@ -52,6 +52,12 @@ class ProjectsController < ApplicationController
       @active_tab = "articles" if @preselected_article
     end
 
+    # Section preselection (from ?section=:id param, used after creating a section)
+    if params[:section].present? && @preselected_section.nil?
+      @preselected_section = @project.sections.find_by(id: params[:section])
+      @active_tab = "articles" if @preselected_section
+    end
+
     @active_tab ||= "inbox"
   end
 

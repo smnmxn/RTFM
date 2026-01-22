@@ -1,12 +1,15 @@
 <%= tag.div id: "articles-section-#{section&.id || 'uncategorized'}",
-    data: { controller: "articles-section" },
-    class: "group" do %>
+    data: {
+      controller: "articles-section #{'section-menu' if section.present?}".strip,
+      section_menu_delete_url_value: section.present? ? project_section_path(project, section) : nil
+    }.compact,
+    class: "group relative" do %>
   <%= button_to select_articles_section_project_path(project, section_id: section&.id || "uncategorized"),
       method: :post,
       form: { data: { turbo_stream: true } },
       data: { action: "click->articles-section#select" },
       class: class_names(
-        "w-full flex items-center justify-between px-4 py-2.5 hover:bg-gray-100 transition-colors cursor-pointer text-left",
+        "w-full flex items-center justify-between px-4 py-2.5 hover:bg-gray-100 transition-colors cursor-pointer text-left pr-8",
         "bg-white border-l-4 border-indigo-500" => selected,
         "border-l-4 border-transparent" => !selected
       ) do %>
@@ -16,5 +19,34 @@
     <span class="ml-2 text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 <%= selected ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-200 text-gray-600' %>">
       <%= article_count %>
     </span>
+  <% end %>
+
+  <% if section.present? %>
+    <!-- Kebab menu button -->
+    <button type="button"
+            data-action="section-menu#toggle"
+            class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity rounded hover:bg-gray-200">
+      <%= heroicon "ellipsis-vertical", options: { class: "w-4 h-4" } %>
+    </button>
+
+    <!-- Dropdown menu -->
+    <div data-section-menu-target="menu"
+         class="hidden absolute right-2 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+      <button type="button"
+              data-action="section-menu#openEdit"
+              class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left">
+        <%= heroicon "pencil", options: { class: "w-4 h-4" } %>
+        Edit
+      </button>
+      <button type="button"
+              data-action="section-menu#delete"
+              class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 text-left">
+        <%= heroicon "trash", options: { class: "w-4 h-4" } %>
+        Delete
+      </button>
+    </div>
+
+    <!-- Edit Modal -->
+    <%= render "sections/edit_section_modal", section: section, project: project %>
   <% end %>
 <% end %>

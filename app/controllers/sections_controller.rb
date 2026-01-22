@@ -22,11 +22,15 @@ class SectionsController < ApplicationController
 
     if @section.save
       respond_to do |format|
+        format.json { render json: { success: true, redirect_url: project_path(@project, section: @section.id) } }
         format.turbo_stream { redirect_to project_sections_path(@project), notice: "Section created." }
         format.html { redirect_to project_sections_path(@project), notice: "Section created." }
       end
     else
-      render :new, status: :unprocessable_entity
+      respond_to do |format|
+        format.json { render json: { success: false, errors: @section.errors }, status: :unprocessable_entity }
+        format.html { render :new, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -36,11 +40,15 @@ class SectionsController < ApplicationController
   def update
     if @section.update(section_params)
       respond_to do |format|
+        format.json { render json: { success: true, redirect_url: project_path(@project, section: @section.id) } }
         format.turbo_stream { redirect_to project_sections_path(@project), notice: "Section updated." }
         format.html { redirect_to project_sections_path(@project), notice: "Section updated." }
       end
     else
-      render :edit, status: :unprocessable_entity
+      respond_to do |format|
+        format.json { render json: { success: false, errors: @section.errors }, status: :unprocessable_entity }
+        format.html { render :edit, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -49,7 +57,14 @@ class SectionsController < ApplicationController
     @section.recommendations.update_all(section_id: nil)
     @section.destroy
 
+    # Find first remaining section to select after deletion
+    first_section = @project.sections.visible.ordered.first
+
     respond_to do |format|
+      format.json do
+        redirect_url = first_section ? project_path(@project, section: first_section.id) : project_path(@project, anchor: "articles")
+        render json: { success: true, redirect_url: redirect_url }
+      end
       format.turbo_stream { redirect_to project_sections_path(@project), notice: "Section deleted." }
       format.html { redirect_to project_sections_path(@project), notice: "Section deleted." }
     end
