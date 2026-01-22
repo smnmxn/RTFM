@@ -26,6 +26,9 @@ Rails.application.routes.draw do
   # Invites
   get "/invite/:token", to: "invites#show", as: :invite
 
+  # Waitlist
+  post "/waitlist", to: "waitlist#create", as: :waitlist
+
   # OmniAuth callbacks
   get "/auth/github/callback", to: "sessions#create"
   get "/auth/failure", to: "sessions#failure"
