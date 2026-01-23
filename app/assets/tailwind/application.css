@@ -133,3 +133,12 @@ a, button, [role="button"], input[type="button"], input[type="submit"], input[ty
 
 /* ===== ACTIVITY STAGES CHECKLIST ===== */
 /* Icon visibility and text styling are controlled by JavaScript in activity_stages_controller.js */
+
+/* ===== SORTABLE DRAG AND DROP ===== */
+.sortable-ghost {
+  @apply bg-indigo-50 border-2 border-dashed border-indigo-300 opacity-50;
+}
+
+[data-sortable-handle] {
+  touch-action: none;
+}

@@ -1,0 +1,82 @@
+<%# locals: (section:, articles:, project:, selected_article_id:) %>
+
+<div id="folder-section-<%= section&.id || 'uncategorized' %>"
+     data-controller="folder-section <%= 'section-menu' if section.present? %>"
+     data-folder-section-expanded-value="true"
+     <%= "data-section-menu-delete-url-value=#{project_section_path(project, section)}" if section.present? %>
+     class="group/section">
+
+  <!-- Section Header -->
+  <div class="relative flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer">
+    <button type="button"
+            data-action="click->folder-section#toggle"
+            class="flex items-center gap-2 flex-1 text-left min-w-0">
+      <span data-folder-section-target="chevron" class="transition-transform duration-200 text-gray-400 rotate-90 flex-shrink-0">
+        <%= heroicon "chevron-right", options: { class: "w-4 h-4" } %>
+      </span>
+      <%= heroicon section&.icon_name || "folder", options: { class: "w-4 h-4 text-gray-500 flex-shrink-0" } %>
+      <span class="font-medium text-sm text-gray-700 truncate"><%= section&.name || "Uncategorized" %></span>
+      <span class="text-xs text-gray-400 flex-shrink-0">(<%= articles.count %>)</span>
+    </button>
+
+    <% if section.present? %>
+      <!-- Add article button -->
+      <button type="button"
+              data-controller="add-article-button"
+              data-add-article-button-section-id-value="<%= section.id %>"
+              data-action="add-article-button#open"
+              class="p-1 text-gray-400 hover:text-gray-600 opacity-0 group-hover/section:opacity-100 transition-opacity flex-shrink-0"
+              title="Add article to <%= section.name %>">
+        <%= heroicon "plus", options: { class: "w-4 h-4" } %>
+      </button>
+
+      <!-- Kebab menu -->
+      <button type="button"
+              data-action="section-menu#toggle"
+              class="p-1 text-gray-400 hover:text-gray-600 opacity-0 group-hover/section:opacity-100 transition-opacity flex-shrink-0">
+        <%= heroicon "ellipsis-vertical", options: { class: "w-4 h-4" } %>
+      </button>
+
+      <!-- Dropdown menu -->
+      <div data-section-menu-target="menu"
+           class="hidden absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+        <button type="button"
+                data-action="section-menu#openEdit"
+                class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left">
+          <%= heroicon "pencil", options: { class: "w-4 h-4" } %>
+          Edit
+        </button>
+        <button type="button"
+                data-action="section-menu#delete"
+                class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 text-left">
+          <%= heroicon "trash", options: { class: "w-4 h-4" } %>
+          Delete
+        </button>
+      </div>
+
+      <!-- Edit Modal -->
+      <%= render "sections/edit_section_modal", section: section, project: project %>
+    <% end %>
+  </div>
+
+  <!-- Nested Articles -->
+  <div data-folder-section-target="content"
+       data-controller="sortable"
+       data-sortable-url-value="<%= bulk_reorder_project_articles_path(project) %>"
+       data-sortable-group-value="articles"
+       data-sortable-section-value="<%= section&.id || 'uncategorized' %>"
+       class="pl-6">
+    <% if articles.any? %>
+      <% articles.each do |article| %>
+        <%= render "projects/articles_folder_article",
+            article: article,
+            project: project,
+            selected: article.id.to_s == selected_article_id.to_s %>
+      <% end %>
+    <% else %>
+      <div class="py-2 text-xs text-gray-400 pl-6">
+        No articles
+      </div>
+    <% end %>
+  </div>
+</div>

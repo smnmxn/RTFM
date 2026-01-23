@@ -1,7 +1,7 @@
 <%= turbo_stream.replace dom_id(@article), partial: "articles/card", locals: { article: @article } %>
 <%= turbo_stream.replace "article_header", partial: "articles/header", locals: { article: @article } %>
 
-<%# Also update the Articles tab editor if viewing from there %>
+<%# Update the Articles tab editor %>
 <%= turbo_stream.replace "articles-editor-frame" do %>
   <%= render "projects/articles_editor",
       article: @article,
@@ -9,12 +9,11 @@
       sections: @article.project.sections.visible.ordered %>
 <% end %>
 
-<%# Update article row in the articles list %>
-<%= turbo_stream.replace dom_id(@article, :articles_row) do %>
-  <%= render "projects/articles_article_row",
-      article: @article,
+<%# Update folder tree to refresh published status indicator %>
+<%= turbo_stream.replace "articles-folder-tree" do %>
+  <%= render "projects/articles_folder_tree",
+      sections: @article.project.sections.visible.ordered,
+      uncategorized_articles: @article.project.articles.for_folder_tree.where(section: nil).ordered,
       project: @article.project,
-      selected: true,
-      index: 0,
-      total: 1 %>
+      selected_article_id: @article.id %>
 <% end %>

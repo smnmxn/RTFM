@@ -42,12 +42,12 @@ class ProjectsController < ApplicationController
 
     # Articles tab data
     @articles_sections = @project.sections.visible.ordered
-    @uncategorized_articles_count = @project.articles.for_editor.where(section: nil).count
-    @total_published_articles = @project.articles.for_editor.count
+    @uncategorized_articles_count = @project.articles.for_folder_tree.where(section: nil).count
+    @total_published_articles = @project.articles.for_folder_tree.count
 
     # Article preselection (from ?article=:id param, used by help centre Edit link)
     if params[:article].present?
-      @preselected_article = @project.articles.for_editor.find_by(id: params[:article])
+      @preselected_article = @project.articles.for_folder_tree.find_by(id: params[:article])
       @preselected_section = @preselected_article&.section
       @active_tab = "articles" if @preselected_article
     end
@@ -183,27 +183,8 @@ class ProjectsController < ApplicationController
   end
 
   # Articles tab actions
-  def select_articles_section
-    @section_id = params[:section_id]
-
-    @articles = if @section_id == "uncategorized"
-      @project.articles.for_editor.where(section: nil).ordered
-    elsif @section_id.present?
-      @project.sections.find(@section_id).articles.for_editor.ordered
-    else
-      []
-    end
-
-    @selected_article = @articles.first
-
-    respond_to do |format|
-      format.turbo_stream
-      format.html { redirect_to project_path(@project, anchor: "articles") }
-    end
-  end
-
   def select_articles_article
-    @article = @project.articles.for_editor.find(params[:article_id])
+    @article = @project.articles.for_folder_tree.find(params[:article_id])
     @sections = @project.sections.visible.ordered
 
     if turbo_frame_request?

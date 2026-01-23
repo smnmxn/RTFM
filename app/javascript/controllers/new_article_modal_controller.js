@@ -6,15 +6,25 @@ export default class extends Controller {
 
   connect() {
     this.closeOnEscape = this.closeOnEscape.bind(this)
+    this.handleOpenWithSection = this.handleOpenWithSection.bind(this)
+    document.addEventListener("new-article-modal:open", this.handleOpenWithSection)
   }
 
   open(event) {
-    event.preventDefault()
+    event?.preventDefault()
     this.backdropTarget.classList.remove("hidden")
     this.dialogTarget.classList.remove("hidden")
     document.addEventListener("keydown", this.closeOnEscape)
     document.body.classList.add("overflow-hidden")
     this.titleTarget?.focus()
+  }
+
+  handleOpenWithSection(event) {
+    const sectionId = event.detail?.sectionId
+    if (this.hasSectionTarget && sectionId) {
+      this.sectionTarget.value = sectionId
+    }
+    this.open()
   }
 
   close() {
@@ -93,6 +103,7 @@ export default class extends Controller {
 
   disconnect() {
     document.removeEventListener("keydown", this.closeOnEscape)
+    document.removeEventListener("new-article-modal:open", this.handleOpenWithSection)
     document.body.classList.remove("overflow-hidden")
   }
 }

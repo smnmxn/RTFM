@@ -34,8 +34,6 @@ import TabsController from "controllers/tabs_controller"
 import InboxRowController from "controllers/inbox_row_controller"
 import ClipboardController from "controllers/clipboard_controller"
 import DropdownController from "controllers/dropdown_controller"
-import ArticlesRowController from "controllers/articles_row_controller"
-import ArticlesSectionController from "controllers/articles_section_controller"
 import OnboardingQuestionsController from "controllers/onboarding_questions_controller"
 import ContextualQuestionsController from "controllers/contextual_questions_controller"
 import FeedbackController from "controllers/feedback_controller"
@@ -49,6 +47,10 @@ import ArticlePreviewController from "controllers/article_preview_controller"
 import SectionModalController from "controllers/section_modal_controller"
 import SectionMenuController from "controllers/section_menu_controller"
 import SectionEditModalController from "controllers/section_edit_modal_controller"
+import SortableController from "controllers/sortable_controller"
+import FolderSectionController from "controllers/folder_section_controller"
+import FolderArticleController from "controllers/folder_article_controller"
+import AddArticleButtonController from "controllers/add_article_button_controller"
 
 application.register("inline-edit", InlineEditController)
 application.register("array-edit", ArrayEditController)
@@ -56,8 +58,6 @@ application.register("tabs", TabsController)
 application.register("inbox-row", InboxRowController)
 application.register("clipboard", ClipboardController)
 application.register("dropdown", DropdownController)
-application.register("articles-row", ArticlesRowController)
-application.register("articles-section", ArticlesSectionController)
 application.register("onboarding-questions", OnboardingQuestionsController)
 application.register("contextual-questions", ContextualQuestionsController)
 application.register("feedback", FeedbackController)
@@ -71,3 +71,7 @@ application.register("article-preview", ArticlePreviewController)
 application.register("section-modal", SectionModalController)
 application.register("section-menu", SectionMenuController)
 application.register("section-edit-modal", SectionEditModalController)
+application.register("sortable", SortableController)
+application.register("folder-section", FolderSectionController)
+application.register("folder-article", FolderArticleController)
+application.register("add-article-button", AddArticleButtonController)

@@ -1,0 +1,26 @@
+<div id="articles-folder-tree" class="flex-1 overflow-y-auto">
+  <% sections.each do |section| %>
+    <% articles = section.articles.for_folder_tree.ordered %>
+    <%= render "projects/articles_folder_section",
+        section: section,
+        articles: articles,
+        project: project,
+        selected_article_id: selected_article_id %>
+  <% end %>
+
+  <% if uncategorized_articles.any? %>
+    <div class="border-t border-gray-200 mt-2 pt-2">
+      <%= render "projects/articles_folder_section",
+          section: nil,
+          articles: uncategorized_articles,
+          project: project,
+          selected_article_id: selected_article_id %>
+    </div>
+  <% end %>
+
+  <% if sections.empty? && uncategorized_articles.empty? %>
+    <div class="p-4 text-center text-gray-500 text-sm">
+      No sections yet
+    </div>
+  <% end %>
+</div>

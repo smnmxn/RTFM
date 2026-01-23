@@ -1,37 +1,10 @@
-<%# Update sections sidebar with updated counts %>
-<%= turbo_stream.replace "articles-sections-list" do %>
-  <div id="articles-sections-list" class="flex-1 overflow-y-auto">
-    <% @project.sections.visible.ordered.each do |section| %>
-      <% article_count = section.articles.for_editor.count %>
-      <%= render "projects/articles_section_row",
-          section: section,
-          article_count: article_count,
-          selected: @article.section_id == section.id,
-          project: @project %>
-    <% end %>
-
-    <% uncategorized_count = @project.articles.for_editor.where(section: nil).count %>
-    <% if uncategorized_count > 0 %>
-      <div class="border-t border-gray-200 mt-2 pt-2">
-        <%= render "projects/articles_section_row",
-            section: nil,
-            article_count: uncategorized_count,
-            selected: @article.section_id.nil?,
-            project: @project %>
-      </div>
-    <% end %>
-  </div>
-<% end %>
-
-<%# Update article list to include the new article %>
-<%= turbo_stream.replace "articles-list-frame" do %>
-  <%= turbo_frame_tag "articles-list-frame" do %>
-    <%= render "projects/articles_list",
-        articles: @articles,
-        section: @article.section,
-        project: @project,
-        selected_article_id: @article.id %>
-  <% end %>
+<%# Replace entire folder tree to refresh counts and article positions %>
+<%= turbo_stream.replace "articles-folder-tree" do %>
+  <%= render "projects/articles_folder_tree",
+      sections: @project.sections.visible.ordered,
+      uncategorized_articles: @project.articles.for_folder_tree.where(section: nil).ordered,
+      project: @project,
+      selected_article_id: @article.id %>
 <% end %>
 
 <%# Update editor to show the new article %>

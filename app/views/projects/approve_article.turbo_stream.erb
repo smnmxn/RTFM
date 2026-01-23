@@ -58,3 +58,12 @@
 <%= turbo_stream.replace "inbox-progress" do %>
   <%= render "projects/inbox_progress", project: @project %>
 <% end %>
+
+<%# Update folder tree (article is now approved and visible there) %>
+<%= turbo_stream.replace "articles-folder-tree" do %>
+  <%= render "projects/articles_folder_tree",
+      sections: @project.sections.visible.ordered,
+      uncategorized_articles: @project.articles.for_folder_tree.where(section: nil).ordered,
+      project: @project,
+      selected_article_id: nil %>
+<% end %>

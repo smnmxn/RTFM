@@ -33,12 +33,12 @@ class HelpCentreController < ApplicationController
     @article = @section.articles.published.find_by!(slug: params[:article_slug])
 
     # Related articles from the same section
-    @related_articles = @section.articles.published.where.not(id: @article.id).limit(3)
+    @related_articles = @section.articles.published.reorder(:position).where.not(id: @article.id).limit(3)
   end
 
   def section
     @section = @project.sections.visible.find_by!(slug: params[:section_slug])
-    @articles = @section.articles.published
+    @articles = @section.articles.published.reorder(:position)
   end
 
   private

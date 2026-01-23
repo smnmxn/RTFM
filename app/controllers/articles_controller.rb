@@ -1,7 +1,7 @@
 class ArticlesController < ApplicationController
   before_action :require_authentication
-  before_action :set_article, except: [ :create_article ]
-  before_action :set_project_for_collection, only: [ :create_article ]
+  before_action :set_article, except: [ :create_article, :bulk_reorder ]
+  before_action :set_project_for_collection, only: [ :create_article, :bulk_reorder ]
 
   def show
     # Redirect to project page with article preselected
@@ -61,6 +61,28 @@ class ArticlesController < ApplicationController
     end
   end
 
+  def bulk_reorder
+    article_ids = params[:article_ids]
+    section_id = params[:section_id]
+    moved_article_id = params[:moved_article_id]
+
+    return head :bad_request if article_ids.blank?
+
+    ActiveRecord::Base.transaction do
+      # If article was moved to a new section, update its section first
+      if moved_article_id.present?
+        @project.articles.where(id: moved_article_id).update_all(section_id: section_id)
+      end
+
+      # Update positions for all articles in the target section
+      article_ids.each_with_index do |id, index|
+        @project.articles.where(id: id).update_all(position: index)
+      end
+    end
+
+    head :ok
+  end
+
   def regenerate
     unless @article.generation_failed? || @article.generation_completed? || @article.generation_pending?
       redirect_to project_path(@article.project), alert: "Article cannot be regenerated while generation is in progress"
@@ -87,8 +109,8 @@ class ArticlesController < ApplicationController
     GenerateArticleJob.perform_later(article_id: @article.id)
 
     respond_to do |format|
-      format.json { render json: { redirect_url: project_path(@article.project, selected: "article_#{@article.id}") } }
-      format.html { redirect_to project_path(@article.project, selected: "article_#{@article.id}"), notice: "Article generation started" }
+      format.json { render json: { redirect_url: project_path(@article.project, article: @article.id) } }
+      format.html { redirect_to project_path(@article.project, article: @article.id), notice: "Article generation started" }
     end
   end
 
@@ -161,6 +183,7 @@ class ArticlesController < ApplicationController
 
   def publish
     if @article.generation_completed?
+      @article.approve! unless @article.approved?
       @article.publish!
       respond_to do |format|
         format.turbo_stream
@@ -197,7 +220,7 @@ class ArticlesController < ApplicationController
 
   def reorder
     direction = params[:direction]
-    articles_scope = @article.section ? @article.section.articles.for_editor.ordered : @article.project.articles.for_editor.where(section: nil).ordered
+    articles_scope = @article.section ? @article.section.articles.for_folder_tree.ordered : @article.project.articles.for_folder_tree.where(section: nil).ordered
     articles = articles_scope.to_a
     current_index = articles.index(@article)
 

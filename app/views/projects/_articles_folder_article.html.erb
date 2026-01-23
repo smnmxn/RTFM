@@ -1,0 +1,27 @@
+<%# locals: (article:, project:, selected:) %>
+
+<div data-article-id="<%= article.id %>"
+     data-section-id="<%= article.section_id || 'uncategorized' %>"
+     data-controller="folder-article"
+     class="group flex items-center border-l-2 rounded-r-lg <%= selected ? 'border-indigo-500 bg-indigo-50' : 'border-transparent hover:bg-gray-50' %>">
+
+  <!-- Drag Handle -->
+  <div data-sortable-handle
+       class="px-2 py-2 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 flex-shrink-0">
+    <%= heroicon "bars-2", options: { class: "w-3 h-3" } %>
+  </div>
+
+  <!-- Article Link -->
+  <%= link_to select_articles_article_project_path(project, article_id: article.id),
+      data: { turbo_frame: "articles-editor-frame", action: "click->folder-article#select" },
+      class: "flex-1 py-2 pr-3 min-w-0 overflow-hidden" do %>
+    <span class="flex items-center gap-1.5">
+      <span class="block text-sm truncate <%= selected ? 'text-indigo-700 font-medium' : (article.published? ? 'text-gray-700' : 'text-gray-400') %> <%= 'italic' unless article.published? %>">
+        <%= article.title %>
+      </span>
+      <% if article.generation_running? || article.generation_pending? %>
+        <span class="flex-shrink-0 text-gray-400 text-xs animate-pulse">...</span>
+      <% end %>
+    </span>
+  <% end %>
+</div>

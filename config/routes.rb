@@ -82,7 +82,6 @@ Rails.application.routes.draw do
       post :accept_recommendation
       post :reject_recommendation
       # Articles tab actions
-      post :select_articles_section
       get :select_articles_article
       # Settings actions
       post :start_over
@@ -102,6 +101,7 @@ Rails.application.routes.draw do
     resources :articles, only: [ :show, :destroy ] do
       collection do
         post :create_article
+        patch :bulk_reorder
       end
       member do
         get :preview

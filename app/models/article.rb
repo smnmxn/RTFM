@@ -32,6 +32,7 @@ class Article < ApplicationRecord
   scope :needs_review, -> { where(review_status: :unreviewed, generation_status: :generation_completed) }
   scope :for_help_centre, -> { approved.published }
   scope :for_editor, -> { approved }
+  scope :for_folder_tree, -> { where.not(review_status: :rejected) }
   scope :ordered, -> { order(:position) }
 
   def publish!
@@ -193,6 +194,21 @@ class Article < ApplicationRecord
         [project, :inbox],
         target: "inbox-notifications",
         html: "<div data-article-updated-id=\"#{id}\" data-status=\"#{generation_status}\" class=\"hidden\"></div>"
+      )
+    end
+
+    # Update folder tree when generation status changes (removes "..." indicator)
+    if saved_change_to_generation_status?
+      broadcast_replace_to(
+        [project, :inbox],
+        target: "articles-folder-tree",
+        partial: "projects/articles_folder_tree",
+        locals: {
+          sections: project.sections.visible.ordered,
+          uncategorized_articles: project.articles.for_folder_tree.where(section: nil).ordered,
+          project: project,
+          selected_article_id: nil
+        }
       )
     end
   end

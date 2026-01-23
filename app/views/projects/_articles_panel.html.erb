@@ -13,69 +13,27 @@
   </div>
 </div>
 
-<!-- Three Column Layout -->
-<%# Use preselected article/section if provided, otherwise default to first %>
-<% active_section = local_assigns[:preselected_section] || sections.find { |s| s.articles.for_editor.any? } %>
-<% is_uncategorized = local_assigns[:preselected_article] && local_assigns[:preselected_section].nil? %>
+<!-- Two Column Layout -->
+<% uncategorized_articles = project.articles.for_folder_tree.where(section: nil).ordered %>
 
 <div class="flex-1 flex overflow-hidden">
-  <!-- Left: Sections Sidebar -->
-  <div class="w-64 flex-shrink-0 border-r border-gray-200 flex flex-col bg-gray-50">
-    <div class="px-4 py-3 border-b border-gray-200 bg-gray-100 flex items-center justify-between">
-      <h3 class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Sections</h3>
+  <!-- Left: Folder Tree -->
+  <div class="w-96 flex-shrink-0 border-r border-gray-200 flex flex-col bg-white">
+    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+      <h3 class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Sections & Articles</h3>
       <%= render "sections/new_section_modal", project: project %>
     </div>
-    <div id="articles-sections-list" class="flex-1 overflow-y-auto">
-      <% sections.each do |section| %>
-        <% article_count = section.articles.for_editor.count %>
-        <%= render "projects/articles_section_row",
-            section: section,
-            article_count: article_count,
-            selected: !is_uncategorized && active_section&.id == section.id,
-            project: project %>
-      <% end %>
-
-      <% if uncategorized_count > 0 %>
-        <div class="border-t border-gray-200 mt-2 pt-2">
-          <%= render "projects/articles_section_row",
-              section: nil,
-              article_count: uncategorized_count,
-              selected: is_uncategorized || (active_section.nil? && !local_assigns[:preselected_article]),
-              project: project %>
-        </div>
-      <% end %>
-
-      <% if sections.empty? && uncategorized_count == 0 %>
-        <div class="p-4 text-center text-gray-500 text-sm">
-          No sections yet
-        </div>
-      <% end %>
-    </div>
-  </div>
-
-  <!-- Middle: Articles List -->
-  <div class="w-72 flex-shrink-0 border-r border-gray-200 flex flex-col bg-white">
-    <% if is_uncategorized %>
-      <% initial_articles = project.articles.for_editor.where(section: nil).ordered %>
-    <% elsif active_section %>
-      <% initial_articles = active_section.articles.for_editor.ordered %>
-    <% else %>
-      <% initial_articles = uncategorized_count > 0 ? project.articles.for_editor.where(section: nil).ordered : [] %>
-    <% end %>
-
-    <%= turbo_frame_tag "articles-list-frame" do %>
-      <%= render "projects/articles_list",
-          articles: initial_articles,
-          section: is_uncategorized ? nil : active_section,
-          project: project,
-          selected_article_id: local_assigns[:preselected_article]&.id %>
-    <% end %>
+    <%= render "projects/articles_folder_tree",
+        sections: sections,
+        uncategorized_articles: uncategorized_articles,
+        project: project,
+        selected_article_id: preselected_article&.id %>
   </div>
 
   <!-- Right: Article Editor -->
   <div class="flex-1 flex flex-col overflow-hidden bg-gray-50">
     <%= turbo_frame_tag "articles-editor-frame", class: "h-full" do %>
-      <% display_article = local_assigns[:preselected_article] || initial_articles.first %>
+      <% display_article = preselected_article || sections.flat_map { |s| s.articles.for_folder_tree.ordered }.first || uncategorized_articles.first %>
       <% if display_article %>
         <%= render "projects/articles_editor",
             article: display_article,

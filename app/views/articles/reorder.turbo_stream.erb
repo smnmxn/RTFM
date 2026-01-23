@@ -1,9 +1,8 @@
-<%# Update article list with new order %>
-<%= turbo_stream.replace "articles-list-frame" do %>
-  <%= turbo_frame_tag "articles-list-frame" do %>
-    <%= render "projects/articles_list",
-        articles: @articles,
-        section: @article.section,
-        project: @article.project %>
-  <% end %>
+<%# Update folder tree with new order %>
+<%= turbo_stream.replace "articles-folder-tree" do %>
+  <%= render "projects/articles_folder_tree",
+      sections: @article.project.sections.visible.ordered,
+      uncategorized_articles: @article.project.articles.for_folder_tree.where(section: nil).ordered,
+      project: @article.project,
+      selected_article_id: @article.id %>
 <% end %>
