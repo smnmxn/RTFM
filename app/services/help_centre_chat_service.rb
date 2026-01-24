@@ -36,6 +36,47 @@ class HelpCentreChatService
     { error: "Unable to process your question. Please try again." }
   end
 
+  # Streaming version - yields events as they arrive
+  def stream(&block)
+    if @question.blank?
+      yield({ type: :error, message: "Please enter a question" })
+      return
+    end
+
+    unless ENV["ANTHROPIC_API_KEY"].present?
+      yield({ type: :error, message: "Ask a question is temporarily unavailable" })
+      return
+    end
+
+    articles = fetch_published_articles
+    if articles.empty?
+      yield({ type: :error, message: "No articles available yet" })
+      return
+    end
+
+    context = build_articles_context(articles)
+
+    if estimated_tokens(context) > MAX_CONTEXT_TOKENS
+      articles = articles.limit(100)
+      context = build_articles_context(articles)
+    end
+
+    full_text = ""
+
+    stream_claude_api(context) do |chunk|
+      full_text += chunk
+      yield({ type: :chunk, text: chunk })
+    end
+
+    # After streaming complete, extract and yield sources
+    sources = extract_sources(full_text, articles)
+    yield({ type: :complete, sources: sources, full_text: full_text })
+  rescue StandardError => e
+    Rails.logger.error "[HelpCentreChatService] Stream error: #{e.message}"
+    Rails.logger.error e.backtrace.first(5).join("\n")
+    yield({ type: :error, message: "Unable to process your question. Please try again." })
+  end
+
   private
 
   def fetch_published_articles
@@ -137,6 +178,101 @@ class HelpCentreChatService
       Rails.logger.error "[HelpCentreChatService] API error: #{response.code} - #{response.body}"
       nil
     end
+  end
+
+  def stream_claude_api(articles_context, &block)
+    uri = URI(ANTHROPIC_API_URL)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    http.read_timeout = 120
+
+    request = Net::HTTP::Post.new(uri)
+    request["Content-Type"] = "application/json"
+    request["x-api-key"] = ENV["ANTHROPIC_API_KEY"]
+    request["anthropic-version"] = "2023-06-01"
+
+    request.body = {
+      model: MODEL,
+      max_tokens: MAX_TOKENS,
+      stream: true,
+      system: build_system_prompt(articles_context),
+      messages: [
+        { role: "user", content: @question }
+      ]
+    }.to_json
+
+    http.request(request) do |response|
+      if response.code != "200"
+        Rails.logger.error "[HelpCentreChatService] Stream API error: #{response.code}"
+        raise "API error: #{response.code}"
+      end
+
+      buffer = ""
+      response.read_body do |chunk|
+        buffer += chunk
+
+        # Parse SSE events from buffer
+        while (event_end = buffer.index("\n\n"))
+          event_data = buffer[0...event_end]
+          buffer = buffer[(event_end + 2)..]
+
+          # Parse the event
+          parse_sse_event(event_data, &block)
+        end
+      end
+    end
+  end
+
+  def parse_sse_event(event_data, &block)
+    lines = event_data.split("\n")
+    event_type = nil
+    data = nil
+
+    lines.each do |line|
+      if line.start_with?("event: ")
+        event_type = line[7..]
+      elsif line.start_with?("data: ")
+        data = line[6..]
+      end
+    end
+
+    return unless data
+
+    begin
+      parsed = JSON.parse(data)
+
+      case parsed["type"]
+      when "content_block_delta"
+        if parsed.dig("delta", "type") == "text_delta"
+          text = parsed.dig("delta", "text")
+          yield(text) if text
+        end
+      when "message_stop"
+        # Stream complete
+      when "error"
+        Rails.logger.error "[HelpCentreChatService] Stream error: #{parsed}"
+      end
+    rescue JSON::ParserError
+      # Ignore non-JSON data lines
+    end
+  end
+
+  def extract_sources(full_text, articles)
+    cited_urls = full_text.scan(/\[([^\]]+)\]\(([^)]+)\)/).map { |_, url| url }
+
+    articles.select do |article|
+      section_slug = article.section&.slug || "general"
+      url = "/#{section_slug}/#{article.slug}"
+      cited_urls.include?(url)
+    end.map do |article|
+      section_slug = article.section&.slug || "general"
+      {
+        id: article.id,
+        title: article.title,
+        section: article.section&.name,
+        url: "/#{section_slug}/#{article.slug}"
+      }
+    end.uniq { |s| s[:id] }
   end
 
   def parse_response(response, articles)

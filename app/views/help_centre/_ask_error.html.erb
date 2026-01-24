@@ -1,0 +1,16 @@
+<%# locals: (error:) %>
+<div id="answer-container">
+  <div class="bg-red-50 border border-red-200 rounded-xl p-6">
+    <div class="flex items-start gap-3">
+      <%= heroicon "exclamation-circle", options: { class: "w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" } %>
+      <div>
+        <p class="text-red-800 font-medium"><%= error %></p>
+        <p class="text-red-600 text-sm mt-2">
+          Try browsing our
+          <%= link_to "help articles", help_centre_path, class: "underline hover:no-underline" %>
+          instead.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

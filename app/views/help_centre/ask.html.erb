@@ -1,5 +1,7 @@
 <% content_for(:title) { "Ask - #{@project.name} Help Centre" } %>
 
+<%= turbo_stream_from "help_centre_ask_#{@stream_id}" %>
+
 <div class="space-y-8">
   <!-- Breadcrumb -->
   <nav class="text-sm">
@@ -17,86 +19,77 @@
     </h1>
   </div>
 
-  <!-- Answer -->
-  <div class="max-w-3xl">
-    <% if @result[:error] %>
-      <!-- Error State -->
-      <div class="bg-red-50 border border-red-200 rounded-xl p-6">
-        <div class="flex items-start gap-3">
-          <%= heroicon "exclamation-circle", options: { class: "w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" } %>
-          <div>
-            <p class="text-red-800 font-medium"><%= @result[:error] %></p>
-            <p class="text-red-600 text-sm mt-2">
-              Try browsing our
-              <%= link_to "help articles", help_centre_path, class: "underline hover:no-underline" %>
-              instead.
-            </p>
-          </div>
-        </div>
-      </div>
-    <% else %>
-      <!-- Answer Card -->
-      <div class="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
-        <div class="px-6 py-4 bg-gradient-to-r from-brand/5 to-transparent border-b border-gray-100">
-          <div class="flex items-center gap-2 text-sm text-gray-600">
-            <%= heroicon "sparkles", options: { class: "w-4 h-4 text-brand" } %>
-            <span>AI-generated answer</span>
-          </div>
-        </div>
-        <div class="px-6 py-6">
-          <div class="prose prose-gray max-w-none prose-a:text-brand prose-a:no-underline hover:prose-a:underline">
-            <%= markdown(@result[:answer]) %>
-          </div>
-        </div>
-      </div>
+  <!-- Answer Container -->
+  <div class="max-w-3xl"
+       id="answer-container"
+       data-controller="streaming-answer"
+       data-streaming-answer-stream-id-value="<%= @stream_id %>">
 
-      <!-- Sources -->
-      <% if @result[:sources].any? %>
-        <div class="mt-8">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4">Sources</h2>
-          <div class="grid gap-3 sm:grid-cols-2">
-            <% @result[:sources].each do |source| %>
-              <%= link_to source[:url], class: "group block bg-white border border-gray-200 rounded-lg p-4 hover:border-brand hover:shadow-sm transition-all" do %>
-                <div class="flex items-start gap-3">
-                  <%= heroicon "document-text", options: { class: "w-5 h-5 text-gray-400 group-hover:text-brand flex-shrink-0 mt-0.5 transition-colors" } %>
-                  <div>
-                    <p class="font-medium text-gray-900 group-hover:text-brand transition-colors"><%= source[:title] %></p>
-                    <% if source[:section] %>
-                      <p class="text-sm text-gray-500 mt-0.5"><%= source[:section] %></p>
-                    <% end %>
-                  </div>
-                </div>
-              <% end %>
-            <% end %>
-          </div>
+    <!-- Answer Card -->
+    <div class="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
+      <div class="px-6 py-4 bg-gradient-to-r from-brand/5 to-transparent border-b border-gray-100">
+        <div class="flex items-center gap-2 text-sm text-gray-600">
+          <%= heroicon "sparkles", options: { class: "w-4 h-4 text-brand" } %>
+          <span>AI-generated answer</span>
         </div>
-      <% end %>
+      </div>
+      <div class="px-6 py-6">
+        <!-- Thinking State -->
+        <div data-streaming-answer-target="thinking" class="flex items-center gap-3 text-gray-500">
+          <svg class="animate-spin h-5 w-5 text-brand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>Thinking...</span>
+        </div>
+
+        <!-- Answer Content (hidden initially) -->
+        <div data-streaming-answer-target="content" class="hidden">
+          <!-- Hidden container where Turbo appends raw text spans -->
+          <div id="answer-text"
+               data-streaming-answer-target="text"
+               class="hidden">
+          </div>
+          <!-- Visible rendered markdown -->
+          <div data-streaming-answer-target="rendered"
+               class="prose prose-gray max-w-none prose-a:text-brand prose-a:no-underline hover:prose-a:underline">
+          </div>
+          <!-- Typing cursor -->
+          <span data-streaming-answer-target="cursor"
+                class="inline-block w-2 h-5 bg-brand/60 animate-pulse ml-0.5 align-middle"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sources (hidden, populated via Turbo Stream) -->
+    <div id="answer-sources" data-streaming-answer-target="sources" class="mt-8 hidden">
+      <!-- Will be replaced by broadcast_complete -->
+    </div>
+  </div>
+
+  <!-- Ask Another Question -->
+  <div class="max-w-3xl mt-8 pt-8 border-t border-gray-200">
+    <p class="text-gray-600 mb-4">Have another question?</p>
+    <%= form_with url: help_centre_ask_path, method: :get, class: "max-w-xl" do %>
+      <div class="flex gap-3">
+        <input type="text"
+               name="q"
+               placeholder="Ask a question..."
+               class="flex-1 px-4 py-3 border border-gray-300 rounded-lg
+                      focus:ring-2 focus:ring-brand focus:border-brand
+                      placeholder:text-gray-400">
+        <button type="submit"
+                class="px-5 py-3 bg-brand text-white rounded-lg hover:opacity-90 transition-opacity font-medium">
+          Ask
+        </button>
+      </div>
     <% end %>
+  </div>
 
-    <!-- Ask Another Question -->
-    <div class="mt-8 pt-8 border-t border-gray-200">
-      <p class="text-gray-600 mb-4">Have another question?</p>
-      <%= form_with url: help_centre_ask_path, method: :get, class: "max-w-xl" do %>
-        <div class="flex gap-3">
-          <input type="text"
-                 name="q"
-                 placeholder="Ask a question..."
-                 class="flex-1 px-4 py-3 border border-gray-300 rounded-lg
-                        focus:ring-2 focus:ring-brand focus:border-brand
-                        placeholder:text-gray-400">
-          <button type="submit"
-                  class="px-5 py-3 bg-brand text-white rounded-lg hover:opacity-90 transition-opacity font-medium">
-            Ask
-          </button>
-        </div>
-      <% end %>
-    </div>
-
-    <!-- Browse Categories -->
-    <div class="mt-6 text-center">
-      <p class="text-sm text-gray-500">
-        Or <%= link_to "browse all categories", help_centre_path, class: "text-brand hover:underline" %>
-      </p>
-    </div>
+  <!-- Browse Categories -->
+  <div class="max-w-3xl mt-6 text-center">
+    <p class="text-sm text-gray-500">
+      Or <%= link_to "browse all categories", help_centre_path, class: "text-brand hover:underline" %>
+    </p>
   </div>
 </div>

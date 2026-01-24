@@ -51,6 +51,7 @@ import SortableController from "controllers/sortable_controller"
 import FolderSectionController from "controllers/folder_section_controller"
 import FolderArticleController from "controllers/folder_article_controller"
 import AddArticleButtonController from "controllers/add_article_button_controller"
+import StreamingAnswerController from "controllers/streaming_answer_controller"
 
 application.register("inline-edit", InlineEditController)
 application.register("array-edit", ArrayEditController)
@@ -75,3 +76,4 @@ application.register("sortable", SortableController)
 application.register("folder-section", FolderSectionController)
 application.register("folder-article", FolderArticleController)
 application.register("add-article-button", AddArticleButtonController)
+application.register("streaming-answer", StreamingAnswerController)

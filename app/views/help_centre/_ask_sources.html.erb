@@ -1,0 +1,23 @@
+<%# locals: (sources:) %>
+<% if sources.any? %>
+  <div id="answer-sources" class="mt-8">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Sources</h2>
+    <div class="grid gap-3 sm:grid-cols-2">
+      <% sources.each do |source| %>
+        <%= link_to source[:url], class: "group block bg-white border border-gray-200 rounded-lg p-4 hover:border-brand hover:shadow-sm transition-all" do %>
+          <div class="flex items-start gap-3">
+            <%= heroicon "document-text", options: { class: "w-5 h-5 text-gray-400 group-hover:text-brand flex-shrink-0 mt-0.5 transition-colors" } %>
+            <div>
+              <p class="font-medium text-gray-900 group-hover:text-brand transition-colors"><%= source[:title] %></p>
+              <% if source[:section] %>
+                <p class="text-sm text-gray-500 mt-0.5"><%= source[:section] %></p>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+<% else %>
+  <div id="answer-sources"></div>
+<% end %>
