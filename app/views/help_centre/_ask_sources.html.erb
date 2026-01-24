@@ -1,8 +1,8 @@
 <%# locals: (sources:) %>
 <% if sources.any? %>
   <div id="answer-sources" class="mt-8">
-    <h2 class="text-lg font-semibold text-gray-900 mb-4">Sources</h2>
-    <div class="grid gap-3 sm:grid-cols-2">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Sources</h3>
+    <div class="grid gap-4 sm:grid-cols-2">
       <% sources.each do |source| %>
         <%= link_to source[:url], class: "group block bg-white border border-gray-200 rounded-lg p-4 hover:border-brand hover:shadow-sm transition-all" do %>
           <div class="flex items-start gap-3">

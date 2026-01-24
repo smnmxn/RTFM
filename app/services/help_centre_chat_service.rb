@@ -48,13 +48,17 @@ class HelpCentreChatService
       return
     end
 
+    Rails.logger.info "[HelpCentreChatService] Fetching articles..."
     articles = fetch_published_articles
     if articles.empty?
       yield({ type: :error, message: "No articles available yet" })
       return
     end
+    Rails.logger.info "[HelpCentreChatService] Found #{articles.count} articles"
 
+    Rails.logger.info "[HelpCentreChatService] Building context..."
     context = build_articles_context(articles)
+    Rails.logger.info "[HelpCentreChatService] Context built (#{context.length} chars)"
 
     if estimated_tokens(context) > MAX_CONTEXT_TOKENS
       articles = articles.limit(100)
@@ -63,6 +67,7 @@ class HelpCentreChatService
 
     full_text = ""
 
+    Rails.logger.info "[HelpCentreChatService] Calling Claude API..."
     stream_claude_api(context) do |chunk|
       full_text += chunk
       yield({ type: :chunk, text: chunk })
@@ -82,7 +87,7 @@ class HelpCentreChatService
   def fetch_published_articles
     @project.articles
       .published
-      .includes(:section)
+      .includes(:section, step_images: { image_attachment: :blob })
       .order(published_at: :desc)
   end
 
@@ -117,7 +122,13 @@ class HelpCentreChatService
 
       if article.steps.any?
         steps_text = article.steps.map.with_index do |step, i|
-          "Step #{i + 1}: #{step['title']} - #{step['content']}"
+          step_image = article.step_images.find { |si| si.step_index == i }
+          image_info = ""
+          if step_image&.image&.attached?
+            url = step_image_url(step_image)
+            image_info = "\n  [Image available: #{url}]" if url
+          end
+          "Step #{i + 1}: #{step['title']} - #{step['content']}#{image_info}"
         end.join("\n")
         parts << steps_text
       end
@@ -144,6 +155,10 @@ class HelpCentreChatService
       4. Never make up information not in the articles
       5. Use a friendly, helpful tone
       6. Format your response with markdown for readability
+      7. When an image would help illustrate a step or concept, include it using: ![description](image_url)
+         - Only include images marked as [Image available: URL] in the articles
+         - Use images when they directly help answer the question
+         - Place images after the relevant text they illustrate
 
       Help Articles:
       #{articles_context}
@@ -308,5 +323,28 @@ class HelpCentreChatService
   def estimated_tokens(text)
     # Rough estimate: ~4 characters per token
     (text.length / 4.0).ceil
+  end
+
+  def step_image_url(step_image)
+    return nil unless step_image&.image&.attached?
+
+    host = build_image_host
+    # Use original blob URL to avoid blocking on variant processing
+    Rails.application.routes.url_helpers.rails_blob_url(
+      step_image.image,
+      host: host
+    )
+  rescue ActiveStorage::FileNotFoundError, ActiveStorage::IntegrityError => e
+    Rails.logger.warn "[HelpCentreChatService] Image not available for step_image #{step_image.id}: #{e.message}"
+    nil
+  rescue => e
+    Rails.logger.error "[HelpCentreChatService] Unexpected error getting image URL: #{e.class} - #{e.message}"
+    nil
+  end
+
+  def build_image_host
+    base_domain = Rails.application.config.x.base_domain
+    protocol = Rails.env.production? ? "https" : "http"
+    "#{protocol}://#{@project.subdomain}.#{base_domain}"
   end
 end

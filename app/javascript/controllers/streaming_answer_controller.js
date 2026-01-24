@@ -71,7 +71,19 @@ export default class extends Controller {
     // Render markdown to the rendered target (separate from where Turbo appends)
     if (this.hasRenderedTarget) {
       this.renderedTarget.innerHTML = this.parseMarkdown(this.rawText)
+      this.addImageErrorHandlers()
     }
+  }
+
+  addImageErrorHandlers() {
+    this.renderedTarget.querySelectorAll('img').forEach(img => {
+      if (!img.dataset.errorHandled) {
+        img.dataset.errorHandled = 'true'
+        img.addEventListener('error', () => {
+          img.style.display = 'none'
+        })
+      }
+    })
   }
 
   handleComplete() {
@@ -99,11 +111,44 @@ export default class extends Controller {
   parseMarkdown(text) {
     if (!text) return ''
 
-    let html = this.escapeHtml(text)
+    // Extract images and links BEFORE escaping to preserve URLs
+    const images = []
+    const links = []
 
-    // Links: [text](url)
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g,
-      '<a href="$2" class="text-brand hover:underline">$1</a>')
+    // Extract images first: ![alt](url)
+    let processed = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, url) => {
+      const placeholder = `__IMG_${images.length}__`
+      images.push({ alt, url })
+      return placeholder
+    })
+
+    // Extract links: [text](url)
+    processed = processed.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
+      const placeholder = `__LINK_${links.length}__`
+      links.push({ text: linkText, url })
+      return placeholder
+    })
+
+    // Now escape HTML
+    let html = this.escapeHtml(processed)
+
+    // Restore images
+    images.forEach((img, i) => {
+      const escapedAlt = this.escapeHtml(img.alt)
+      html = html.replace(
+        `__IMG_${i}__`,
+        `<img src="${img.url}" alt="${escapedAlt}" class="my-4 rounded-lg max-w-full border border-gray-200" loading="lazy" />`
+      )
+    })
+
+    // Restore links
+    links.forEach((link, i) => {
+      const escapedText = this.escapeHtml(link.text)
+      html = html.replace(
+        `__LINK_${i}__`,
+        `<a href="${link.url}" class="text-brand hover:underline">${escapedText}</a>`
+      )
+    })
 
     // Bold: **text**
     html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
@@ -111,6 +156,16 @@ export default class extends Controller {
     // Inline code: `text`
     html = html.replace(/`([^`]+)`/g,
       '<code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>')
+
+    // Headings (must be processed before paragraphs/line breaks)
+    // h4: ####
+    html = html.replace(/^#### (.+)$/gm, '<h4 class="text-base font-semibold text-gray-900 mt-4 mb-2">$1</h4>')
+    // h3: ###
+    html = html.replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold text-gray-900 mt-5 mb-2">$1</h3>')
+    // h2: ##
+    html = html.replace(/^## (.+)$/gm, '<h2 class="text-xl font-semibold text-gray-900 mt-6 mb-3">$1</h2>')
+    // h1: #
+    html = html.replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold text-gray-900 mt-6 mb-3">$1</h1>')
 
     // Paragraphs (double newlines)
     html = html.replace(/\n\n/g, '</p><p class="mt-3">')
