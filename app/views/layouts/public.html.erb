@@ -71,17 +71,17 @@
 
         <div class="flex items-center gap-4">
           <% unless content_for?(:hero) %>
-            <!-- Mini search on non-index pages -->
-            <%= form_with url: help_centre_search_path(project_slug: @project.slug),
+            <!-- Mini ask on non-index pages -->
+            <%= form_with url: help_centre_ask_path,
                           method: :get,
                           class: "hidden sm:block" do %>
               <div class="relative">
                 <input type="text"
                        name="q"
-                       placeholder="Search..."
+                       placeholder="Ask a question..."
                        class="w-48 lg:w-64 px-4 py-2 pl-10 text-sm border border-gray-300 rounded-lg
-                              focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-  <%= heroicon "magnifying-glass", options: { class: "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" } %>
+                              focus:ring-2 focus:ring-brand focus:border-brand">
+                <%= heroicon "sparkles", options: { class: "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" } %>
               </div>
             <% end %>
           <% end %>

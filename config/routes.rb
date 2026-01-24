@@ -135,7 +135,7 @@ Rails.application.routes.draw do
   # URL structure: /:section_slug/:article_slug
   constraints SubdomainConstraint do
     root "help_centre#index", as: :help_centre
-    get "search", to: "help_centre#search", as: :help_centre_search
+    get "ask", to: "help_centre#ask", as: :help_centre_ask
     get ":section_slug/:article_slug", to: "help_centre#show", as: :help_centre_article
     get ":section_slug", to: "help_centre#section", as: :help_centre_section
   end

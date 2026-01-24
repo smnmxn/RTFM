@@ -15,17 +15,16 @@ class HelpCentreController < ApplicationController
     @popular_articles = @project.articles.published.order(published_at: :desc).limit(6)
   end
 
-  def search
-    @query = params[:q].to_s.strip
+  def ask
+    @question = params[:q].to_s.strip
 
-    if @query.present?
-      @articles = @project.articles
-        .published
-        .where("title LIKE :q OR content LIKE :q OR structured_content LIKE :q", q: "%#{@query}%")
-        .limit(20)
-    else
-      @articles = []
+    if @question.blank?
+      redirect_to help_centre_path
+      return
     end
+
+    service = HelpCentreChatService.new(@project, @question)
+    @result = service.call
   end
 
   def show

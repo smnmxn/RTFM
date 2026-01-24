@@ -1,0 +1,176 @@
+require "net/http"
+require "json"
+require "uri"
+
+class HelpCentreChatService
+  ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
+  MODEL = "claude-sonnet-4-20250514"
+  MAX_TOKENS = 2048
+  MAX_CONTEXT_TOKENS = 150_000
+
+  def initialize(project, question)
+    @project = project
+    @question = question.to_s.strip
+  end
+
+  def call
+    return { error: "Please enter a question" } if @question.blank?
+    return { error: "Ask a question is temporarily unavailable" } unless ENV["ANTHROPIC_API_KEY"].present?
+
+    articles = fetch_published_articles
+    return { error: "No articles available yet" } if articles.empty?
+
+    context = build_articles_context(articles)
+
+    if estimated_tokens(context) > MAX_CONTEXT_TOKENS
+      # Truncate to most recent 100 articles
+      articles = articles.limit(100)
+      context = build_articles_context(articles)
+    end
+
+    response = call_claude_api(context)
+    parse_response(response, articles)
+  rescue StandardError => e
+    Rails.logger.error "[HelpCentreChatService] Error: #{e.message}"
+    Rails.logger.error e.backtrace.first(5).join("\n")
+    { error: "Unable to process your question. Please try again." }
+  end
+
+  private
+
+  def fetch_published_articles
+    @project.articles
+      .published
+      .includes(:section)
+      .order(published_at: :desc)
+  end
+
+  def build_articles_context(articles)
+    articles.map do |article|
+      section_name = article.section&.name || "General"
+      section_slug = article.section&.slug || "general"
+      url = "/#{section_slug}/#{article.slug}"
+
+      content_text = extract_article_content(article)
+
+      <<~ARTICLE
+        ---
+        TITLE: #{article.title}
+        SECTION: #{section_name}
+        URL: #{url}
+        CONTENT:
+        #{content_text}
+        ---
+      ARTICLE
+    end.join("\n")
+  end
+
+  def extract_article_content(article)
+    if article.structured?
+      parts = []
+      parts << article.introduction if article.introduction.present?
+
+      if article.prerequisites.any?
+        parts << "Prerequisites: #{article.prerequisites.join(', ')}"
+      end
+
+      if article.steps.any?
+        steps_text = article.steps.map.with_index do |step, i|
+          "Step #{i + 1}: #{step['title']} - #{step['content']}"
+        end.join("\n")
+        parts << steps_text
+      end
+
+      if article.tips.any?
+        parts << "Tips: #{article.tips.join(', ')}"
+      end
+
+      parts << article.summary if article.summary.present?
+      parts.join("\n\n")
+    else
+      article.content.to_s
+    end
+  end
+
+  def build_system_prompt(articles_context)
+    <<~PROMPT
+      You are a helpful support assistant for #{@project.name}. Answer questions using ONLY the help articles provided below.
+
+      Rules:
+      1. Answer the question directly and concisely
+      2. When referencing an article, cite it as a markdown link: [Article Title](URL)
+      3. If the articles don't contain enough information to answer, say "I couldn't find a specific answer to that question in our help articles."
+      4. Never make up information not in the articles
+      5. Use a friendly, helpful tone
+      6. Format your response with markdown for readability
+
+      Help Articles:
+      #{articles_context}
+    PROMPT
+  end
+
+  def call_claude_api(articles_context)
+    uri = URI(ANTHROPIC_API_URL)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    http.read_timeout = 60
+
+    request = Net::HTTP::Post.new(uri)
+    request["Content-Type"] = "application/json"
+    request["x-api-key"] = ENV["ANTHROPIC_API_KEY"]
+    request["anthropic-version"] = "2023-06-01"
+
+    request.body = {
+      model: MODEL,
+      max_tokens: MAX_TOKENS,
+      system: build_system_prompt(articles_context),
+      messages: [
+        { role: "user", content: @question }
+      ]
+    }.to_json
+
+    response = http.request(request)
+
+    if response.code == "200"
+      JSON.parse(response.body)
+    else
+      Rails.logger.error "[HelpCentreChatService] API error: #{response.code} - #{response.body}"
+      nil
+    end
+  end
+
+  def parse_response(response, articles)
+    return { error: "Unable to get a response. Please try again." } unless response
+
+    content = response.dig("content", 0, "text")
+    return { error: "Empty response received. Please try again." } unless content
+
+    # Extract cited URLs from markdown links in the response
+    cited_urls = content.scan(/\[([^\]]+)\]\(([^)]+)\)/).map { |_, url| url }
+
+    # Build sources array from cited articles
+    sources = articles.select do |article|
+      section_slug = article.section&.slug || "general"
+      url = "/#{section_slug}/#{article.slug}"
+      cited_urls.include?(url)
+    end.map do |article|
+      section_slug = article.section&.slug || "general"
+      {
+        id: article.id,
+        title: article.title,
+        section: article.section&.name,
+        url: "/#{section_slug}/#{article.slug}"
+      }
+    end
+
+    {
+      answer: content,
+      sources: sources.uniq { |s| s[:id] }
+    }
+  end
+
+  def estimated_tokens(text)
+    # Rough estimate: ~4 characters per token
+    (text.length / 4.0).ceil
+  end
+end
