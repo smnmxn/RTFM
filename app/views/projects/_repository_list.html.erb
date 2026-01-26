@@ -30,8 +30,8 @@
             data: { turbo: false } %>
       </div>
     <% elsif @onboarding_project.present? %>
-      <%# Onboarding mode - multi-select with checkboxes %>
-      <%= form_with url: connect_onboarding_project_path(@onboarding_project), method: :post, data: { turbo_frame: "_top", controller: "repo-select" } do |f| %>
+      <%# Onboarding mode - single-select by default, toggle to multi-select %>
+      <div data-controller="repo-select" data-repo-select-mode-value="single">
         <%# Search input %>
         <% if @repositories.size > 5 %>
           <div class="p-4 border-b border-slate-100">
@@ -55,26 +55,29 @@
 
         <div class="divide-y divide-slate-100" data-repo-select-target="repoList">
           <% @repositories.each_with_index do |repo, index| %>
-            <% connected = @connected_repos.include?(repo[:full_name]) %>
-            <label class="p-4 flex items-center gap-4 cursor-pointer <%= 'bg-slate-50' if connected %> <%= 'hover:bg-slate-50 transition-smooth' unless connected %>"
-                   data-repo-select-target="repoItem"
-                   data-repo-name="<%= repo[:full_name].downcase %>"
-                   data-repo-description="<%= repo[:description]&.downcase %>"
-            >
-              <input type="checkbox"
-                     name="repositories[<%= index %>][selected]"
-                     value="1"
-                     data-action="repo-select#updateButton"
-                     <%= 'checked disabled' if connected %>
-                     class="h-5 w-5 rounded border-slate-300 text-violet-600 focus:ring-violet-500 disabled:opacity-50" />
-              <input type="hidden"
-                     name="repositories[<%= index %>][github_repo]"
-                     value="<%= repo[:full_name] %>"
-                     <%= 'disabled' if connected %> />
-              <input type="hidden"
-                     name="repositories[<%= index %>][installation_id]"
-                     value="<%= repo[:installation_id] %>"
-                     <%= 'disabled' if connected %> />
+            <% connected_to_this = @connected_to_this_project.include?(repo[:full_name]) %>
+            <% connected_to_other = @connected_to_other_projects.include?(repo[:full_name]) %>
+            <% connected = connected_to_this || connected_to_other %>
+            <%# In multi mode, hide repos connected to other projects %>
+            <div class="p-4 flex items-center gap-4 <%= 'bg-slate-50' if connected %> <%= 'hover:bg-slate-50 transition-smooth' unless connected %>"
+                 data-repo-select-target="repoItem"
+                 data-repo-name="<%= repo[:full_name].downcase %>"
+                 data-repo-description="<%= repo[:description]&.downcase %>"
+                 data-connected-to-this="<%= connected_to_this %>"
+                 data-connected-to-other="<%= connected_to_other %>">
+
+              <%# Checkbox - hidden in single mode, visible in multi mode (not for repos connected to other projects) %>
+              <% unless connected_to_other %>
+                <input type="checkbox"
+                       form="multi-repo-form"
+                       name="repositories[<%= index %>][selected]"
+                       value="1"
+                       data-repo-select-target="checkbox"
+                       data-action="change->repo-select#checkboxChanged"
+                       data-index="<%= index %>"
+                       <%= 'checked disabled' if connected_to_this %>
+                       class="hidden h-5 w-5 rounded border-slate-300 text-violet-600 focus:ring-violet-500 disabled:opacity-50" />
+              <% end %>
 
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2">
@@ -84,9 +87,13 @@
                       Private
                     </span>
                   <% end %>
-                  <% if connected %>
+                  <% if connected_to_this %>
                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700">
                       Connected
+                    </span>
+                  <% elsif connected_to_other %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-500">
+                      In another project
                     </span>
                   <% end %>
                 </div>
@@ -94,30 +101,60 @@
                   <p class="text-sm text-slate-500 truncate"><%= repo[:description] %></p>
                 <% end %>
               </div>
-            </label>
+
+              <%# Single mode: Connect button per row %>
+              <% if connected %>
+                <span class="ml-4 px-4 py-2 bg-slate-200 text-slate-500 text-sm rounded-lg cursor-not-allowed"
+                      data-repo-select-target="connectButton">
+                  <%= connected_to_this ? 'Connected' : 'Unavailable' %>
+                </span>
+              <% else %>
+                <%= button_to "Connect",
+                    connect_onboarding_project_path(@onboarding_project,
+                      repositories: { "0" => { selected: "1", github_repo: repo[:full_name], installation_id: repo[:installation_id] } }),
+                    method: :post,
+                    class: "ml-4 px-4 py-2 bg-gradient-brand text-white text-sm rounded-lg hover:opacity-90 transition-smooth",
+                    data: { turbo_frame: "_top", repo_select_target: "connectButton" } %>
+              <% end %>
+            </div>
           <% end %>
         </div>
 
-        <%# Submit button %>
+        <%# Multi-select form (hidden inputs added dynamically) %>
+        <%= form_with id: "multi-repo-form", url: connect_onboarding_project_path(@onboarding_project), method: :post, data: { turbo_frame: "_top", repo_select_target: "multiForm" }, class: "hidden" do |f| %>
+          <% @repositories.each_with_index do |repo, index| %>
+            <% connected = @connected_repos.include?(repo[:full_name]) %>
+            <input type="hidden" name="repositories[<%= index %>][github_repo]" value="<%= repo[:full_name] %>" <%= 'disabled' if connected %> />
+            <input type="hidden" name="repositories[<%= index %>][installation_id]" value="<%= repo[:installation_id] %>" <%= 'disabled' if connected %> />
+          <% end %>
+        <% end %>
+
+        <%# Footer with toggle and multi-select submit %>
         <div class="p-4 border-t border-slate-100 bg-slate-50">
           <div class="flex items-center justify-between">
             <%= link_to "Add more repositories",
                 github_app_install_path(return_to: repository_onboarding_project_path(@onboarding_project)),
                 class: "text-violet-600 hover:text-violet-800 transition-smooth text-sm",
                 data: { turbo: false } %>
-            <%= f.submit "Continue",
-                class: "px-6 py-2 bg-gradient-brand text-white text-sm font-medium rounded-lg hover:opacity-90 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed",
-                data: { repo_select_target: "submitButton" } %>
+            <%# Multi-mode submit button (hidden in single mode) %>
+            <button type="submit"
+                    form="multi-repo-form"
+                    class="hidden px-6 py-2 bg-gradient-brand text-white text-sm font-medium rounded-lg hover:opacity-90 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+                    data-repo-select-target="submitButton">
+              Continue
+            </button>
           </div>
-          <p class="text-xs text-slate-500 mt-2" data-repo-select-target="hint">
-            <% if @connected_repos.any? %>
-              Select additional repositories to include in this project
-            <% else %>
-              Select at least one repository to continue
-            <% end %>
-          </p>
+          <div class="flex items-center justify-between mt-2">
+            <span class="text-xs text-slate-500" data-repo-select-target="hint"></span>
+            <button type="button"
+                    data-action="repo-select#toggleMode"
+                    data-repo-select-target="toggleLink"
+                    class="text-xs text-slate-400 hover:text-violet-600 transition-smooth">
+              Need to connect multiple repositories?
+            </button>
+          </div>
         </div>
-      <% end %>
+      </div>
     <% else %>
       <%# Normal mode (not onboarding) - single connect buttons %>
       <div data-controller="repo-select">

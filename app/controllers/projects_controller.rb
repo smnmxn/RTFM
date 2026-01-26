@@ -337,10 +337,24 @@ class ProjectsController < ApplicationController
     if result.success?
       @repositories = result.repositories
       @installations = result.installations
-      @connected_repos = current_user.projects.pluck(:github_repo)
 
       # Pass through onboarding project if in wizard
       @onboarding_project = current_user.projects.find_by(slug: params[:onboarding_project_slug]) if params[:onboarding_project_slug].present?
+
+      # Split connected repos: this project vs other projects
+      if @onboarding_project
+        @connected_to_this_project = @onboarding_project.project_repositories.pluck(:github_repo)
+        @connected_to_other_projects = current_user.projects
+          .where.not(id: @onboarding_project.id)
+          .joins(:project_repositories)
+          .pluck("project_repositories.github_repo")
+      else
+        @connected_to_this_project = []
+        @connected_to_other_projects = []
+      end
+
+      # For backwards compatibility, @connected_repos includes all connected repos
+      @connected_repos = @connected_to_this_project + @connected_to_other_projects
 
       render partial: "projects/repository_list"
     else
