@@ -4,14 +4,22 @@ export default class extends Controller {
   static targets = ["tab", "panel"]
   static values = {
     active: { type: String, default: "overview" },
-    hash: { type: Boolean, default: false }
+    hash: { type: Boolean, default: false },
+    hashPrefix: { type: String, default: "" }
   }
 
   connect() {
     if (this.hashValue && window.location.hash) {
-      const hashTab = window.location.hash.substring(1)
-      if (this.hasTab(hashTab)) {
-        this.activeValue = hashTab
+      const hash = window.location.hash.substring(1)
+      const prefix = this.hashPrefixValue
+
+      if (prefix && hash.startsWith(prefix)) {
+        const tabName = hash.substring(prefix.length)
+        if (this.hasTab(tabName)) {
+          this.activeValue = tabName
+        }
+      } else if (!prefix && this.hasTab(hash)) {
+        this.activeValue = hash
       }
     }
     this.showActiveTab()
@@ -28,7 +36,8 @@ export default class extends Controller {
   activeValueChanged() {
     this.showActiveTab()
     if (this.hashValue) {
-      history.replaceState(null, null, `#${this.activeValue}`)
+      const hashPath = this.hashPrefixValue + this.activeValue
+      history.replaceState(null, null, `#${hashPath}`)
     }
 
     // Dispatch event so panels can refresh their content if needed
@@ -43,12 +52,23 @@ export default class extends Controller {
   showActiveTab() {
     this.tabTargets.forEach(tab => {
       const isActive = tab.dataset.tabsName === this.activeValue
-      tab.classList.toggle("border-indigo-500", isActive)
-      tab.classList.toggle("text-indigo-600", isActive)
-      tab.classList.toggle("border-transparent", !isActive)
-      tab.classList.toggle("text-gray-500", !isActive)
-      tab.classList.toggle("hover:text-gray-700", !isActive)
-      tab.classList.toggle("hover:border-gray-300", !isActive)
+
+      if (tab.classList.contains("settings-nav-item")) {
+        // Sidebar navigation styling
+        tab.classList.toggle("bg-white", isActive)
+        tab.classList.toggle("shadow-sm", isActive)
+        tab.classList.toggle("text-gray-900", isActive)
+        tab.classList.toggle("text-gray-600", !isActive)
+        tab.classList.toggle("hover:bg-gray-100", !isActive)
+      } else {
+        // Horizontal tab styling
+        tab.classList.toggle("border-indigo-500", isActive)
+        tab.classList.toggle("text-indigo-600", isActive)
+        tab.classList.toggle("border-transparent", !isActive)
+        tab.classList.toggle("text-gray-500", !isActive)
+        tab.classList.toggle("hover:text-gray-700", !isActive)
+        tab.classList.toggle("hover:border-gray-300", !isActive)
+      }
     })
 
     this.panelTargets.forEach(panel => {

@@ -10,48 +10,58 @@
   </div>
 </div>
 
-<!-- Settings Content -->
-<div class="flex-1 overflow-y-auto p-6">
-  <div class="max-w-2xl">
-    <!-- Branding Section -->
-    <%= render "projects/branding_form", project: @project, saved: false %>
+<!-- Settings Two Column Layout -->
+<div class="flex-1 flex flex-row overflow-hidden"
+     data-controller="tabs"
+     data-tabs-active-value="branding"
+     data-tabs-hash-value="true"
+     data-tabs-hash-prefix-value="settings/">
 
-    <!-- AI Settings Section -->
-    <%= render "projects/ai_settings_form", project: @project, saved: false %>
+  <!-- Left: Sidebar Navigation -->
+  <div class="w-64 flex-shrink-0 border-r border-gray-200 bg-gray-50">
+    <nav class="p-4 flex flex-col gap-1" aria-label="Settings navigation">
+      <button type="button"
+              data-tabs-target="tab"
+              data-tabs-name="branding"
+              data-action="click->tabs#switch"
+              class="settings-nav-item w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 bg-white shadow-sm text-gray-900">
+        <%= heroicon "paint-brush", options: { class: "w-4 h-4 text-gray-400" } %>
+        Branding
+      </button>
+      <button type="button"
+              data-tabs-target="tab"
+              data-tabs-name="ai-settings"
+              data-action="click->tabs#switch"
+              class="settings-nav-item w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 text-gray-600 hover:bg-gray-100">
+        <%= heroicon "cpu-chip", options: { class: "w-4 h-4 text-gray-400" } %>
+        AI Settings
+      </button>
+      <button type="button"
+              data-tabs-target="tab"
+              data-tabs-name="danger-zone"
+              data-action="click->tabs#switch"
+              class="settings-nav-item w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 text-gray-600 hover:bg-gray-100">
+        <%= heroicon "exclamation-triangle", options: { class: "w-4 h-4 text-red-400" } %>
+        Danger Zone
+      </button>
+    </nav>
+  </div>
 
-    <!-- Danger Zone -->
-    <div class="border border-red-200 rounded-lg">
-      <div class="px-4 py-3 bg-red-50 border-b border-red-200 rounded-t-lg">
-        <h3 class="text-lg font-medium text-red-600">Danger Zone</h3>
-      </div>
+  <!-- Right: Content Area -->
+  <div class="flex-1 overflow-y-auto p-6">
+    <!-- Branding Panel -->
+    <div data-tabs-target="panel" data-tabs-name="branding">
+      <%= render "projects/branding_form", project: @project, saved: false %>
+    </div>
 
-      <div class="divide-y divide-red-200">
-        <!-- Start Over -->
-        <div class="p-4 flex items-center justify-between">
-          <div>
-            <h4 class="text-sm font-medium text-gray-900">Start Over</h4>
-            <p class="text-sm text-gray-500">Clear all articles and sections, then re-run the setup wizard.</p>
-          </div>
-          <%= button_to "Start Over...",
-              start_over_project_path(@project),
-              method: :post,
-              class: "ml-4 px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium",
-              data: { turbo_confirm: "Are you sure you want to start over? This will delete all articles, sections, and recommendations. You'll need to go through the setup wizard again." } %>
-        </div>
+    <!-- AI Settings Panel -->
+    <div data-tabs-target="panel" data-tabs-name="ai-settings" class="hidden">
+      <%= render "projects/ai_settings_form", project: @project, saved: false %>
+    </div>
 
-        <!-- Delete Project -->
-        <div class="p-4 flex items-center justify-between">
-          <div>
-            <h4 class="text-sm font-medium text-gray-900">Delete Project</h4>
-            <p class="text-sm text-gray-500">Permanently delete this project and all its data.</p>
-          </div>
-          <%= button_to "Delete Project...",
-              project_path(@project),
-              method: :delete,
-              class: "ml-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium",
-              data: { turbo_confirm: "Are you sure you want to delete this project? This will permanently remove all articles, sections, and data. This action cannot be undone." } %>
-        </div>
-      </div>
+    <!-- Danger Zone Panel -->
+    <div data-tabs-target="panel" data-tabs-name="danger-zone" class="hidden">
+      <%= render "projects/danger_zone", project: @project %>
     </div>
   </div>
 </div>

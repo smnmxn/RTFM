@@ -1,6 +1,6 @@
 <%# locals: (project:, saved: false) %>
 <%= turbo_frame_tag "branding_form" do %>
-  <div class="border border-gray-200 rounded-lg mb-8">
+  <div class="border border-gray-200 rounded-lg">
     <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 rounded-t-lg">
       <h3 class="text-lg font-medium text-gray-900">Help Centre Branding</h3>
       <p class="text-sm text-gray-500 mt-1">Customize the look and feel of your public help centre.</p>
@@ -96,11 +96,13 @@
           <div>
             <label class="block text-sm font-medium text-gray-900 mb-1">Primary Color</label>
             <div class="flex items-center gap-2">
-              <input type="color"
-                     id="primary_color_picker"
-                     value="<%= project.primary_color_or_default %>"
-                     class="w-10 h-10 rounded cursor-pointer border border-gray-300"
-                     oninput="document.getElementById('project_primary_color').value = this.value; updateColorPreview();">
+              <div class="relative w-10 h-10 flex-shrink-0">
+                <input type="color"
+                       id="primary_color_picker"
+                       value="<%= project.primary_color_or_default %>"
+                       class="absolute inset-0 w-full h-full cursor-pointer rounded border border-gray-300"
+                       oninput="document.getElementById('project_primary_color').value = this.value; updateColorPreview();">
+              </div>
               <%= form.text_field :primary_color,
                   value: project.primary_color_or_default,
                   placeholder: "#4f46e5",
@@ -112,11 +114,13 @@
           <div>
             <label class="block text-sm font-medium text-gray-900 mb-1">Accent Color</label>
             <div class="flex items-center gap-2">
-              <input type="color"
-                     id="accent_color_picker"
-                     value="<%= project.accent_color_or_default %>"
-                     class="w-10 h-10 rounded cursor-pointer border border-gray-300"
-                     oninput="document.getElementById('project_accent_color').value = this.value; updateColorPreview();">
+              <div class="relative w-10 h-10 flex-shrink-0">
+                <input type="color"
+                       id="accent_color_picker"
+                       value="<%= project.accent_color_or_default %>"
+                       class="absolute inset-0 w-full h-full cursor-pointer rounded border border-gray-300"
+                       oninput="document.getElementById('project_accent_color').value = this.value; updateColorPreview();">
+              </div>
               <%= form.text_field :accent_color,
                   value: project.accent_color_or_default,
                   placeholder: "#7c3aed",
@@ -128,11 +132,13 @@
           <div>
             <label class="block text-sm font-medium text-gray-900 mb-1">Title Text Color</label>
             <div class="flex items-center gap-2">
-              <input type="color"
-                     id="title_text_color_picker"
-                     value="<%= project.title_text_color_or_default %>"
-                     class="w-10 h-10 rounded cursor-pointer border border-gray-300"
-                     oninput="document.getElementById('project_title_text_color').value = this.value;">
+              <div class="relative w-10 h-10 flex-shrink-0">
+                <input type="color"
+                       id="title_text_color_picker"
+                       value="<%= project.title_text_color_or_default %>"
+                       class="absolute inset-0 w-full h-full cursor-pointer rounded border border-gray-300"
+                       oninput="document.getElementById('project_title_text_color').value = this.value;">
+              </div>
               <%= form.text_field :title_text_color,
                   value: project.title_text_color_or_default,
                   placeholder: "#111827",
