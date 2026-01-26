@@ -60,24 +60,74 @@ module Onboarding
     end
 
     def connect
-      repo_full_name = params[:github_repo]
-      installation_id = params[:installation_id]
+      Rails.logger.info "[Onboarding::ProjectsController#connect] Raw params[:repositories]: #{params[:repositories].inspect}"
+      repositories_params = params[:repositories]&.to_unsafe_h&.values || []
+      Rails.logger.info "[Onboarding::ProjectsController#connect] Parsed repositories_params: #{repositories_params.inspect}"
 
-      # Find the installation
-      installation = GithubAppInstallation.find_by(github_installation_id: installation_id)
-      unless installation
+      # Handle legacy single-repo format for backwards compatibility
+      if repositories_params.empty? && params[:github_repo].present?
+        repositories_params = [{ "github_repo" => params[:github_repo], "installation_id" => params[:installation_id], "selected" => "1" }]
+        Rails.logger.info "[Onboarding::ProjectsController#connect] Using legacy format: #{repositories_params.inspect}"
+      end
+
+      # Filter to only selected repositories
+      selected_repos = repositories_params.select { |r| r["selected"] == "1" }
+      Rails.logger.info "[Onboarding::ProjectsController#connect] Selected repos: #{selected_repos.inspect}"
+
+      if selected_repos.empty?
         redirect_to repository_onboarding_project_path(@project),
-          alert: "GitHub App installation not found. Please install the app first."
+          alert: "Please select at least one repository."
         return
       end
 
-      # Only update github_repo and installation - preserve user's name and subdomain
-      @project.assign_attributes(
-        github_repo: repo_full_name,
-        github_app_installation: installation
-      )
+      errors = []
+      connected_repos = []
 
-      @project.save!
+      selected_repos.each do |repo_params|
+        repo_full_name = repo_params["github_repo"]
+        installation_id = repo_params["installation_id"]
+
+        next if repo_full_name.blank?
+
+        # Find the installation
+        installation = GithubAppInstallation.find_by(github_installation_id: installation_id)
+        unless installation
+          errors << "GitHub App installation not found for #{repo_full_name}."
+          next
+        end
+
+        # Check if repo is already connected to another project
+        existing_repo = ProjectRepository.find_by(github_repo: repo_full_name)
+        if existing_repo && existing_repo.project_id != @project.id
+          errors << "#{repo_full_name} is already connected to another project."
+          next
+        end
+
+        # Create ProjectRepository record (new system)
+        @project.project_repositories.find_or_create_by!(github_repo: repo_full_name) do |pr|
+          pr.github_installation_id = installation.github_installation_id
+          pr.is_primary = @project.project_repositories.empty?
+        end
+
+        connected_repos << repo_full_name
+      end
+
+      if connected_repos.empty? && errors.any?
+        redirect_to repository_onboarding_project_path(@project), alert: errors.first
+        return
+      end
+
+      # Update legacy fields for backwards compatibility (use primary repo)
+      primary_repo = @project.primary_repository
+      if primary_repo
+        installation = GithubAppInstallation.find_by(github_installation_id: primary_repo.github_installation_id)
+        @project.assign_attributes(
+          github_repo: primary_repo.github_repo,
+          github_app_installation: installation
+        )
+        @project.save!
+      end
+
       @project.advance_onboarding!("analyze")
       redirect_to analyze_onboarding_project_path(@project)
     end

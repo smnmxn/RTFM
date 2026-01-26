@@ -17,7 +17,7 @@ class ProjectsController < ApplicationController
 
     @inbox_articles = @project.articles
       .where(review_status: :unreviewed)
-      .where(generation_status: [ :generation_pending, :generation_running, :generation_completed ])
+      .where(generation_status: [ :generation_pending, :generation_running, :generation_completed, :generation_failed ])
       .includes(:section)
       .order(created_at: :asc)
 
@@ -64,7 +64,7 @@ class ProjectsController < ApplicationController
   def inbox_articles
     @inbox_articles = @project.articles
       .where(review_status: :unreviewed)
-      .where(generation_status: [ :generation_pending, :generation_running, :generation_completed ])
+      .where(generation_status: [ :generation_pending, :generation_running, :generation_completed, :generation_failed ])
       .includes(:section)
       .order(created_at: :asc)
 
@@ -465,6 +465,64 @@ class ProjectsController < ApplicationController
     redirect_to projects_path, notice: "Project '#{@project.name}' disconnected."
   end
 
+  # Repository management actions
+
+  def add_repository
+    repo_full_name = params[:github_repo]
+    installation_id = params[:installation_id]
+
+    installation = GithubAppInstallation.find_by(github_installation_id: installation_id)
+    unless installation
+      redirect_to project_path(@project, anchor: "settings"), alert: "GitHub App installation not found."
+      return
+    end
+
+    # Check if repo is already connected to another project
+    existing_repo = ProjectRepository.find_by(github_repo: repo_full_name)
+    if existing_repo && existing_repo.project_id != @project.id
+      redirect_to project_path(@project, anchor: "settings"), alert: "This repository is already connected to another project."
+      return
+    end
+
+    @project.project_repositories.create!(
+      github_repo: repo_full_name,
+      github_installation_id: installation.github_installation_id,
+      is_primary: @project.project_repositories.empty?
+    )
+
+    redirect_to project_path(@project, anchor: "settings"), notice: "Repository #{repo_full_name} added."
+  end
+
+  def remove_repository
+    repo = @project.project_repositories.find(params[:repository_id])
+
+    if @project.project_repositories.count == 1
+      redirect_to project_path(@project, anchor: "settings"), alert: "Cannot remove the only repository."
+      return
+    end
+
+    # Reassign primary if removing the primary repo
+    if repo.is_primary?
+      @project.project_repositories.where.not(id: repo.id).first&.update!(is_primary: true)
+    end
+
+    repo.destroy
+
+    redirect_to project_path(@project, anchor: "settings"), notice: "Repository removed."
+  end
+
+  def set_primary_repository
+    repo = @project.project_repositories.find(params[:repository_id])
+
+    @project.project_repositories.update_all(is_primary: false)
+    repo.update!(is_primary: true)
+
+    # Also update legacy github_repo field
+    @project.update!(github_repo: repo.github_repo)
+
+    redirect_to project_path(@project, anchor: "settings"), notice: "Primary repository updated."
+  end
+
   private
 
   def set_project
@@ -479,7 +537,7 @@ class ProjectsController < ApplicationController
   end
 
   def ai_settings_params
-    params.require(:project).permit(:claude_model)
+    params.require(:project).permit(:claude_model, :claude_max_turns)
   end
 
   def load_inbox_items
@@ -489,7 +547,7 @@ class ProjectsController < ApplicationController
 
     @inbox_articles = @project.articles
       .where(review_status: :unreviewed)
-      .where(generation_status: [ :generation_pending, :generation_running, :generation_completed ])
+      .where(generation_status: [ :generation_pending, :generation_running, :generation_completed, :generation_failed ])
       .includes(:section)
       .order(created_at: :asc)
 

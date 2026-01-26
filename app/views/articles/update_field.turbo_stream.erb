@@ -1,3 +1,9 @@
 <%= turbo_stream.replace "article_#{@field_section}" do %>
   <%= render "articles/editable/#{@field_section}", article: @article %>
 <% end %>
+
+<% if @field_section == "title" %>
+  <%= turbo_stream.replace "folder_article_#{@article.id}" do %>
+    <%= render "projects/articles_folder_article", article: @article, project: @article.project, selected: true %>
+  <% end %>
+<% end %>

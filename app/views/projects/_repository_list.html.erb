@@ -3,7 +3,7 @@
     <% if @installations.blank? %>
       <%# No GitHub App installed %>
       <div class="p-8 text-center">
-<div class="mx-auto w-12 h-12 rounded-full bg-violet-100 flex items-center justify-center mb-4">
+        <div class="mx-auto w-12 h-12 rounded-full bg-violet-100 flex items-center justify-center mb-4">
           <%= heroicon "link", options: { class: "w-6 h-6 text-violet-600" } %>
         </div>
         <h3 class="text-lg font-medium text-slate-900 mb-2">Install the GitHub App</h3>
@@ -29,62 +29,170 @@
             class: "text-violet-600 hover:text-violet-800 transition-smooth",
             data: { turbo: false } %>
       </div>
-    <% else %>
-      <% @repositories.each do |repo| %>
-        <% connected = @connected_repos.include?(repo[:full_name]) %>
-        <div class="p-4 <%= 'bg-slate-50' if connected %> <%= 'hover:bg-slate-50 transition-smooth' unless connected %> flex justify-between items-center">
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2">
-              <span class="font-medium <%= connected ? 'text-slate-500' : 'text-slate-900' %> truncate"><%= repo[:full_name] %></span>
-              <% if repo[:private] %>
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600">
-                  Private
-                </span>
-              <% end %>
-              <% if connected %>
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700">
-                  Connected
-                </span>
-              <% end %>
+    <% elsif @onboarding_project.present? %>
+      <%# Onboarding mode - multi-select with checkboxes %>
+      <%= form_with url: connect_onboarding_project_path(@onboarding_project), method: :post, data: { turbo_frame: "_top", controller: "repo-select" } do |f| %>
+        <%# Search input %>
+        <% if @repositories.size > 5 %>
+          <div class="p-4 border-b border-slate-100">
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <%= heroicon "magnifying-glass", options: { class: "h-5 w-5 text-slate-400" } %>
+              </div>
+              <input type="text"
+                     placeholder="Search repositories..."
+                     data-repo-select-target="searchInput"
+                     data-action="input->repo-select#filter"
+                     class="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent" />
             </div>
-            <% if repo[:description].present? %>
-              <p class="text-sm text-slate-500 truncate"><%= repo[:description] %></p>
-            <% end %>
           </div>
+        <% end %>
 
-          <% if connected %>
-            <span class="ml-4 px-4 py-2 bg-slate-200 text-slate-500 text-sm rounded-lg cursor-not-allowed">
-              Connected
-            </span>
-          <% elsif @onboarding_project.present? %>
-            <%# Onboarding mode - connect to wizard flow %>
-            <%= button_to "Connect",
-                connect_onboarding_project_path(@onboarding_project,
-                  github_repo: repo[:full_name],
-                  installation_id: repo[:installation_id]),
-                method: :post,
-                class: "ml-4 px-4 py-2 bg-gradient-brand text-white text-sm rounded-lg hover:opacity-90 transition-smooth",
-                data: { turbo_frame: "_top" } %>
-          <% else %>
-            <%# Normal mode - connect via standard flow %>
-            <%= button_to "Connect",
-                projects_path(
-                  github_repo: repo[:full_name],
-                  installation_id: repo[:installation_id]),
-                method: :post,
-                class: "ml-4 px-4 py-2 bg-gradient-brand text-white text-sm rounded-lg hover:opacity-90 transition-smooth",
-                data: { turbo_frame: "_top" } %>
+        <%# No results message (hidden by default) %>
+        <div class="p-8 text-center hidden" data-repo-select-target="noResults">
+          <p class="text-slate-500">No repositories match your search.</p>
+        </div>
+
+        <div class="divide-y divide-slate-100" data-repo-select-target="repoList">
+          <% @repositories.each_with_index do |repo, index| %>
+            <% connected = @connected_repos.include?(repo[:full_name]) %>
+            <label class="p-4 flex items-center gap-4 cursor-pointer <%= 'bg-slate-50' if connected %> <%= 'hover:bg-slate-50 transition-smooth' unless connected %>"
+                   data-repo-select-target="repoItem"
+                   data-repo-name="<%= repo[:full_name].downcase %>"
+                   data-repo-description="<%= repo[:description]&.downcase %>"
+            >
+              <input type="checkbox"
+                     name="repositories[<%= index %>][selected]"
+                     value="1"
+                     data-action="repo-select#updateButton"
+                     <%= 'checked disabled' if connected %>
+                     class="h-5 w-5 rounded border-slate-300 text-violet-600 focus:ring-violet-500 disabled:opacity-50" />
+              <input type="hidden"
+                     name="repositories[<%= index %>][github_repo]"
+                     value="<%= repo[:full_name] %>"
+                     <%= 'disabled' if connected %> />
+              <input type="hidden"
+                     name="repositories[<%= index %>][installation_id]"
+                     value="<%= repo[:installation_id] %>"
+                     <%= 'disabled' if connected %> />
+
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium <%= connected ? 'text-slate-500' : 'text-slate-900' %> truncate"><%= repo[:full_name] %></span>
+                  <% if repo[:private] %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600">
+                      Private
+                    </span>
+                  <% end %>
+                  <% if connected %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700">
+                      Connected
+                    </span>
+                  <% end %>
+                </div>
+                <% if repo[:description].present? %>
+                  <p class="text-sm text-slate-500 truncate"><%= repo[:description] %></p>
+                <% end %>
+              </div>
+            </label>
           <% end %>
         </div>
-      <% end %>
 
-      <%# Link to add more repos %>
-      <div class="p-4 text-center border-t border-slate-100">
-        <% return_path = @onboarding_project.present? ? repository_onboarding_project_path(@onboarding_project) : new_project_path %>
-        <%= link_to "Add more repositories",
-            github_app_install_path(return_to: return_path),
-            class: "text-violet-600 hover:text-violet-800 transition-smooth text-sm",
-            data: { turbo: false } %>
+        <%# Submit button %>
+        <div class="p-4 border-t border-slate-100 bg-slate-50">
+          <div class="flex items-center justify-between">
+            <%= link_to "Add more repositories",
+                github_app_install_path(return_to: repository_onboarding_project_path(@onboarding_project)),
+                class: "text-violet-600 hover:text-violet-800 transition-smooth text-sm",
+                data: { turbo: false } %>
+            <%= f.submit "Continue",
+                class: "px-6 py-2 bg-gradient-brand text-white text-sm font-medium rounded-lg hover:opacity-90 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed",
+                data: { repo_select_target: "submitButton" } %>
+          </div>
+          <p class="text-xs text-slate-500 mt-2" data-repo-select-target="hint">
+            <% if @connected_repos.any? %>
+              Select additional repositories to include in this project
+            <% else %>
+              Select at least one repository to continue
+            <% end %>
+          </p>
+        </div>
+      <% end %>
+    <% else %>
+      <%# Normal mode (not onboarding) - single connect buttons %>
+      <div data-controller="repo-select">
+        <%# Search input %>
+        <% if @repositories.size > 5 %>
+          <div class="p-4 border-b border-slate-100">
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <%= heroicon "magnifying-glass", options: { class: "h-5 w-5 text-slate-400" } %>
+              </div>
+              <input type="text"
+                     placeholder="Search repositories..."
+                     data-repo-select-target="searchInput"
+                     data-action="input->repo-select#filter"
+                     class="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent" />
+            </div>
+          </div>
+        <% end %>
+
+        <%# No results message (hidden by default) %>
+        <div class="p-8 text-center hidden" data-repo-select-target="noResults">
+          <p class="text-slate-500">No repositories match your search.</p>
+        </div>
+
+        <div class="divide-y divide-slate-100" data-repo-select-target="repoList">
+          <% @repositories.each do |repo| %>
+            <% connected = @connected_repos.include?(repo[:full_name]) %>
+            <div class="p-4 <%= 'bg-slate-50' if connected %> <%= 'hover:bg-slate-50 transition-smooth' unless connected %> flex justify-between items-center"
+                 data-repo-select-target="repoItem"
+                 data-repo-name="<%= repo[:full_name].downcase %>"
+                 data-repo-description="<%= repo[:description]&.downcase %>"
+            >
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium <%= connected ? 'text-slate-500' : 'text-slate-900' %> truncate"><%= repo[:full_name] %></span>
+                  <% if repo[:private] %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600">
+                      Private
+                    </span>
+                  <% end %>
+                  <% if connected %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700">
+                      Connected
+                    </span>
+                  <% end %>
+                </div>
+                <% if repo[:description].present? %>
+                  <p class="text-sm text-slate-500 truncate"><%= repo[:description] %></p>
+                <% end %>
+              </div>
+
+              <% if connected %>
+                <span class="ml-4 px-4 py-2 bg-slate-200 text-slate-500 text-sm rounded-lg cursor-not-allowed">
+                  Connected
+                </span>
+              <% else %>
+                <%= button_to "Connect",
+                    projects_path(
+                      github_repo: repo[:full_name],
+                      installation_id: repo[:installation_id]),
+                    method: :post,
+                    class: "ml-4 px-4 py-2 bg-gradient-brand text-white text-sm rounded-lg hover:opacity-90 transition-smooth",
+                    data: { turbo_frame: "_top" } %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <%# Link to add more repos %>
+        <div class="p-4 text-center border-t border-slate-100">
+          <%= link_to "Add more repositories",
+              github_app_install_path(return_to: new_project_path),
+              class: "text-violet-600 hover:text-violet-800 transition-smooth text-sm",
+              data: { turbo: false } %>
+        </div>
       </div>
     <% end %>
   </div>

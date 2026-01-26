@@ -3,15 +3,16 @@ set -e
 
 # Required environment variables:
 # - ANTHROPIC_API_KEY: Anthropic API key for Claude Code
+# - GITHUB_REPOS_JSON: JSON array of {repo, directory, token} objects
+#   OR (legacy single repo mode):
 # - GITHUB_REPO: owner/repo format
 # - GITHUB_TOKEN: GitHub access token
 
 # Required input files (mounted at /input):
 # - diff.patch: The commit diff
-# - context.json: Project context and commit metadata
+# - context.json: Project context and commit metadata (includes repository_relationships for multi-repo)
 
 echo "Starting commit analysis..."
-echo "Repository: ${GITHUB_REPO}"
 
 # Verify input files exist
 if [ ! -f /input/diff.patch ]; then
@@ -24,38 +25,96 @@ if [ ! -f /input/context.json ]; then
     exit 1
 fi
 
-# Clone the repository for full code context
-echo "Cloning repository..."
-if ! git clone --depth 1 "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" /repo 2>&1; then
-    echo "ERROR: Failed to clone repository ${GITHUB_REPO}"
-    exit 1
+# Create repos directory
+mkdir -p /repos
+
+# Determine if we're in multi-repo or single-repo mode
+if [ -n "${GITHUB_REPOS_JSON}" ]; then
+    REPO_COUNT=$(echo "$GITHUB_REPOS_JSON" | jq 'length')
+    echo "Multi-repo mode: ${REPO_COUNT} repositories"
+    MULTI_REPO=true
+
+    # Clone each repository from JSON
+    for i in $(seq 0 $((REPO_COUNT - 1))); do
+        REPO=$(echo "$GITHUB_REPOS_JSON" | jq -r ".[$i].repo")
+        DIR=$(echo "$GITHUB_REPOS_JSON" | jq -r ".[$i].directory")
+        TOKEN=$(echo "$GITHUB_REPOS_JSON" | jq -r ".[$i].token")
+
+        echo "Cloning $REPO to /repos/$DIR..."
+        if ! git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/${REPO}.git" "/repos/$DIR" 2>&1; then
+            echo "ERROR: Failed to clone repository $REPO"
+            exit 1
+        fi
+
+        if [ ! -d "/repos/$DIR/.git" ]; then
+            echo "ERROR: Repository clone failed - /repos/$DIR/.git not found"
+            exit 1
+        fi
+    done
+else
+    echo "Single-repo mode: ${GITHUB_REPO}"
+    MULTI_REPO=false
+
+    # Legacy single-repo mode
+    echo "Cloning repository..."
+    DIR=$(echo "${GITHUB_REPO}" | sed 's/\//-/g')
+    if ! git clone --depth 1 "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" "/repos/$DIR" 2>&1; then
+        echo "ERROR: Failed to clone repository ${GITHUB_REPO}"
+        exit 1
+    fi
+
+    if [ ! -d "/repos/$DIR/.git" ]; then
+        echo "ERROR: Repository clone failed - /repos/$DIR/.git not found"
+        exit 1
+    fi
 fi
 
-if [ ! -d /repo/.git ]; then
-    echo "ERROR: Repository clone failed - /repo/.git not found"
-    exit 1
-fi
-
-cd /repo
+# Change to repos directory for analysis
+cd /repos
 
 # Read commit SHA from context for logging
 COMMIT_SHA=$(cat /input/context.json | grep -o '"commit_sha":"[^"]*"' | grep -o '[a-f0-9]\{7,40\}' | head -1 || echo "unknown")
 echo "Analyzing commit ${COMMIT_SHA}"
 
+# Build multi-repo context for prompt if applicable
+if [ "$MULTI_REPO" = true ] && [ "$REPO_COUNT" -gt 1 ]; then
+    # Check if context.json has repository_relationships
+    HAS_RELATIONSHIPS=$(cat /input/context.json | jq -r 'if .repository_relationships then "yes" else "no" end')
+
+    if [ "$HAS_RELATIONSHIPS" = "yes" ]; then
+        MULTI_REPO_CONTEXT="
+IMPORTANT: This project consists of multiple related repositories:
+
+$(cat /input/context.json | jq -r '.repository_relationships.architecture_summary // empty')
+
+Repositories:
+$(cat /input/context.json | jq -r '.repository_relationships.repositories[]? | "- \(.directory): \(.role) - \(.description)"')
+
+This commit affects the repository: $(cat /input/context.json | jq -r '.source_repo // .github_repo // "unknown"')
+
+When analyzing this commit, consider how changes might affect other repositories in this project.
+"
+    else
+        MULTI_REPO_CONTEXT="Note: This project has multiple repositories. The diff is from one of them."
+    fi
+else
+    MULTI_REPO_CONTEXT=""
+fi
+
 # Run Claude Code to analyze the commit diff
 echo "Running Claude Code analysis..."
 echo "API Key set: ${ANTHROPIC_API_KEY:+yes}"
 
-cat <<'PROMPT' | claude -p --output-format json --allowedTools "Read,Glob,Grep,Bash" > /tmp/claude_output.json
+cat <<PROMPT | claude -p --output-format json --allowedTools "Read,Glob,Grep,Bash" > /tmp/claude_output.json
 You are a changelog writer for a software product. Your job is to convert technical code changes into user-facing release notes that help users understand what's new and how it benefits them.
-
+${MULTI_REPO_CONTEXT}
 STEP 1: Read the project context file to understand what this project does:
 /input/context.json
 
 STEP 2: Read the commit diff to understand what code changed:
 /input/diff.patch
 
-STEP 3: If needed, explore the full codebase at /repo to understand the broader context of the changes. Use Glob, Grep, and Read tools to find related code.
+STEP 3: If needed, explore the full codebase at /repos to understand the broader context of the changes. Use Glob, Grep, and Read tools to find related code.
 
 STEP 4: Based on the project context and the code changes, generate the following output:
 

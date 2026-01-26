@@ -12,6 +12,8 @@
       <div class="flex-shrink-0">
         <% if article.generation_running? %>
           <%= spinner_icon(size: "w-5 h-5", extra_class: "text-indigo-500") %>
+        <% elsif article.generation_failed? %>
+          <%= heroicon "exclamation-triangle", options: { class: "w-5 h-5 text-red-500" } %>
         <% elsif article.approved? %>
           <%= heroicon "check-circle", options: { class: "w-5 h-5 text-green-500" } %>
         <% elsif article.rejected? %>

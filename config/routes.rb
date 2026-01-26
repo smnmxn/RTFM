@@ -91,6 +91,10 @@ Rails.application.routes.draw do
       delete :remove_logo
       # AI settings
       patch :update_ai_settings
+      # Repository management
+      post :add_repository
+      delete :remove_repository
+      patch :set_primary_repository
     end
     resources :recommendations, only: [] do
       member do
@@ -109,6 +113,7 @@ Rails.application.routes.draw do
         patch :update_field
         post :add_array_item
         delete :remove_array_item
+        patch :reorder_array_item
         post :publish
         post :unpublish
         patch :move_to_section

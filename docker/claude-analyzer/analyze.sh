@@ -2,38 +2,131 @@
 set -e
 
 # Required environment variables:
+# - GITHUB_REPOS_JSON: JSON array of {repo, directory, token} objects
+#   OR (legacy single repo mode):
 # - GITHUB_REPO: owner/repo format
 # - GITHUB_TOKEN: GitHub access token
 # - ANTHROPIC_API_KEY: Anthropic API key for Claude Code
 
 echo "Starting codebase analysis..."
-echo "Repository: ${GITHUB_REPO}"
 
-# Clone the repository (x-access-token format works for both OAuth and GitHub App tokens)
-echo "Cloning repository..."
-if ! git clone --depth 1 "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" /repo 2>&1; then
-    echo "ERROR: Failed to clone repository ${GITHUB_REPO}"
-    exit 1
+# Determine if we're in multi-repo or single-repo mode
+if [ -n "${GITHUB_REPOS_JSON}" ]; then
+    REPO_COUNT=$(echo "$GITHUB_REPOS_JSON" | jq 'length')
+    echo "Multi-repo mode: ${REPO_COUNT} repositories"
+    MULTI_REPO=true
+else
+    echo "Single-repo mode: ${GITHUB_REPO}"
+    REPO_COUNT=1
+    MULTI_REPO=false
 fi
 
-if [ ! -d /repo/.git ]; then
-    echo "ERROR: Repository clone failed - /repo/.git not found"
-    exit 1
-fi
+# Create repos directory
+mkdir -p /repos
 
-cd /repo
+if [ "$MULTI_REPO" = true ]; then
+    # Clone each repository from JSON
+    for i in $(seq 0 $((REPO_COUNT - 1))); do
+        REPO=$(echo "$GITHUB_REPOS_JSON" | jq -r ".[$i].repo")
+        DIR=$(echo "$GITHUB_REPOS_JSON" | jq -r ".[$i].directory")
+        TOKEN=$(echo "$GITHUB_REPOS_JSON" | jq -r ".[$i].token")
+
+        echo "Cloning $REPO to /repos/$DIR..."
+        if ! git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/${REPO}.git" "/repos/$DIR" 2>&1; then
+            echo "ERROR: Failed to clone repository $REPO"
+            exit 1
+        fi
+
+        if [ ! -d "/repos/$DIR/.git" ]; then
+            echo "ERROR: Repository clone failed - /repos/$DIR/.git not found"
+            exit 1
+        fi
+    done
+
+    # Get commit SHA from primary repo (first one)
+    PRIMARY_DIR=$(echo "$GITHUB_REPOS_JSON" | jq -r '.[0].directory')
+    cd "/repos/$PRIMARY_DIR"
+else
+    # Legacy single-repo mode
+    echo "Cloning repository..."
+    DIR=$(echo "${GITHUB_REPO}" | sed 's/\//-/g')
+    if ! git clone --depth 1 "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" "/repos/$DIR" 2>&1; then
+        echo "ERROR: Failed to clone repository ${GITHUB_REPO}"
+        exit 1
+    fi
+
+    if [ ! -d "/repos/$DIR/.git" ]; then
+        echo "ERROR: Repository clone failed - /repos/$DIR/.git not found"
+        exit 1
+    fi
+
+    cd "/repos/$DIR"
+fi
 
 # Get the current commit SHA
 COMMIT_SHA=$(git rev-parse HEAD)
 echo "Commit SHA: ${COMMIT_SHA}"
 echo "${COMMIT_SHA}" > /output/commit_sha.txt
 
+# Change to repos parent directory for analysis
+cd /repos
+
 # Run Claude Code to analyze the codebase
 echo "Running Claude Code analysis..."
 echo "API Key set: ${ANTHROPIC_API_KEY:+yes}"
 
-cat <<'PROMPT' | claude -p --output-format json --allowedTools "Read,Glob,Grep,Bash" > /tmp/claude_main_output.json
-Analyze this codebase and provide:
+# Build the prompt based on single/multi repo mode
+if [ "$MULTI_REPO" = true ] && [ "$REPO_COUNT" -gt 1 ]; then
+    # List the repos for the prompt
+    REPO_LIST=""
+    for i in $(seq 0 $((REPO_COUNT - 1))); do
+        DIR=$(echo "$GITHUB_REPOS_JSON" | jq -r ".[$i].directory")
+        REPO_LIST="${REPO_LIST}- /repos/${DIR}\n"
+    done
+
+    MULTI_REPO_INTRO="You have access to multiple repositories in this workspace. Each repository is in its own subdirectory under /repos/:
+
+${REPO_LIST}
+Analyze ALL repositories as a unified codebase. Consider how they work together and document their relationships.
+
+"
+    REPO_RELATIONSHIPS_SECTION="
+10. THEN, output the delimiter: ---REPOSITORY_RELATIONSHIPS---
+
+11. Output a JSON object describing each repository and their relationships:
+{
+  \"repositories\": [
+    {
+      \"directory\": \"owner-repo1\",
+      \"name\": \"repo1\",
+      \"role\": \"Brief role description (e.g., Backend API server)\",
+      \"description\": \"What this repository does and its main purpose\"
+    }
+  ],
+  \"relationships\": [
+    {
+      \"from\": \"directory-name\",
+      \"to\": \"directory-name\",
+      \"type\": \"consumes|provides|extends|shares\",
+      \"description\": \"How these repositories relate to each other\"
+    }
+  ],
+  \"architecture_summary\": \"A 2-3 sentence summary of how all repositories work together as a system\"
+}
+
+Relationship types:
+- consumes: One repo uses/calls another (e.g., frontend calls backend API)
+- provides: One repo provides services/data to another
+- extends: One repo extends/builds upon another
+- shares: Repos share common code, data, or configuration
+"
+else
+    MULTI_REPO_INTRO=""
+    REPO_RELATIONSHIPS_SECTION=""
+fi
+
+cat <<PROMPT | claude -p --output-format json --allowedTools "Read,Glob,Grep,Bash" > /tmp/claude_main_output.json
+${MULTI_REPO_INTRO}Analyze this codebase and provide:
 
 1. FIRST, output a CLAUDE.md-style project summary in markdown format including:
    - Project overview (what it does)
@@ -119,7 +212,7 @@ Output valid JSON only (no markdown):
 
 Types: "prioritization" (which to focus on) or "gap_filling" (what's confusing/missing)
 Make questions SPECIFIC to this codebase - reference actual components, APIs, or features you found.
-
+${REPO_RELATIONSHIPS_SECTION}
 Be thorough but concise. Focus on what would help someone understand this codebase quickly.
 PROMPT
 
@@ -144,8 +237,18 @@ sed -n '/---PROJECT_OVERVIEW---/,/---TARGET_USERS---/p' /output/analysis_raw.txt
 # Extract target users (between ---TARGET_USERS--- and ---CONTEXTUAL_QUESTIONS---)
 sed -n '/---TARGET_USERS---/,/---CONTEXTUAL_QUESTIONS---/p' /output/analysis_raw.txt | sed '1d;$d' > /output/target_users.json
 
-# Extract contextual questions (everything after ---CONTEXTUAL_QUESTIONS---)
-sed -n '/---CONTEXTUAL_QUESTIONS---/,$p' /output/analysis_raw.txt | tail -n +2 > /output/contextual_questions.json
+# Check if we have repository relationships section
+if grep -q '---REPOSITORY_RELATIONSHIPS---' /output/analysis_raw.txt; then
+    # Extract contextual questions (between ---CONTEXTUAL_QUESTIONS--- and ---REPOSITORY_RELATIONSHIPS---)
+    sed -n '/---CONTEXTUAL_QUESTIONS---/,/---REPOSITORY_RELATIONSHIPS---/p' /output/analysis_raw.txt | sed '1d;$d' > /output/contextual_questions.json
+
+    # Extract repository relationships (everything after ---REPOSITORY_RELATIONSHIPS---)
+    sed -n '/---REPOSITORY_RELATIONSHIPS---/,$p' /output/analysis_raw.txt | tail -n +2 > /output/repository_relationships.json
+    echo "Repository relationships extracted!"
+else
+    # Extract contextual questions (everything after ---CONTEXTUAL_QUESTIONS---)
+    sed -n '/---CONTEXTUAL_QUESTIONS---/,$p' /output/analysis_raw.txt | tail -n +2 > /output/contextual_questions.json
+fi
 
 echo "Main analysis complete!"
 

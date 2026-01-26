@@ -80,6 +80,33 @@ class Article < ApplicationRecord
     end
   end
 
+  def reindex_step_images_after_reorder(old_index, new_index)
+    return if old_index == new_index
+
+    # Use a temporary index to avoid conflicts
+    temp_index = -1
+
+    # Move the dragged item's image to temp
+    moved_image = step_images.find_by(step_index: old_index)
+    moved_image&.update!(step_index: temp_index)
+
+    # Shift images between old and new positions
+    if old_index < new_index
+      # Moving down: shift items between old+1 and new up by 1
+      step_images.where(step_index: (old_index + 1)..new_index).order(:step_index).each do |si|
+        si.update!(step_index: si.step_index - 1)
+      end
+    else
+      # Moving up: shift items between new and old-1 down by 1
+      step_images.where(step_index: new_index..(old_index - 1)).order(step_index: :desc).each do |si|
+        si.update!(step_index: si.step_index + 1)
+      end
+    end
+
+    # Move the dragged item's image to its final position
+    moved_image&.update!(step_index: new_index)
+  end
+
   def tips
     structured_content&.dig("tips") || []
   end
@@ -165,11 +192,11 @@ class Article < ApplicationRecord
     return unless saved_change_to_generation_status? || saved_change_to_review_status?
 
     # For inbox: add or update the article row
-    if unreviewed? && (generation_pending? || generation_running? || generation_completed?)
+    if unreviewed? && (generation_pending? || generation_running? || generation_completed? || generation_failed?)
       # Replace the entire articles section (handles new articles, count updates, empty state)
       inbox_articles = project.articles
         .where(review_status: :unreviewed)
-        .where(generation_status: [ :generation_pending, :generation_running, :generation_completed ])
+        .where(generation_status: [ :generation_pending, :generation_running, :generation_completed, :generation_failed ])
         .includes(:section)
         .order(created_at: :asc)
 

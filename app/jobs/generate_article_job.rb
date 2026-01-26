@@ -9,7 +9,7 @@ class GenerateArticleJob < ApplicationJob
 
   queue_as :analysis
 
-  GENERATION_TIMEOUT = 300 # 5 minutes
+  GENERATION_TIMEOUT = 600 # 10 minutes
 
   def perform(article_id:)
     article = Article.find_by(id: article_id)
@@ -135,8 +135,14 @@ class GenerateArticleJob < ApplicationJob
       end
 
       Rails.logger.info "[GenerateArticleJob] Exit status: #{status.exitstatus}"
-      Rails.logger.debug "[GenerateArticleJob] Stdout: #{stdout[0..500]}" if stdout.present?
-      Rails.logger.debug "[GenerateArticleJob] Stderr: #{stderr[0..500]}" if stderr.present?
+      Rails.logger.info "[GenerateArticleJob] Stdout (last 2000 chars): #{stdout[-2000..]}" if stdout.present?
+      Rails.logger.info "[GenerateArticleJob] Stderr (last 1000 chars): #{stderr[-1000..]}" if stderr.present?
+
+      # Log output directory contents
+      if Dir.exist?(output_dir)
+        files = Dir.glob(File.join(output_dir, "**/*")).select { |f| File.file?(f) }
+        Rails.logger.info "[GenerateArticleJob] Output files: #{files.map { |f| "#{f.sub(output_dir + '/', '')} (#{File.size(f)} bytes)" }.join(', ')}"
+      end
 
       # Record usage regardless of success/failure
       record_claude_usage(
@@ -150,6 +156,15 @@ class GenerateArticleJob < ApplicationJob
 
       if status.success?
         json_content = read_output_file(output_dir, "article.json")
+        # Log usage.json for debugging
+      usage_content = read_output_file(output_dir, "usage.json")
+      Rails.logger.info "[GenerateArticleJob] usage.json: #{usage_content}"
+
+      # Log raw Claude output if available
+      raw_output = read_output_file(output_dir, "claude_raw_output.json")
+      Rails.logger.info "[GenerateArticleJob] claude_raw_output.json (first 2000 chars): #{raw_output&.slice(0, 2000)}" if raw_output
+
+      Rails.logger.info "[GenerateArticleJob] article.json content (first 500 chars): #{json_content&.slice(0, 500).inspect}"
 
         if json_content.present?
           cleaned = extract_json(json_content)

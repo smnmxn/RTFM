@@ -1,6 +1,7 @@
 <%# locals: (article:, project:, selected:) %>
 
-<div data-article-id="<%= article.id %>"
+<div id="folder_article_<%= article.id %>"
+     data-article-id="<%= article.id %>"
      data-section-id="<%= article.section_id || 'uncategorized' %>"
      data-controller="folder-article"
      class="group flex items-center border-l-2 rounded-r-lg <%= selected ? 'border-indigo-500 bg-indigo-50' : 'border-transparent hover:bg-gray-50' %>">

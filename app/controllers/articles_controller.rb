@@ -118,6 +118,22 @@ class ArticlesController < ApplicationController
     field_path = params[:field]
     new_value = params[:value]
 
+    # Handle direct article attributes
+    if field_path == "title"
+      if @article.update(title: new_value)
+        @field_section = "title"
+        respond_to do |format|
+          format.turbo_stream
+          format.json { render json: { success: true } }
+        end
+      else
+        respond_to do |format|
+          format.json { render json: { success: false, errors: @article.errors }, status: :unprocessable_entity }
+        end
+      end
+      return
+    end
+
     updated_content = update_nested_field(
       (@article.structured_content || {}).deep_dup,
       field_path,
@@ -175,6 +191,34 @@ class ArticlesController < ApplicationController
       @field = field
       respond_to do |format|
         format.turbo_stream
+      end
+    else
+      head :unprocessable_entity
+    end
+  end
+
+  def reorder_array_item
+    field = params[:field]
+    old_index = params[:old_index].to_i
+    new_index = params[:new_index].to_i
+
+    updated_content = (@article.structured_content || {}).deep_dup
+    array = updated_content[field]
+
+    return head :unprocessable_entity unless array.is_a?(Array)
+    return head :unprocessable_entity if old_index < 0 || old_index >= array.length
+    return head :unprocessable_entity if new_index < 0 || new_index >= array.length
+
+    # Remove item from old position and insert at new position
+    item = array.delete_at(old_index)
+    array.insert(new_index, item)
+
+    if @article.update(structured_content: updated_content)
+      @article.reindex_step_images_after_reorder(old_index, new_index) if field == "steps"
+      @field = field
+      respond_to do |format|
+        format.turbo_stream
+        format.json { head :ok }
       end
     else
       head :unprocessable_entity

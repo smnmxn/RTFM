@@ -3,7 +3,12 @@
     data-inline-edit-url-value="<%= update_field_project_article_path(article.project, article) %>"
     data-inline-edit-field-value="prerequisites.<%= index %>">
 
-<%= heroicon "check", options: { class: "w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" } %>
+  <!-- Drag Handle -->
+  <button type="button" data-drag-handle class="flex-shrink-0 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600">
+    <%= heroicon "bars-2", options: { class: "w-4 h-4" } %>
+  </button>
+
+  <%= heroicon "check", options: { class: "w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" } %>
 
   <!-- Display Mode -->
   <span data-inline-edit-target="display"

@@ -33,8 +33,15 @@ class GithubRepositoriesService
       end
     end
 
-    # Sort by most recently pushed
-    all_repos.sort_by! { |r| r[:pushed_at] || Time.at(0) }.reverse!
+    # Sort by most recently pushed (most recent first)
+    all_repos.sort_by! { |r|
+      pushed_at = r[:pushed_at]
+      case pushed_at
+      when Time, DateTime then pushed_at.to_time
+      when String then Time.parse(pushed_at) rescue Time.at(0)
+      else Time.at(0)
+      end
+    }.reverse!
 
     Result.new(
       success?: true,

@@ -37,7 +37,7 @@ RUN npm install -g @anthropic-ai/claude-code puppeteer jsdom
 RUN useradd -m -s /bin/bash analyzer
 
 # Create directories and set permissions
-RUN mkdir -p /output /output/images /output/html /repo /input && chown -R analyzer:analyzer /output /repo /input
+RUN mkdir -p /output /output/images /output/html /repo /repos /input && chown -R analyzer:analyzer /output /repo /repos /input
 
 # Copy analysis scripts and make executable by all
 COPY --chmod=755 analyze.sh /analyze.sh

@@ -15,16 +15,21 @@ class AnalyzePullRequestJob < ApplicationJob
   # Shorter timeout than codebase analysis (5 minutes)
   ANALYSIS_TIMEOUT = 300
 
-  def perform(project_id:, pull_request_number:, pull_request_url:, pull_request_title:, pull_request_body:)
+  def perform(project_id:, pull_request_number:, pull_request_url:, pull_request_title:, pull_request_body:, source_repo: nil)
     project = Project.find_by(id: project_id)
     return unless project
 
-    client = project.github_client
+    # Determine which repo this PR is from
+    @source_repo = source_repo || project.primary_github_repo
+
+    # Find the project repository record for this source repo
+    project_repo = project.project_repositories.find_by(github_repo: @source_repo)
+    client = project_repo&.client || project.github_client
     return unless client
 
-    # Fetch the PR diff
+    # Fetch the PR diff using the source repo
     diff = client.pull_request(
-      project.github_repo,
+      @source_repo,
       pull_request_number,
       accept: "application/vnd.github.v3.diff"
     )
@@ -87,25 +92,42 @@ class AnalyzePullRequestJob < ApplicationJob
       File.write(File.join(input_dir, "diff.patch"), diff.to_s)
       File.write(File.join(input_dir, "context.json"), build_context_json(project, update, pr_title, pr_body))
 
-      # Get installation token for Docker
-      github_token = get_github_token(project)
-      return { success: false, error: "No GitHub token available" } unless github_token
+      # Build repos JSON for multi-repo support
+      repos_json = build_repos_json(project)
 
-      # Run Docker with the PR analysis script
-      cmd = [
-        "docker", "run",
-        "--rm",
-        "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
-        "-e", "GITHUB_TOKEN=#{github_token}",
-        "-e", "GITHUB_REPO=#{project.github_repo}",
-        "-v", "#{host_volume_path(input_dir)}:/input:ro",
-        "-v", "#{host_volume_path(output_dir)}:/output",
-        "--network", "host",
-        "--entrypoint", "/analyze_pr.sh",
-        docker_image
-      ]
+      if repos_json.empty?
+        # Fall back to legacy single-repo mode
+        github_token = get_github_token(project)
+        return { success: false, error: "No GitHub token available" } unless github_token
 
-      Rails.logger.info "[AnalyzePullRequestJob] Running Docker PR analysis for #{project.github_repo} PR ##{update.pull_request_number}"
+        cmd = [
+          "docker", "run",
+          "--rm",
+          "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
+          "-e", "GITHUB_TOKEN=#{github_token}",
+          "-e", "GITHUB_REPO=#{@source_repo}",
+          "-v", "#{host_volume_path(input_dir)}:/input:ro",
+          "-v", "#{host_volume_path(output_dir)}:/output",
+          "--network", "host",
+          "--entrypoint", "/analyze_pr.sh",
+          docker_image
+        ]
+        Rails.logger.info "[AnalyzePullRequestJob] Running Docker PR analysis (legacy mode) for #{@source_repo} PR ##{update.pull_request_number}"
+      else
+        # Multi-repo mode - clone all repos for context
+        cmd = [
+          "docker", "run",
+          "--rm",
+          "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
+          "-e", "GITHUB_REPOS_JSON=#{repos_json.to_json}",
+          "-v", "#{host_volume_path(input_dir)}:/input:ro",
+          "-v", "#{host_volume_path(output_dir)}:/output",
+          "--network", "host",
+          "--entrypoint", "/analyze_pr.sh",
+          docker_image
+        ]
+        Rails.logger.info "[AnalyzePullRequestJob] Running Docker PR analysis (multi-repo mode) for #{repos_json.size} repos, PR from #{@source_repo}"
+      end
       Rails.logger.debug "[AnalyzePullRequestJob] Command: #{cmd.map { |c| c.include?("ANTHROPIC") ? "ANTHROPIC_API_KEY=***" : c }.join(' ')}"
 
       stdout, stderr, status = Timeout.timeout(ANALYSIS_TIMEOUT) do
@@ -159,7 +181,7 @@ class AnalyzePullRequestJob < ApplicationJob
   end
 
   def build_context_json(project, update, pr_title, pr_body)
-    {
+    context = {
       project_name: project.name,
       project_overview: project.project_overview,
       analysis_summary: project.analysis_summary,
@@ -167,8 +189,17 @@ class AnalyzePullRequestJob < ApplicationJob
       key_patterns: project.analysis_metadata&.dig("key_patterns") || [],
       pr_number: update.pull_request_number,
       pr_title: pr_title,
-      pr_body: pr_body
-    }.to_json
+      pr_body: pr_body,
+      source_repo: @source_repo,
+      github_repo: @source_repo  # Legacy compatibility
+    }
+
+    # Include repository relationships for multi-repo projects
+    if project.repository_relationships.present?
+      context[:repository_relationships] = project.repository_relationships
+    end
+
+    context.to_json
   end
 
   def read_output_file(output_dir, filename)
@@ -247,6 +278,23 @@ class AnalyzePullRequestJob < ApplicationJob
 
       _AI analysis was unavailable. This is a placeholder summary._
     CONTENT
+  end
+
+  def build_repos_json(project)
+    # Build repos array with tokens for multi-repo Docker analysis
+    project.project_repositories.filter_map do |pr|
+      begin
+        token = GithubAppService.installation_token(pr.github_installation_id)
+        {
+          repo: pr.github_repo,
+          directory: pr.clone_directory_name,
+          token: token
+        }
+      rescue => e
+        Rails.logger.error "[AnalyzePullRequestJob] Failed to get token for repo #{pr.github_repo}: #{e.message}"
+        nil
+      end
+    end
   end
 
   def get_github_token(project)

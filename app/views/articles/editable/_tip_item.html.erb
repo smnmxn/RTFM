@@ -3,6 +3,11 @@
     data-inline-edit-url-value="<%= update_field_project_article_path(article.project, article) %>"
     data-inline-edit-field-value="tips.<%= index %>">
 
+  <!-- Drag Handle -->
+  <button type="button" data-drag-handle class="flex-shrink-0 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600">
+    <%= heroicon "bars-2", options: { class: "w-4 h-4" } %>
+  </button>
+
   <span class="text-amber-600 mt-1 flex-shrink-0">&bull;</span>
 
   <!-- Display Mode -->

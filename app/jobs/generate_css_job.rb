@@ -8,7 +8,7 @@ class GenerateCssJob < ApplicationJob
 
   queue_as :analysis
 
-  GENERATION_TIMEOUT = 300 # 5 minutes
+  GENERATION_TIMEOUT = 600 # 10 minutes
 
   def perform(project_id:)
     project = Project.find_by(id: project_id)

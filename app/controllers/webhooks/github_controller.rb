@@ -82,7 +82,10 @@ module Webhooks
       end
 
       repo_full_name = data.dig("repository", "full_name")
-      project = Project.find_by(github_repo: repo_full_name)
+
+      # Look up project through ProjectRepository join table first, fall back to legacy
+      project_repo = ProjectRepository.find_by(github_repo: repo_full_name)
+      project = project_repo&.project || Project.find_by(github_repo: repo_full_name)
 
       unless project
         Rails.logger.warn "[Webhook] No project found for repo: #{repo_full_name}"
@@ -95,7 +98,8 @@ module Webhooks
         pull_request_number: pull_request["number"],
         pull_request_url: pull_request["html_url"],
         pull_request_title: pull_request["title"],
-        pull_request_body: pull_request["body"]
+        pull_request_body: pull_request["body"],
+        source_repo: repo_full_name
       )
 
       head :accepted

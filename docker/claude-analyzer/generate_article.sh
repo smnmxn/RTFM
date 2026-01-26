@@ -76,9 +76,14 @@ echo "API Key set: ${ANTHROPIC_API_KEY:+yes}"
 CLAUDE_MODEL="${CLAUDE_MODEL:-claude-sonnet-4-5}"
 echo "Using model: ${CLAUDE_MODEL}"
 
+# Build max-turns argument (default to 30 for article generation which needs many steps)
+CLAUDE_MAX_TURNS="${CLAUDE_MAX_TURNS:-30}"
+MAX_TURNS_ARG="--max-turns ${CLAUDE_MAX_TURNS}"
+echo "Max turns: ${CLAUDE_MAX_TURNS}"
+
 # Run Claude and capture exit status (don't fail on error due to set -e)
 set +e
-cat <<'PROMPT' | claude -p --model "${CLAUDE_MODEL}" --output-format json --allowedTools "Read,Glob,Grep,Bash" > /tmp/claude_output.json
+cat <<'PROMPT' | claude -p --model "${CLAUDE_MODEL}" ${MAX_TURNS_ARG} --output-format json --allowedTools "Read,Glob,Grep,Bash" > /tmp/claude_output.json
 You are a technical writer creating a how-to guide article for end users of a software product.
 
 STEP 1: Read the context file to understand what article you need to write:
@@ -613,6 +618,13 @@ echo "JSON output structure:"
 jq 'keys' /tmp/claude_output.json 2>/dev/null || echo "Failed to parse JSON"
 echo "Result type:"
 jq -r '.result | type' /tmp/claude_output.json 2>/dev/null || echo "No result field"
+
+# Copy raw output for debugging
+cp /tmp/claude_output.json /output/claude_raw_output.json
+
+# Show full structure for debugging
+echo "Full JSON output:"
+cat /tmp/claude_output.json | head -c 5000
 
 # Extract the result content from JSON output
 # The result field contains the text output from Claude

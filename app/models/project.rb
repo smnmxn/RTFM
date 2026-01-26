@@ -15,6 +15,7 @@ class Project < ApplicationRecord
   has_many :recommendations, dependent: :destroy
   has_many :sections, dependent: :destroy
   has_many :claude_usages, dependent: :destroy
+  has_many :project_repositories, dependent: :destroy
 
   # Logo upload via Active Storage
   has_one_attached :logo
@@ -39,7 +40,8 @@ class Project < ApplicationRecord
 
   # AI settings
   store :ai_settings, accessors: [
-    :claude_model
+    :claude_model,
+    :claude_max_turns
   ], coder: JSON
 
   CLAUDE_MODELS = [
@@ -48,13 +50,23 @@ class Project < ApplicationRecord
     [ "Claude Haiku 4.5 (Fastest)", "claude-haiku-4-5" ]
   ].freeze
 
+  CLAUDE_MAX_TURNS_OPTIONS = [
+    [ "5 turns (Fastest)", 5 ],
+    [ "10 turns (Balanced)", 10 ],
+    [ "15 turns (Default)", 15 ],
+    [ "25 turns (Thorough)", 25 ],
+    [ "Unlimited", 0 ]
+  ].freeze
+
   DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-5".freeze
+  DEFAULT_CLAUDE_MAX_TURNS = 15
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true, format: { with: /\A[a-z0-9-]+\z/, message: "only allows lowercase letters, numbers, and hyphens" }
-  validates :github_repo, presence: true,
-                          format: { with: %r{\A[\w.-]+/[\w.-]+\z}, message: "must be in 'owner/repo' format" },
-                          uniqueness: { scope: :user_id, message: "is already connected" }
+  # github_repo is now optional - repos are stored in project_repositories table
+  # Keep validation for backwards compatibility during migration
+  validates :github_repo, format: { with: %r{\A[\w.-]+/[\w.-]+\z}, message: "must be in 'owner/repo' format" },
+                          allow_blank: true
 
   # Branding validations
   validates :primary_color, format: { with: /\A#[0-9a-fA-F]{6}\z/, message: "must be a valid hex color" }, allow_blank: true
@@ -170,7 +182,48 @@ class Project < ApplicationRecord
   end
 
   def github_client
-    github_app_installation&.client
+    # Use primary repository's installation client, fall back to project's installation
+    primary_repository&.client || github_app_installation&.client
+  end
+
+  # Multi-repository support methods
+
+  # Returns the primary github_repo name (for backwards compatibility)
+  # First checks project_repositories, falls back to legacy github_repo column
+  def primary_github_repo
+    primary_repository&.github_repo || read_attribute(:github_repo)
+  end
+
+  # Returns the primary repository, or the first one if none marked primary
+  def primary_repository
+    project_repositories.primary.first || project_repositories.first
+  end
+
+  # Returns an array of all connected repo names (owner/repo format)
+  def github_repos
+    project_repositories.pluck(:github_repo)
+  end
+
+  # Check if this project has multiple repositories
+  def multi_repo?
+    project_repositories.count > 1
+  end
+
+  # Build the repositories data structure for Docker analysis
+  # Returns array of hashes with repo, directory, and installation_id
+  def repositories_for_analysis
+    project_repositories.map do |pr|
+      {
+        repo: pr.github_repo,
+        directory: pr.clone_directory_name,
+        installation_id: pr.github_installation_id
+      }
+    end
+  end
+
+  # Get repository relationships from analysis metadata (for multi-repo projects)
+  def repository_relationships
+    analysis_metadata&.dig("repository_relationships")
   end
 
   # Branding helper methods with defaults
@@ -197,6 +250,18 @@ class Project < ApplicationRecord
   # AI settings helper methods
   def claude_model_id
     claude_model.presence || DEFAULT_CLAUDE_MODEL
+  end
+
+  def claude_max_turns_value
+    turns = claude_max_turns.presence&.to_i
+    turns.nil? || turns <= 0 ? DEFAULT_CLAUDE_MAX_TURNS : turns
+  end
+
+  # Returns nil for unlimited, or the max turns value
+  def claude_max_turns_arg
+    turns = claude_max_turns.presence&.to_i
+    return nil if turns == 0  # 0 means unlimited
+    turns.nil? ? DEFAULT_CLAUDE_MAX_TURNS : turns
   end
 
   # Subdomain helper methods

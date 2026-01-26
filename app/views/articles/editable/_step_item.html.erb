@@ -4,6 +4,11 @@
      data-array-edit-field-value="steps">
 
   <div class="flex items-start gap-3">
+    <!-- Drag Handle -->
+    <button type="button" data-drag-handle class="flex-shrink-0 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 mt-1.5">
+      <%= heroicon "bars-2", options: { class: "w-5 h-5" } %>
+    </button>
+
     <!-- Step Number Badge -->
     <span class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-semibold text-sm">
       <%= index + 1 %>

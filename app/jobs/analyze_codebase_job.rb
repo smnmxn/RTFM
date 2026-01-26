@@ -15,7 +15,8 @@ class AnalyzeCodebaseJob < ApplicationJob
   def perform(project_id)
     project = Project.find_by(id: project_id)
     return unless project
-    return unless project.github_app_installation.present?
+    # Check for either legacy installation or project_repositories
+    return unless project.github_app_installation.present? || project.project_repositories.any?
 
     project.update!(analysis_status: "running")
 
@@ -81,23 +82,41 @@ class AnalyzeCodebaseJob < ApplicationJob
       # Check if we need to build the image
       build_docker_image_if_needed(docker_image)
 
-      # Get installation token for Docker
-      github_token = get_github_token(project)
-      return { success: false, error: "No GitHub token available" } unless github_token
+      # Build repos JSON for multi-repo support
+      repos_json = build_repos_json(project)
+      Rails.logger.info "[AnalyzeCodebaseJob] Project #{project.id} has #{project.project_repositories.count} project_repositories"
+      Rails.logger.info "[AnalyzeCodebaseJob] repos_json: #{repos_json.inspect}"
 
-      # Run the Docker container
-      cmd = [
-        "docker", "run",
-        "--rm",
-        "-e", "GITHUB_REPO=#{project.github_repo}",
-        "-e", "GITHUB_TOKEN=#{github_token}",
-        *claude_auth_docker_args,
-        "-v", "#{host_volume_path(output_dir)}:/output",
-        "--network", "host",
-        docker_image
-      ]
+      if repos_json.empty?
+        # Fall back to legacy single-repo mode
+        Rails.logger.info "[AnalyzeCodebaseJob] Falling back to legacy mode. github_repo=#{project.github_repo.inspect}, installation_id=#{project.github_app_installation_id.inspect}"
+        github_token = get_github_token(project)
+        return { success: false, error: "No GitHub token available" } unless github_token
 
-      Rails.logger.info "[AnalyzeCodebaseJob] Running Docker analysis for #{project.github_repo}"
+        cmd = [
+          "docker", "run",
+          "--rm",
+          "-e", "GITHUB_REPO=#{project.primary_github_repo}",
+          "-e", "GITHUB_TOKEN=#{github_token}",
+          *claude_auth_docker_args,
+          "-v", "#{host_volume_path(output_dir)}:/output",
+          "--network", "host",
+          docker_image
+        ]
+        Rails.logger.info "[AnalyzeCodebaseJob] Running Docker analysis (legacy mode) for #{project.primary_github_repo}"
+      else
+        # Multi-repo mode
+        cmd = [
+          "docker", "run",
+          "--rm",
+          "-e", "GITHUB_REPOS_JSON=#{repos_json.to_json}",
+          *claude_auth_docker_args,
+          "-v", "#{host_volume_path(output_dir)}:/output",
+          "--network", "host",
+          docker_image
+        ]
+        Rails.logger.info "[AnalyzeCodebaseJob] Running Docker analysis (multi-repo mode) for #{repos_json.size} repositories"
+      end
       Rails.logger.info "[AnalyzeCodebaseJob] Command: #{cmd.join(' ')}"
 
       stdout, stderr, status = Timeout.timeout(ANALYSIS_TIMEOUT) do
@@ -231,6 +250,29 @@ class AnalyzeCodebaseJob < ApplicationJob
         Rails.logger.warn "[AnalyzeCodebaseJob] Skipping style_context: raw=#{style_context_raw.present?}, metadata=#{metadata.present?}"
       end
 
+      # Parse repository relationships JSON (for multi-repo projects)
+      repo_relationships_path = File.join(output_dir, "repository_relationships.json")
+      repo_relationships_raw = File.read(repo_relationships_path).strip rescue nil
+
+      if repo_relationships_raw.present? && metadata
+        begin
+          clean_json = if repo_relationships_raw =~ /```json\s*(.*?)\s*```/m
+            $1.strip
+          elsif repo_relationships_raw =~ /(\{[\s\S]*\})/
+            $1.strip
+          else
+            repo_relationships_raw
+              .gsub(/\A\s*```json\s*/i, "")
+              .gsub(/\s*```\s*\z/, "")
+              .strip
+          end
+          metadata["repository_relationships"] = JSON.parse(clean_json)
+          Rails.logger.info "[AnalyzeCodebaseJob] Extracted repository relationships for #{metadata['repository_relationships']['repositories']&.size || 0} repos"
+        rescue JSON::ParserError => e
+          Rails.logger.warn "[AnalyzeCodebaseJob] Failed to parse repository_relationships JSON: #{e.message}"
+        end
+      end
+
       if summary.present?
         {
           success: true,
@@ -263,6 +305,23 @@ class AnalyzeCodebaseJob < ApplicationJob
 
       unless status.success?
         raise "Failed to build Docker image: #{stderr}"
+      end
+    end
+  end
+
+  def build_repos_json(project)
+    # Build repos array with tokens for multi-repo Docker analysis
+    project.project_repositories.filter_map do |pr|
+      begin
+        token = GithubAppService.installation_token(pr.github_installation_id)
+        {
+          repo: pr.github_repo,
+          directory: pr.clone_directory_name,
+          token: token
+        }
+      rescue => e
+        Rails.logger.error "[AnalyzeCodebaseJob] Failed to get token for repo #{pr.github_repo}: #{e.message}"
+        nil
       end
     end
   end

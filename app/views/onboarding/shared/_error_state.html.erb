@@ -6,11 +6,11 @@
   </div>
   <p class="text-red-600 mb-4"><%= message %></p>
   <div class="flex justify-center gap-3">
-    <%= button_to retry_text || "Retry", retry_path,
+    <%= button_to local_assigns[:retry_text] || "Retry", retry_path,
         method: :post,
         class: "px-5 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-smooth" %>
     <% if local_assigns[:secondary_path] %>
-      <%= link_to secondary_text || "Continue", secondary_path,
+      <%= link_to local_assigns[:secondary_text] || "Continue", secondary_path,
           class: "px-5 py-2 bg-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-300 transition-smooth" %>
     <% end %>
   </div>
