@@ -28,20 +28,6 @@
             <strong>Haiku 4.5:</strong> Fastest, ideal for simple articles.
           </p>
         </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-900 mb-1">Max Turns</label>
-          <p class="text-sm text-gray-500 mb-2">
-            Limit how many tool-use rounds Claude can perform. Lower values are faster but may reduce quality.
-          </p>
-          <%= form.select :claude_max_turns,
-              options_for_select(Project::CLAUDE_MAX_TURNS_OPTIONS, project.claude_max_turns_value),
-              {},
-              class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm" %>
-          <p class="text-xs text-gray-400 mt-2">
-            Each turn allows Claude to read files, search code, etc. More turns = more thorough but slower.
-          </p>
-        </div>
       </div>
 
       <!-- Submit -->
