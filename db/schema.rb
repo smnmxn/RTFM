@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_24_151821) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_26_115138) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -129,6 +129,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_24_151821) do
     t.integer "github_app_installation_id"
     t.string "github_repo"
     t.integer "help_centre_cache_version", default: 0, null: false
+    t.integer "help_centre_daily_limit", default: 100, null: false
+    t.integer "help_centre_hourly_limit", default: 20, null: false
     t.string "name"
     t.datetime "onboarding_started_at"
     t.string "onboarding_step"

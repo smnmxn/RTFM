@@ -2,6 +2,7 @@ class HelpCentreController < ApplicationController
   skip_before_action :require_authentication
 
   before_action :set_project
+  before_action :check_rate_limit, only: [ :ask ]
 
   layout "public"
 
@@ -24,6 +25,9 @@ class HelpCentreController < ApplicationController
     end
 
     @stream_id = SecureRandom.hex(8)
+
+    # Increment rate limit counters
+    @rate_limiter.increment!
 
     # Store what we need for the background thread
     project_id = @project.id
@@ -115,6 +119,17 @@ class HelpCentreController < ApplicationController
   end
 
   private
+
+  def check_rate_limit
+    @rate_limiter = HelpCentreRateLimiter.new(@project)
+
+    if @rate_limiter.exceeded?
+      @retry_after = @rate_limiter.retry_after
+      @limit_info = @rate_limiter.limit_info
+      response.set_header("Retry-After", @retry_after.to_s)
+      render "help_centre/rate_limited", status: :too_many_requests
+    end
+  end
 
   def set_project
     subdomain = SubdomainConstraint.extract_subdomain(request)
