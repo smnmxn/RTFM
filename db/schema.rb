@@ -11,6 +11,9 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[8.1].define(version: 2026_01_26_115138) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_catalog.plpgsql"
+
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -77,7 +80,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_115138) do
     t.json "metadata"
     t.integer "num_turns"
     t.integer "output_tokens", default: 0, null: false
-    t.integer "project_id"
+    t.bigint "project_id"
     t.string "service_tier"
     t.string "session_id"
     t.boolean "success", default: true, null: false
@@ -97,7 +100,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_115138) do
     t.bigint "github_installation_id", null: false
     t.datetime "suspended_at"
     t.datetime "updated_at", null: false
-    t.integer "user_id"
+    t.bigint "user_id"
     t.index ["account_login"], name: "index_github_app_installations_on_account_login"
     t.index ["github_installation_id"], name: "index_github_app_installations_on_github_installation_id", unique: true
     t.index ["user_id"], name: "index_github_app_installations_on_user_id"
@@ -110,7 +113,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_115138) do
     t.string "token", null: false
     t.datetime "updated_at", null: false
     t.datetime "used_at"
-    t.integer "user_id"
+    t.bigint "user_id"
     t.index ["token"], name: "index_invites_on_token", unique: true
     t.index ["user_id"], name: "index_invites_on_user_id"
   end
@@ -126,7 +129,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_115138) do
     t.json "branding"
     t.json "contextual_questions"
     t.datetime "created_at", null: false
-    t.integer "github_app_installation_id"
+    t.bigint "github_app_installation_id"
     t.string "github_repo"
     t.integer "help_centre_cache_version", default: 0, null: false
     t.integer "help_centre_daily_limit", default: 100, null: false
@@ -145,7 +148,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_115138) do
     t.index ["github_app_installation_id"], name: "index_projects_on_github_app_installation_id"
     t.index ["onboarding_step"], name: "index_projects_on_onboarding_step"
     t.index ["slug"], name: "index_projects_on_slug", unique: true
-    t.index ["subdomain"], name: "index_projects_on_subdomain", unique: true, where: "subdomain IS NOT NULL"
+    t.index ["subdomain"], name: "index_projects_on_subdomain", unique: true, where: "(subdomain IS NOT NULL)"
     t.index ["user_id"], name: "index_projects_on_user_id"
   end
 
@@ -186,7 +189,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_115138) do
   end
 
   create_table "step_images", force: :cascade do |t|
-    t.integer "article_id", null: false
+    t.bigint "article_id", null: false
     t.datetime "created_at", null: false
     t.integer "render_attempts", default: 0
     t.json "render_metadata"
