@@ -1,4 +1,6 @@
 class Section < ApplicationRecord
+  include InvalidatesHelpCentreCache
+
   belongs_to :project
   has_many :articles, dependent: :nullify
   has_many :recommendations, dependent: :nullify
@@ -135,5 +137,20 @@ class Section < ApplicationRecord
     if saved_change_to_recommendations_status?
       Turbo::StreamsChannel.broadcast_refresh_to([project, :inbox])
     end
+  end
+
+  # Help Centre cache invalidation
+  def project_for_cache
+    project
+  end
+
+  def should_invalidate_help_centre_cache?
+    # Invalidate when a section with published articles is destroyed
+    return true if destroyed? && articles.published.exists?
+
+    # Invalidate when visibility changes (may hide/show articles in help centre)
+    return true if saved_change_to_visible?
+
+    false
   end
 end

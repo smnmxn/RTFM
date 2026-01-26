@@ -263,6 +263,7 @@ class ArticlesController < ApplicationController
     step_image.image.attach(params[:image])
 
     if step_image.save
+      @article.touch if @article.published? # Invalidate help centre cache
       @step_index = step_index
       respond_to do |format|
         format.turbo_stream
@@ -281,6 +282,7 @@ class ArticlesController < ApplicationController
     step_image = @article.step_images.find_by(step_index: step_index)
 
     if step_image&.destroy
+      @article.touch if @article.published? # Invalidate help centre cache
       @step_index = step_index
       respond_to do |format|
         format.turbo_stream

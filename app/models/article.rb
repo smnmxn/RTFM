@@ -1,5 +1,6 @@
 class Article < ApplicationRecord
   include Turbo::Broadcastable
+  include InvalidatesHelpCentreCache
 
   belongs_to :project
   belongs_to :recommendation
@@ -211,5 +212,33 @@ class Article < ApplicationRecord
         }
       )
     end
+  end
+
+  # Help Centre cache invalidation
+  def project_for_cache
+    project
+  end
+
+  def should_invalidate_help_centre_cache?
+    # Invalidate when a published article is destroyed
+    return true if destroyed? && status == "published"
+
+    # Invalidate when publish status changes (published <-> draft)
+    if saved_change_to_status?
+      was_published = status_before_last_save == "published"
+      return true if published? || was_published
+    end
+
+    # Invalidate when a published article's content changes
+    return true if published? && content_fields_changed?
+
+    false
+  end
+
+  def content_fields_changed?
+    saved_change_to_structured_content? ||
+      saved_change_to_content? ||
+      saved_change_to_title? ||
+      saved_change_to_section_id?
   end
 end

@@ -1,12 +1,14 @@
 require "net/http"
 require "json"
 require "uri"
+require "digest"
 
 class HelpCentreChatService
   ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
   MODEL = "claude-sonnet-4-20250514"
   MAX_TOKENS = 2048
   MAX_CONTEXT_TOKENS = 150_000
+  CACHE_PREFIX = "help_centre_chat:v1"
 
   def initialize(project, question)
     @project = project
@@ -48,6 +50,15 @@ class HelpCentreChatService
       return
     end
 
+    # Check cache first
+    if (cached = read_cache)
+      Rails.logger.info "[HelpCentreCache] HIT project=#{@project.id} question_hash=#{question_hash}"
+      stream_cached_response(cached, &block)
+      return
+    end
+
+    Rails.logger.info "[HelpCentreCache] MISS project=#{@project.id} question_hash=#{question_hash}"
+
     Rails.logger.info "[HelpCentreChatService] Fetching articles..."
     articles = fetch_published_articles
     if articles.empty?
@@ -75,6 +86,10 @@ class HelpCentreChatService
 
     # After streaming complete, extract and yield sources
     sources = extract_sources(full_text, articles)
+
+    # Cache the successful response
+    write_cache(full_text, sources)
+
     yield({ type: :complete, sources: sources, full_text: full_text })
   rescue StandardError => e
     Rails.logger.error "[HelpCentreChatService] Stream error: #{e.message}"
@@ -346,5 +361,70 @@ class HelpCentreChatService
     base_domain = Rails.application.config.x.base_domain
     protocol = Rails.env.production? ? "https" : "http"
     "#{protocol}://#{@project.subdomain}.#{base_domain}"
+  end
+
+  # Caching methods
+
+  def cache_key
+    "#{CACHE_PREFIX}:project_#{@project.id}:content_#{@project.help_centre_cache_version}:q_#{question_hash}"
+  end
+
+  def question_hash
+    @question_hash ||= Digest::SHA256.hexdigest(normalize_question(@question))[0..15]
+  end
+
+  def normalize_question(question)
+    question.to_s.strip.downcase.gsub(/[^\w\s]/, "").gsub(/\s+/, " ")
+  end
+
+  def read_cache
+    Rails.cache.read(cache_key)
+  end
+
+  def write_cache(full_text, sources)
+    Rails.cache.write(
+      cache_key,
+      { full_text: full_text, sources: sources }
+    )
+    Rails.logger.info "[HelpCentreCache] WRITE project=#{@project.id} version=#{@project.help_centre_cache_version}"
+  end
+
+  # Simulated streaming for cached responses
+
+  def stream_cached_response(cached_data, &block)
+    chunks = split_into_natural_chunks(cached_data[:full_text])
+
+    chunks.each do |chunk|
+      yield({ type: :chunk, text: chunk })
+      sleep(calculate_chunk_delay(chunk))
+    end
+
+    yield({ type: :complete, sources: cached_data[:sources], full_text: cached_data[:full_text] })
+  end
+
+  def split_into_natural_chunks(text)
+    chunks = []
+    buffer = ""
+
+    text.each_char do |char|
+      buffer += char
+
+      # Yield chunk at natural breakpoints (punctuation or max length)
+      if buffer.length >= 15 && (char.match?(/[.!?,:\n]/) || buffer.length >= 40)
+        chunks << buffer
+        buffer = ""
+      end
+    end
+
+    chunks << buffer unless buffer.empty?
+    chunks
+  end
+
+  def calculate_chunk_delay(chunk)
+    # Base delay ~30ms per chunk with slight variance
+    base_delay = 0.03
+    variance = rand(-0.01..0.02)
+    length_factor = [chunk.length / 100.0, 0.02].min
+    [base_delay + variance + length_factor, 0.01].max
   end
 end
