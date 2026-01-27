@@ -12,6 +12,7 @@ require "timeout"
 class GenerateAllRecommendationsJob < ApplicationJob
   include DockerVolumeHelper
   include ClaudeUsageTracker
+  include ToastNotifier
 
   queue_as :analysis
 
@@ -47,6 +48,7 @@ class GenerateAllRecommendationsJob < ApplicationJob
 
         total_count = result[:recommendations].values.flatten.size
         Rails.logger.info "[GenerateAllRecommendationsJob] Generated #{total_count} recommendations across #{accepted_sections.size} sections for project #{project.id}"
+        broadcast_toast(project, message: "#{total_count} article recommendations ready", action_url: "/projects/#{project.slug}?tab=inbox", action_label: "View")
       else
         # Mark all sections as failed
         accepted_sections.each do |section|
@@ -57,6 +59,7 @@ class GenerateAllRecommendationsJob < ApplicationJob
         project.reload.complete_onboarding! if project.in_onboarding?
 
         Rails.logger.warn "[GenerateAllRecommendationsJob] Generation failed for project #{project.id}: #{result[:error]}"
+        broadcast_toast(project, message: "Recommendation generation failed", type: "error", action_url: "/projects/#{project.slug}", action_label: "View")
       end
     rescue ActiveRecord::RecordNotFound, ActiveRecord::InvalidForeignKey => e
       Rails.logger.info "[GenerateAllRecommendationsJob] Project or sections deleted during job execution: #{e.message}"

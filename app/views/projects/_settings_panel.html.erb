@@ -47,6 +47,14 @@
 
       <button type="button"
               data-tabs-target="tab"
+              data-tabs-name="notifications"
+              data-action="click->tabs#switch"
+              class="settings-nav-item w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 text-gray-600 hover:bg-gray-100">
+        <%= heroicon "bell", options: { class: "w-4 h-4 text-gray-400" } %>
+        Notifications
+      </button>
+      <button type="button"
+              data-tabs-target="tab"
               data-tabs-name="danger-zone"
               data-action="click->tabs#switch"
               class="settings-nav-item w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 text-gray-600 hover:bg-gray-100">
@@ -71,6 +79,46 @@
     <!-- AI Settings Panel -->
     <div data-tabs-target="panel" data-tabs-name="ai-settings" class="hidden">
       <%= render "projects/ai_settings_form", project: @project, saved: false %>
+    </div>
+
+    <!-- Notifications Panel -->
+    <div data-tabs-target="panel" data-tabs-name="notifications" class="hidden">
+      <div class="max-w-2xl">
+        <h3 class="text-lg font-semibold text-gray-900 mb-1">Notifications</h3>
+        <p class="text-sm text-gray-500 mb-6">Configure how you're notified when background tasks complete.</p>
+
+        <div class="space-y-6">
+          <!-- In-app toasts (always on) -->
+          <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+            <div class="shrink-0">
+              <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Always on</span>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-gray-900">In-app toast notifications</p>
+              <p class="text-sm text-gray-500 mt-0.5">Brief pop-up notifications appear in the bottom-right corner when tasks complete.</p>
+            </div>
+            <div class="shrink-0">
+              <%= button_to "Test", test_toast_project_path(project), params: { toast_type: "success" }, class: "inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md bg-white text-gray-700 ring-1 ring-gray-300 hover:bg-gray-50 transition-colors shadow-sm", data: { turbo: true } %>
+            </div>
+          </div>
+
+          <!-- Browser notifications (opt-in) -->
+          <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg" data-controller="browser-notification">
+            <div class="shrink-0 mt-0.5">
+              <button type="button"
+                      data-browser-notification-target="toggle"
+                      data-action="browser-notification#request"
+                      class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 hover:bg-gray-200 cursor-pointer transition-colors">
+                Enable
+              </button>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-900">Browser notifications</p>
+              <p class="text-sm text-gray-500 mt-0.5" data-browser-notification-target="status">Get notified when background tasks finish, even if the tab is not focused.</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Danger Zone Panel -->

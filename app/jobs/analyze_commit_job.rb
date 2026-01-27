@@ -7,6 +7,7 @@ require "timeout"
 class AnalyzeCommitJob < ApplicationJob
   include DockerVolumeHelper
   include ClaudeUsageTracker
+  include ToastNotifier
 
   queue_as :analysis
 
@@ -75,6 +76,7 @@ class AnalyzeCommitJob < ApplicationJob
         # Advance the baseline to this commit
         project.update!(analysis_commit_sha: commit_sha, analyzed_at: Time.current)
         Rails.logger.info "[AnalyzeCommitJob] AI analysis completed for commit #{commit_sha[0..6]} in project #{project.id}, baseline advanced"
+        broadcast_toast(project, message: "Commit #{commit_sha[0..6]} analyzed", action_url: "/projects/#{project.slug}?tab=inbox", action_label: "View")
       else
         # Fall back to placeholder content
         update.update!(
@@ -82,6 +84,7 @@ class AnalyzeCommitJob < ApplicationJob
           analysis_status: "failed"
         )
         Rails.logger.warn "[AnalyzeCommitJob] AI analysis failed, using placeholder for commit #{commit_sha[0..6]}: #{result[:error]}"
+        broadcast_toast(project, message: "Commit #{commit_sha[0..6]} analysis failed", type: "error", action_url: "/projects/#{project.slug}?tab=code_history", action_label: "View")
       end
     rescue StandardError => e
       # Fall back to placeholder content on any error
@@ -90,6 +93,7 @@ class AnalyzeCommitJob < ApplicationJob
         analysis_status: "failed"
       )
       Rails.logger.error "[AnalyzeCommitJob] Error during AI analysis for commit #{commit_sha[0..6]}: #{e.message}"
+      broadcast_toast(project, message: "Commit analysis failed", type: "error")
     end
   end
 

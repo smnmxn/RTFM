@@ -6,6 +6,7 @@ require "timeout"
 class GenerateArticleJob < ApplicationJob
   include DockerVolumeHelper
   include ClaudeUsageTracker
+  include ToastNotifier
 
   queue_as :analysis
 
@@ -51,12 +52,14 @@ class GenerateArticleJob < ApplicationJob
           article.update!(update_attrs)
         end
         Rails.logger.info "[GenerateArticleJob] Article generation completed for article #{article.id}"
+        broadcast_toast(project, message: "Article ready: #{article.title}", action_url: "/projects/#{project.slug}?tab=inbox&selected=article_#{article.id}", action_label: "View")
       else
         article.update!(
           content: placeholder_content(recommendation),
           generation_status: :generation_failed
         )
         Rails.logger.warn "[GenerateArticleJob] Article generation failed for article #{article.id}: #{result[:error]}"
+        broadcast_toast(project, message: "Article generation failed: #{article.title}", type: "error", action_url: "/projects/#{project.slug}?tab=inbox&selected=article_#{article.id}", action_label: "View")
       end
     rescue StandardError => e
       article.update!(
@@ -64,6 +67,7 @@ class GenerateArticleJob < ApplicationJob
         generation_status: :generation_failed
       )
       Rails.logger.error "[GenerateArticleJob] Error generating article #{article.id}: #{e.message}"
+      broadcast_toast(project, message: "Article generation failed: #{article.title}", type: "error")
     end
   end
 

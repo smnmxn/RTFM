@@ -85,6 +85,7 @@ Rails.application.routes.draw do
       get :select_articles_article
       # Settings actions
       post :start_over
+      post :test_toast
       # Branding settings
       patch :update_branding
       post :upload_logo

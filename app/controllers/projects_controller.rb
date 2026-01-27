@@ -579,6 +579,23 @@ class ProjectsController < ApplicationController
     end
   end
 
+  def test_toast
+    Turbo::StreamsChannel.broadcast_append_to(
+      [@project, :notifications],
+      target: "toast-container",
+      partial: "shared/toast",
+      locals: {
+        message: "This is a test notification",
+        type: params[:toast_type] || "success",
+        action_url: project_path(@project),
+        action_label: "View",
+        persistent: params[:toast_type] == "error"
+      }
+    )
+
+    head :ok
+  end
+
   def destroy
     @project.destroy
     redirect_to projects_path, notice: "Project '#{@project.name}' disconnected."

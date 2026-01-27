@@ -6,6 +6,7 @@ require "timeout"
 class SuggestSectionsJob < ApplicationJob
   include DockerVolumeHelper
   include ClaudeUsageTracker
+  include ToastNotifier
 
   queue_as :analysis
 
@@ -31,6 +32,7 @@ class SuggestSectionsJob < ApplicationJob
         create_sections(project, result[:sections])
         project.reload.update!(sections_generation_status: "completed")
         Rails.logger.info "[SuggestSectionsJob] Suggested #{result[:sections]&.size || 0} sections for project #{project.id}"
+        broadcast_toast(project, message: "Section suggestions ready", action_url: "/projects/#{project.slug}", action_label: "View")
 
         # Broadcast update to refresh the onboarding view
         broadcast_onboarding_update(project)
@@ -40,6 +42,7 @@ class SuggestSectionsJob < ApplicationJob
       else
         project.reload.update!(sections_generation_status: "failed")
         Rails.logger.warn "[SuggestSectionsJob] Suggestion failed for project #{project.id}: #{result[:error]}"
+        broadcast_toast(project, message: "Section suggestion failed", type: "error")
 
         # Broadcast update to show error state
         broadcast_onboarding_update(project)

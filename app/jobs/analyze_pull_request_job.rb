@@ -7,6 +7,7 @@ require "timeout"
 class AnalyzePullRequestJob < ApplicationJob
   include DockerVolumeHelper
   include ClaudeUsageTracker
+  include ToastNotifier
 
   queue_as :analysis
 
@@ -80,6 +81,7 @@ class AnalyzePullRequestJob < ApplicationJob
         end
 
         Rails.logger.info "[AnalyzePullRequestJob] AI analysis completed for PR ##{pull_request_number} in project #{project.id}"
+        broadcast_toast(project, message: "PR ##{pull_request_number} analyzed", action_url: "/projects/#{project.slug}?tab=inbox", action_label: "View")
       else
         # Fall back to placeholder content
         update.update!(
@@ -87,6 +89,7 @@ class AnalyzePullRequestJob < ApplicationJob
           analysis_status: "failed"
         )
         Rails.logger.warn "[AnalyzePullRequestJob] AI analysis failed, using placeholder for PR ##{pull_request_number}: #{result[:error]}"
+        broadcast_toast(project, message: "PR ##{pull_request_number} analysis failed", type: "error", action_url: "/projects/#{project.slug}?tab=code_history", action_label: "View")
       end
     rescue StandardError => e
       # Fall back to placeholder content on any error
@@ -95,6 +98,7 @@ class AnalyzePullRequestJob < ApplicationJob
         analysis_status: "failed"
       )
       Rails.logger.error "[AnalyzePullRequestJob] Error during AI analysis for PR ##{pull_request_number}: #{e.message}"
+      broadcast_toast(project, message: "PR ##{pull_request_number} analysis failed", type: "error")
     end
   end
 

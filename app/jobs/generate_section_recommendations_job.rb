@@ -17,6 +17,7 @@ require "timeout"
 class GenerateSectionRecommendationsJob < ApplicationJob
   include DockerVolumeHelper
   include ClaudeUsageTracker
+  include ToastNotifier
 
   queue_as :analysis
 
@@ -45,9 +46,11 @@ class GenerateSectionRecommendationsJob < ApplicationJob
         create_recommendations(project, section, result[:recommendations])
         section.reload.update!(recommendations_status: "completed")
         Rails.logger.info "[GenerateSectionRecommendationsJob] Generated #{result[:recommendations]&.size || 0} recommendations for section #{section.id}"
+        broadcast_toast(project, message: "New recommendations in #{section.name}", action_url: "/projects/#{project.slug}?tab=inbox", action_label: "View")
       else
         section.reload.update!(recommendations_status: "failed")
         Rails.logger.warn "[GenerateSectionRecommendationsJob] Generation failed for section #{section.id}: #{result[:error]}"
+        broadcast_toast(project, message: "Recommendations failed for #{section.name}", type: "error")
       end
     rescue ActiveRecord::RecordNotFound, ActiveRecord::InvalidForeignKey => e
       # Project or section was deleted while job was running - this is expected, just log and exit

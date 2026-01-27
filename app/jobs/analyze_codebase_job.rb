@@ -6,6 +6,7 @@ require "timeout"
 class AnalyzeCodebaseJob < ApplicationJob
   include DockerVolumeHelper
   include ClaudeUsageTracker
+  include ToastNotifier
 
   queue_as :analysis
 
@@ -34,6 +35,7 @@ class AnalyzeCodebaseJob < ApplicationJob
           contextual_questions: result[:contextual_questions]
         )
         Rails.logger.info "[AnalyzeCodebaseJob] Analysis completed for project #{project.id}"
+        broadcast_toast(project, message: "Repository analysis complete", action_url: "/projects/#{project.slug}", action_label: "View")
         if result[:contextual_questions].present?
           Rails.logger.info "[AnalyzeCodebaseJob] Generated #{result[:contextual_questions].size} contextual questions"
         end
@@ -55,6 +57,7 @@ class AnalyzeCodebaseJob < ApplicationJob
       else
         project.update!(analysis_status: "failed")
         Rails.logger.error "[AnalyzeCodebaseJob] Analysis failed for project #{project.id}: #{result[:error]}"
+        broadcast_toast(project, message: "Repository analysis failed", type: "error", action_url: "/projects/#{project.slug}", action_label: "View")
 
         # Broadcast update to show error state
         broadcast_onboarding_update(project)
