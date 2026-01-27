@@ -55,8 +55,17 @@ export default class extends Controller {
     if (Notification.permission !== "granted") return
 
     const message = this.element.querySelector("p")?.textContent
+    const actionUrl = this.element.querySelector("a")?.getAttribute("href")
+
     if (message) {
-      new Notification("supportpages.io", { body: message, icon: "/icon.png" })
+      const notification = new Notification("supportpages.io", { body: message, icon: "/icon.png" })
+      if (actionUrl) {
+        notification.onclick = () => {
+          window.focus()
+          window.location.href = actionUrl
+          notification.close()
+        }
+      }
     }
   }
 }

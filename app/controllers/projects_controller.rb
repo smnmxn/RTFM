@@ -92,6 +92,10 @@ class ProjectsController < ApplicationController
 
   def approve_article
     @article = @project.articles.find(params[:article_id])
+    if params[:section_id].present?
+      section = @project.sections.find(params[:section_id])
+      @article.update!(section: section)
+    end
     article_created_at = @article.created_at
     @article.approve!
     @article.publish!

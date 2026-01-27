@@ -43,11 +43,15 @@
                   button_classes: "px-3 py-1.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 cursor-pointer" %>
             <% end %>
 
-            <%= button_to "Approve",
-                approve_article_project_path(article.project, article_id: article.id),
-                method: :post,
-                form: { data: { turbo_stream: true } },
-                class: "px-4 py-1.5 text-sm bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 cursor-pointer" %>
+            <% if article.section.present? %>
+              <%= button_to "Approve",
+                  approve_article_project_path(article.project, article_id: article.id),
+                  method: :post,
+                  form: { data: { turbo_stream: true } },
+                  class: "px-4 py-1.5 text-sm bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 cursor-pointer" %>
+            <% else %>
+              <%= render "articles/section_picker_modal", article: article %>
+            <% end %>
           <% end %>
         <% elsif article.approved? %>
 <span class="inline-flex items-center gap-1.5 text-sm">
