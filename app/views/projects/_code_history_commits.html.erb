@@ -6,9 +6,15 @@
         <p class="mt-2 text-sm font-medium">No commits found.</p>
       </div>
     <% else %>
+      <%# Find the baseline commit's date from the list, or use analyzed_at as fallback %>
+      <% baseline_commit = @commits.find { |c| c[:sha] == project.analysis_commit_sha } %>
+      <% baseline_date = baseline_commit&.dig(:committed_at) || project.analyzed_at %>
       <% @commits.each do |commit| %>
         <% update = @updates_by_commit[commit[:sha]] %>
-        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
+        <% is_analysis_baseline = commit[:sha] == project.analysis_commit_sha %>
+        <% last_check = project.article_update_checks.completed.recent.first %>
+        <% is_last_check = last_check && commit[:sha] == last_check.target_commit_sha %>
+        <div class="<%= is_analysis_baseline ? 'bg-indigo-50 border-indigo-200' : (is_last_check ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200') %> border rounded-lg p-4 hover:shadow-sm transition-shadow"
              id="<%= "code-history-commit-#{commit[:short_sha]}" %>">
           <div class="flex items-start gap-4">
             <!-- Author Avatar -->
@@ -18,12 +24,24 @@
 
             <div class="flex-1 min-w-0">
               <!-- Commit Title & Link -->
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
                 <%= link_to commit[:html_url], target: "_blank",
                     class: "font-medium text-gray-900 hover:text-indigo-600 truncate" do %>
                   <%= commit[:title] %>
                 <% end %>
                 <span class="text-xs font-mono text-gray-400 flex-shrink-0"><%= commit[:short_sha] %></span>
+                <% if is_analysis_baseline %>
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-700">
+                    <%= heroicon "flag", options: { class: "w-3 h-3" } %>
+                    Docs baseline
+                  </span>
+                <% end %>
+                <% if is_last_check %>
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">
+                    <%= heroicon "arrow-path", options: { class: "w-3 h-3" } %>
+                    Last check
+                  </span>
+                <% end %>
               </div>
 
               <!-- Commit Metadata -->
@@ -44,13 +62,17 @@
                     <% if update.content.present? %>
                       <p class="text-sm text-gray-700 line-clamp-2"><%= truncate(update.content, length: 150) %></p>
                     <% end %>
-                    <div class="mt-2 flex items-center gap-2">
+                    <div class="mt-2 flex items-center gap-2 flex-wrap">
                       <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                         Analyzed
                       </span>
                       <% if update.recommendations.any? %>
                         <span class="text-xs text-gray-500">
                           <%= update.recommendations.count %> article suggestion<%= update.recommendations.count == 1 ? '' : 's' %>
+                        </span>
+                      <% elsif update.analysis_reason.present? %>
+                        <span class="text-xs text-gray-500 italic">
+                          <%= truncate(update.analysis_reason, length: 100) %>
                         </span>
                       <% end %>
                     </div>
@@ -69,10 +91,12 @@
 
             <!-- Actions -->
             <div class="flex-shrink-0">
+              <% is_prior_to_baseline = baseline_date.present? && commit[:committed_at] < baseline_date %>
               <%= render "updates/commit_row_actions",
                   update: update,
                   project: project,
-                  commit: commit %>
+                  commit: commit,
+                  is_prior_to_baseline: is_prior_to_baseline %>
             </div>
           </div>
         </div>

@@ -1,7 +1,8 @@
+<% is_prior_to_baseline = local_assigns.fetch(:is_prior_to_baseline, false) %>
 <%= tag.div id: "commit-actions-#{commit[:short_sha]}", class: "flex items-center gap-2 flex-shrink-0" do %>
   <% if update %>
     <% if update.analysis_status == "running" %>
-<span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 bg-indigo-50 rounded">
+      <span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 bg-indigo-50 rounded">
         <%= spinner_icon(size: "w-3 h-3") %>
         Analyzing...
       </span>
@@ -15,6 +16,11 @@
           class: "inline-flex items-center px-2 py-1 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded",
           data: { turbo_confirm: "Re-analyze commit #{commit[:short_sha]}? This will replace the existing analysis." } %>
     <% end %>
+  <% elsif is_prior_to_baseline %>
+    <span class="inline-flex items-center px-3 py-1 text-xs font-medium text-gray-400 bg-gray-100 rounded cursor-not-allowed"
+          title="This commit is before your documentation baseline">
+      Analyze
+    </span>
   <% else %>
     <%= button_to "Analyze",
         analyze_commit_project_path(project, commit_sha: commit[:sha]),

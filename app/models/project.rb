@@ -16,6 +16,7 @@ class Project < ApplicationRecord
   has_many :sections, dependent: :destroy
   has_many :claude_usages, dependent: :destroy
   has_many :project_repositories, dependent: :destroy
+  has_many :article_update_checks, dependent: :destroy
 
   # Logo upload via Active Storage
   has_one_attached :logo
@@ -224,6 +225,22 @@ class Project < ApplicationRecord
   # Get repository relationships from analysis metadata (for multi-repo projects)
   def repository_relationships
     analysis_metadata&.dig("repository_relationships")
+  end
+
+  # Count commits ahead of baseline (cached for 5 minutes)
+  def commits_since_baseline
+    return nil unless analysis_commit_sha.present?
+
+    Rails.cache.fetch("project:#{id}:commits_since_baseline", expires_in: 5.minutes) do
+      client = github_client
+      return nil unless client
+
+      comparison = client.compare(primary_github_repo, analysis_commit_sha, "HEAD")
+      comparison.ahead_by
+    rescue Octokit::Error => e
+      Rails.logger.warn "[Project#commits_since_baseline] GitHub API error: #{e.message}"
+      nil
+    end
   end
 
   # Branding helper methods with defaults

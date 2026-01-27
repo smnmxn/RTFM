@@ -598,7 +598,14 @@ CONTENT GUIDELINES:
 - tips: Array of strings. Include 1-3 helpful tips
 - summary: Brief closing (1-2 sentences)
 
-Output ONLY the JSON object. No markdown, no commentary, no explanations - just valid JSON.
+CRITICAL FINAL INSTRUCTION:
+Your entire response must be ONLY the JSON object — starting with { and ending with }.
+Do NOT summarize what you did. Do NOT describe the article or mockups you created.
+Do NOT say "Here's the article" or "I've generated..." or anything similar.
+The ONLY acceptable output is the raw JSON object itself. Example of correct output:
+{"introduction":"...","prerequisites":[...],"steps":[...],"tips":[...],"summary":"..."}
+
+Any response that is not valid JSON will be treated as a failure.
 PROMPT
 CLAUDE_EXIT_STATUS=$?
 set -e
@@ -642,4 +649,11 @@ ls -la /output/
 if [ -d /output/images ] && [ "$(ls -A /output/images 2>/dev/null)" ]; then
     echo "Generated images:"
     ls -la /output/images/
+fi
+
+# Output the commit SHA for tracking which version the article was generated from
+COMMIT_SHA=$(cd /repo && git rev-parse HEAD 2>/dev/null || echo "")
+if [ -n "$COMMIT_SHA" ]; then
+    echo "$COMMIT_SHA" > /output/commit_sha.txt
+    echo "Source commit: $COMMIT_SHA"
 fi

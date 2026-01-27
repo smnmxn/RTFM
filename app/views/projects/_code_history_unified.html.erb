@@ -1,0 +1,179 @@
+<%= turbo_frame_tag "code-history-timeline" do %>
+  <div class="space-y-3">
+    <% if @timeline_items.empty? %>
+      <div class="text-center py-12 text-gray-500">
+        <%= heroicon "document-text", options: { class: "mx-auto h-12 w-12 text-gray-300" } %>
+        <p class="mt-2 text-sm font-medium">No commits or pull requests found.</p>
+      </div>
+    <% else %>
+      <% any_running = @timeline_items.any? { |i| i[:update]&.analysis_status == "running" } %>
+      <% @timeline_items.each do |item| %>
+        <% update = item[:update] %>
+        <% is_commit = item[:type] == :commit %>
+        <% is_analysis_baseline = (is_commit && item[:sha] == project.analysis_commit_sha) ||
+                                   (!is_commit && item[:merge_commit_sha] == project.analysis_commit_sha) %>
+        <% last_check = project.article_update_checks.completed.recent.first %>
+        <% is_last_check = is_commit && last_check && item[:sha] == last_check.target_commit_sha %>
+        <% is_before_cutoff = @analysis_cutoff_date.present? && item[:date] <= @analysis_cutoff_date %>
+        <% has_analysis = update.present? && update.analysis_status.present? %>
+
+        <div class="rounded-lg overflow-hidden border <%= has_analysis && update.analysis_status == 'completed' ? 'border-gray-300 shadow-sm' : 'border-gray-200' %>">
+          <!-- Analysis Result Row (ABOVE the commit/PR) -->
+          <% if has_analysis %>
+            <div id="<%= is_commit ? "code-history-analysis-#{item[:short_sha]}" : "code-history-analysis-pr-#{item[:pr_number]}" %>">
+              <% if update.analysis_status == "running" %>
+                <div class="bg-indigo-50 px-5 py-4 border-b border-indigo-100">
+                  <div class="flex items-center gap-3 text-indigo-700">
+                    <%= spinner_icon(size: "w-5 h-5") %>
+                    <span class="font-medium">Analyzing <%= is_commit ? 'commit' : 'pull request' %>...</span>
+                  </div>
+                </div>
+              <% elsif update.analysis_status == "completed" %>
+                <% if update.recommendations.any? %>
+                  <!-- Has recommendations - prominent indigo banner -->
+                  <div class="bg-indigo-600 px-5 py-4">
+                    <div class="flex items-start gap-4">
+                      <div class="flex-shrink-0 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                        <%= heroicon "light-bulb", options: { class: "w-5 h-5 text-white" } %>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                          <span class="text-lg font-semibold text-white">
+                            <%= update.recommendations.count %> article suggestion<%= update.recommendations.count == 1 ? '' : 's' %>
+                          </span>
+                        </div>
+                        <div class="mt-2 flex flex-wrap gap-2">
+                          <% update.recommendations.limit(4).each do |rec| %>
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-sm font-medium bg-white/20 text-white">
+                              <%= truncate(rec.title, length: 45) %>
+                            </span>
+                          <% end %>
+                          <% if update.recommendations.count > 4 %>
+                            <span class="text-sm text-indigo-200">+<%= update.recommendations.count - 4 %> more</span>
+                          <% end %>
+                        </div>
+                      </div>
+                      <% first_rec = update.recommendations.first %>
+                      <% if first_rec %>
+                        <div class="flex-shrink-0">
+                          <%= link_to "Review",
+                              project_path(project, selected: "recommendation_#{first_rec.id}"),
+                              class: "inline-flex items-center px-3 py-1.5 text-sm font-medium text-indigo-600 bg-white hover:bg-indigo-50 rounded-md",
+                              data: { turbo_frame: "_top" } %>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+                <% else %>
+                  <!-- No recommendations - subtle gray banner -->
+                  <div class="bg-gray-100 px-5 py-4 border-b border-gray-200">
+                    <div class="flex items-start gap-4">
+                      <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                        <%= heroicon "check", options: { class: "w-5 h-5 text-gray-500" } %>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <span class="text-base font-semibold text-gray-700">No documentation updates needed</span>
+                        <% if update.analysis_reason.present? %>
+                          <p class="mt-1 text-sm text-gray-500 leading-relaxed">
+                            "<%= truncate(update.analysis_reason, length: 300) %>"
+                          </p>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              <% elsif update.analysis_status == "failed" %>
+                <div class="bg-red-50 px-5 py-4 border-b border-red-100">
+                  <div class="flex items-center gap-3">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                      <%= heroicon "x-mark", options: { class: "w-5 h-5 text-red-600" } %>
+                    </div>
+                    <span class="font-medium text-red-700">Analysis failed</span>
+                  </div>
+                </div>
+              <% else %>
+                <div class="bg-yellow-50 px-5 py-4 border-b border-yellow-100">
+                  <div class="flex items-center gap-3">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                      <%= heroicon "clock", options: { class: "w-5 h-5 text-yellow-600" } %>
+                    </div>
+                    <span class="font-medium text-yellow-700"><%= update.analysis_status&.humanize || "Pending" %></span>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+
+          <!-- Commit/PR Row (source context) -->
+          <div class="<%= is_analysis_baseline ? 'bg-indigo-50' : (is_last_check ? 'bg-green-50' : 'bg-white') %> px-5 py-3"
+               id="<%= is_commit ? "code-history-commit-#{item[:short_sha]}" : "code-history-pr-#{item[:pr_number]}" %>">
+            <div class="flex items-center gap-4">
+              <!-- Type indicator icon -->
+              <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center <%= is_commit ? 'bg-gray-100' : 'bg-purple-100' %>">
+                <% if is_commit %>
+                  <%= heroicon "code-bracket", variant: :mini, options: { class: "w-4 h-4 text-gray-600" } %>
+                <% else %>
+                  <%= heroicon "arrow-path", variant: :mini, options: { class: "w-4 h-4 text-purple-600" } %>
+                <% end %>
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <!-- Title & metadata on same line -->
+                <div class="flex items-center gap-2 flex-wrap">
+                  <%= link_to item[:url], target: "_blank",
+                      class: "text-sm font-medium text-gray-700 hover:text-indigo-600 truncate" do %>
+                    <%= item[:title] %>
+                  <% end %>
+                  <% if is_commit %>
+                    <span class="text-xs font-mono text-gray-400"><%= item[:short_sha] %></span>
+                  <% else %>
+                    <span class="text-xs text-gray-400">#<%= item[:pr_number] %></span>
+                  <% end %>
+                  <span class="text-xs text-gray-400">·</span>
+                  <span class="text-xs text-gray-500">
+                    <% if is_commit %>
+                      <%= time_ago_in_words(item[:date]) %> ago by <%= item[:author][:login] %>
+                    <% else %>
+                      merged <%= time_ago_in_words(item[:date]) %> ago by <%= item[:author][:login] %>
+                    <% end %>
+                  </span>
+                  <% if is_analysis_baseline %>
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-700">
+                      <%= heroicon "flag", options: { class: "w-3 h-3" } %>
+                      Baseline
+                    </span>
+                  <% end %>
+                  <% if is_last_check %>
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">
+                      <%= heroicon "arrow-path", options: { class: "w-3 h-3" } %>
+                      Last check
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex-shrink-0">
+                <%= render "updates/timeline_row_actions",
+                    update: update,
+                    project: project,
+                    item: item,
+                    is_before_cutoff: is_before_cutoff,
+                    any_running: any_running %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <% if @has_more %>
+        <div class="text-center py-4">
+          <%= link_to "Load more",
+              code_history_project_path(project, page: @page + 1),
+              class: "text-indigo-600 hover:text-indigo-800 text-sm font-medium",
+              data: { turbo_frame: "code-history-timeline" } %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

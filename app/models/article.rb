@@ -6,6 +6,7 @@ class Article < ApplicationRecord
   belongs_to :recommendation
   belongs_to :section, optional: true
   has_many :step_images, dependent: :destroy
+  has_many :article_update_suggestions, dependent: :nullify
 
   # Turbo refresh broadcasts
   after_update_commit :broadcast_refreshes

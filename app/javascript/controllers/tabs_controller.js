@@ -13,13 +13,23 @@ export default class extends Controller {
       const hash = window.location.hash.substring(1)
       const prefix = this.hashPrefixValue
 
+      let tabName = null
       if (prefix && hash.startsWith(prefix)) {
-        const tabName = hash.substring(prefix.length)
+        tabName = hash.substring(prefix.length)
+      } else if (!prefix) {
+        tabName = hash
+      }
+
+      if (tabName) {
+        // Exact match first, then try the root segment (e.g. "settings/branding" -> "settings")
         if (this.hasTab(tabName)) {
           this.activeValue = tabName
+        } else {
+          const rootTab = tabName.split("/")[0]
+          if (this.hasTab(rootTab)) {
+            this.activeValue = rootTab
+          }
         }
-      } else if (!prefix && this.hasTab(hash)) {
-        this.activeValue = hash
       }
     }
     this.showActiveTab()

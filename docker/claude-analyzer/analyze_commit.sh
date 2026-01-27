@@ -191,3 +191,24 @@ ls -la /output/
 echo "Title length: $(wc -c < /output/title.txt) chars"
 echo "Content length: $(wc -c < /output/content.md) chars"
 echo "Articles JSON length: $(wc -c < /output/articles.json) chars"
+
+# Log actual content for debugging
+echo "--- Title ---"
+cat /output/title.txt
+echo ""
+echo "--- Articles JSON ---"
+cat /output/articles.json
+echo ""
+
+# Validate articles JSON
+if [ -s /output/articles.json ]; then
+    if jq -e . /output/articles.json > /dev/null 2>&1; then
+        ARTICLE_COUNT=$(jq '.articles | length' /output/articles.json 2>/dev/null || echo "0")
+        echo "Valid JSON with ${ARTICLE_COUNT} article recommendations"
+    else
+        echo "WARNING: articles.json is not valid JSON"
+        echo "Raw content: $(cat /output/articles.json)"
+    fi
+else
+    echo "WARNING: articles.json is empty"
+fi

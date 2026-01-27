@@ -1,6 +1,7 @@
 <%= turbo_stream_from @project, :articles %>
 <%= turbo_stream_from @project, :recommendations %>
 <%= turbo_stream_from @project, :inbox %>
+<%= turbo_stream_from @project, :code_history %>
 
 <div class="min-h-screen bg-gray-50">
   <!-- Header -->
@@ -21,6 +22,9 @@
       </div>
     </div>
   </header>
+
+  <!-- Docs Behind Banner -->
+  <%= render "projects/docs_behind_banner", project: @project %>
 
   <main class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
     <div class="bg-white shadow rounded-lg overflow-hidden flex flex-col" style="height: calc(100vh - 160px); min-height: 500px;"

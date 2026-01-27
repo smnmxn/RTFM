@@ -15,24 +15,37 @@ class AnalyzePullRequestJob < ApplicationJob
   # Shorter timeout than codebase analysis (5 minutes)
   ANALYSIS_TIMEOUT = 300
 
-  def perform(project_id:, pull_request_number:, pull_request_url:, pull_request_title:, pull_request_body:, source_repo: nil)
+  def perform(project_id:, pull_request_number:, pull_request_url:, pull_request_title:, pull_request_body:, merge_commit_sha: nil, source_repo: nil)
     project = Project.find_by(id: project_id)
     return unless project
 
     # Determine which repo this PR is from
     @source_repo = source_repo || project.primary_github_repo
+    @merge_commit_sha = merge_commit_sha
 
     # Find the project repository record for this source repo
     project_repo = project.project_repositories.find_by(github_repo: @source_repo)
     client = project_repo&.client || project.github_client
     return unless client
 
-    # Fetch the PR diff using the source repo
-    diff = client.pull_request(
-      @source_repo,
-      pull_request_number,
-      accept: "application/vnd.github.v3.diff"
-    )
+    # Use baseline to get cumulative diff if available, otherwise use PR diff
+    baseline_sha = project.analysis_commit_sha
+    if baseline_sha.present? && @merge_commit_sha.present?
+      Rails.logger.info "[AnalyzePullRequestJob] Fetching compare diff: #{baseline_sha[0..6]}..#{@merge_commit_sha[0..6]}"
+      diff = client.compare(
+        @source_repo,
+        baseline_sha,
+        @merge_commit_sha,
+        accept: "application/vnd.github.v3.diff"
+      )
+    else
+      Rails.logger.info "[AnalyzePullRequestJob] No baseline/merge SHA, fetching PR diff for PR ##{pull_request_number}"
+      diff = client.pull_request(
+        @source_repo,
+        pull_request_number,
+        accept: "application/vnd.github.v3.diff"
+      )
+    end
 
     # Find existing update or create new one (supports re-analysis)
     update = project.updates.find_or_initialize_by(pull_request_number: pull_request_number)
@@ -53,11 +66,18 @@ class AnalyzePullRequestJob < ApplicationJob
         update.update!(
           title: result[:title].presence || update.title,
           content: result[:content],
-          analysis_status: "completed"
+          analysis_status: "completed",
+          recommended_articles: result[:recommended_articles]
         )
 
         # Create Recommendation records from the articles
         create_recommendations(project, update, result[:recommended_articles])
+
+        # Advance the baseline to this PR's merge commit if available
+        if @merge_commit_sha.present?
+          project.update!(analysis_commit_sha: @merge_commit_sha, analyzed_at: Time.current)
+          Rails.logger.info "[AnalyzePullRequestJob] Baseline advanced to #{@merge_commit_sha[0..6]}"
+        end
 
         Rails.logger.info "[AnalyzePullRequestJob] AI analysis completed for PR ##{pull_request_number} in project #{project.id}"
       else

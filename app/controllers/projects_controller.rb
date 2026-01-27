@@ -35,8 +35,11 @@ class ProjectsController < ApplicationController
     end
 
     # Fallback to default selection if param invalid or not provided
-    @selected_article ||= @inbox_articles.where(generation_status: :generation_completed).first
-    @selected_recommendation ||= @selected_article.nil? ? @pending_recommendations.first : nil
+    # Don't override an explicitly selected recommendation with an article fallback
+    if @selected_recommendation.nil?
+      @selected_article ||= @inbox_articles.where(generation_status: :generation_completed).first
+      @selected_recommendation ||= @selected_article.nil? ? @pending_recommendations.first : nil
+    end
 
     @inbox_empty = @pending_recommendations.empty? && @inbox_articles.empty?
 
@@ -215,44 +218,101 @@ class ProjectsController < ApplicationController
   end
 
   def code_history
-    @view_type = params[:view].presence || "prs"
     page = (params[:page] || 1).to_i
 
-    if @view_type == "commits"
-      service = GithubCommitsService.new(@project)
-      result = service.call(page: page)
+    # Fetch both commits and PRs
+    commits_service = GithubCommitsService.new(@project)
+    prs_service = GithubPullRequestsService.new(@project)
 
-      if result.success?
-        @commits = result.commits
-        @updates_by_commit = @project.updates
-          .from_commits
-          .where(commit_sha: @commits.map { |c| c[:sha] })
-          .index_by(&:commit_sha)
-        @page = page
-        @has_more = result.commits.size == 30
+    commits_result = commits_service.call(page: page)
+    prs_result = prs_service.call(page: page)
 
-        render partial: "projects/code_history_commits", locals: { project: @project }
+    unless commits_result.success? && prs_result.success?
+      error = commits_result.error || prs_result.error
+      render partial: "projects/pull_request_error", locals: { error: error }
+      return
+    end
+
+    # Build unified timeline items
+    @timeline_items = []
+
+    # Add commits to timeline
+    commits_result.commits.each do |commit|
+      @timeline_items << {
+        type: :commit,
+        date: commit[:committed_at],
+        sha: commit[:sha],
+        short_sha: commit[:short_sha],
+        title: commit[:title],
+        message: commit[:message],
+        url: commit[:html_url],
+        author: commit[:author]
+      }
+    end
+
+    # Add PRs to timeline
+    prs_result.pull_requests.each do |pr|
+      @timeline_items << {
+        type: :pull_request,
+        date: pr[:merged_at],
+        pr_number: pr[:number],
+        merge_commit_sha: pr[:merge_commit_sha],
+        title: pr[:title],
+        url: pr[:html_url],
+        author: pr[:user]
+      }
+    end
+
+    # Deduplicate: when a PR's merge commit SHA matches a commit, remove the commit
+    # (the PR is more informative — it has title, number, etc.)
+    pr_merge_shas = @timeline_items
+      .select { |i| i[:type] == :pull_request && i[:merge_commit_sha].present? }
+      .map { |i| i[:merge_commit_sha] }
+      .to_set
+
+    @timeline_items.reject! { |i| i[:type] == :commit && pr_merge_shas.include?(i[:sha]) }
+
+    # Sort by date descending
+    @timeline_items.sort_by! { |item| item[:date] }.reverse!
+
+    # Index existing updates by commit SHA and PR number
+    commit_shas = @timeline_items.select { |i| i[:type] == :commit }.map { |i| i[:sha] }
+    pr_numbers = @timeline_items.select { |i| i[:type] == :pull_request }.map { |i| i[:pr_number] }
+
+    @updates_by_commit = @project.updates
+      .from_commits
+      .where(commit_sha: commit_shas)
+      .index_by(&:commit_sha)
+
+    @updates_by_pr = @project.updates
+      .from_pull_requests
+      .where(pull_request_number: pr_numbers)
+      .index_by(&:pull_request_number)
+
+    # Add update reference to each timeline item
+    @timeline_items.each do |item|
+      item[:update] = if item[:type] == :commit
+        @updates_by_commit[item[:sha]]
       else
-        render partial: "projects/pull_request_error", locals: { error: result.error }
-      end
-    else
-      service = GithubPullRequestsService.new(@project)
-      result = service.call(page: page)
-
-      if result.success?
-        @pull_requests = result.pull_requests
-        @updates_by_pr = @project.updates
-          .from_pull_requests
-          .where(pull_request_number: @pull_requests.map { |pr| pr[:number] })
-          .index_by(&:pull_request_number)
-        @page = page
-        @has_more = result.pull_requests.size == 30
-
-        render partial: "projects/code_history_timeline", locals: { project: @project }
-      else
-        render partial: "projects/pull_request_error", locals: { error: result.error }
+        @updates_by_pr[item[:pr_number]]
       end
     end
+
+    # Cutoff: items at or before the baseline can't be analyzed
+    # Find the baseline item (could be a commit SHA or a PR's merge commit SHA)
+    baseline_sha = @project.analysis_commit_sha
+    if baseline_sha.present?
+      baseline_item = @timeline_items.find do |i|
+        (i[:type] == :commit && i[:sha] == baseline_sha) ||
+          (i[:type] == :pull_request && i[:merge_commit_sha] == baseline_sha)
+      end
+      @analysis_cutoff_date = baseline_item&.dig(:date)
+    end
+
+    @page = page
+    @has_more = commits_result.commits.size == 30 || prs_result.pull_requests.size == 30
+
+    render partial: "projects/code_history_unified", locals: { project: @project }
   end
 
   def analyze_commit
@@ -277,7 +337,14 @@ class ProjectsController < ApplicationController
       commit_message: params[:commit_message].to_s
     )
 
-    redirect_to project_path(@project, anchor: "code-history"), notice: "Analysis started for commit #{commit_sha[0..6]}. This may take a few minutes."
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.action(:replace, "code-history-timeline",
+          partial: "projects/code_history_timeline_reload",
+          locals: { project: @project })
+      end
+      format.html { redirect_to project_path(@project, anchor: "code-history"), notice: "Analysis started for commit #{commit_sha[0..6]}." }
+    end
   end
 
   def analyze
@@ -312,10 +379,18 @@ class ProjectsController < ApplicationController
       pull_request_number: pr_number,
       pull_request_url: pr_url,
       pull_request_title: pr_title,
-      pull_request_body: params[:pr_body].to_s
+      pull_request_body: params[:pr_body].to_s,
+      merge_commit_sha: params[:merge_commit_sha].presence
     )
 
-    redirect_to project_path(@project), notice: "Analysis started for PR ##{pr_number}. This may take a few minutes."
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.action(:replace, "code-history-timeline",
+          partial: "projects/code_history_timeline_reload",
+          locals: { project: @project })
+      end
+      format.html { redirect_to project_path(@project, anchor: "code-history"), notice: "Analysis started for PR ##{pr_number}." }
+    end
   end
 
   def generate_recommendations
@@ -537,6 +612,42 @@ class ProjectsController < ApplicationController
     redirect_to project_path(@project, anchor: "settings"), notice: "Primary repository updated."
   end
 
+  # Article update check actions (Maintenance)
+
+  def create_article_update_check
+    # Get target commit from params or fetch latest
+    target_commit = params[:target_commit].presence || fetch_latest_commit_sha
+
+    unless target_commit.present?
+      redirect_to project_path(@project, anchor: "settings/maintenance"), alert: "Could not determine target commit."
+      return
+    end
+
+    check = @project.article_update_checks.create!(
+      target_commit_sha: target_commit,
+      base_commit_sha: @project.analysis_commit_sha
+    )
+
+    CheckArticleUpdatesJob.perform_later(check_id: check.id)
+
+    redirect_to project_path(@project, anchor: "settings/maintenance"), notice: "Checking for article updates..."
+  end
+
+  def article_update_check
+    @check = @project.article_update_checks.find(params[:check_id])
+
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace(
+          "update_check_#{@check.id}",
+          partial: "projects/article_update_check",
+          locals: { check: @check }
+        )
+      end
+      format.html { redirect_to project_path(@project, anchor: "settings/maintenance") }
+    end
+  end
+
   private
 
   def set_project
@@ -597,4 +708,13 @@ class ProjectsController < ApplicationController
       .first
   end
 
+  def fetch_latest_commit_sha
+    service = GithubCommitsService.new(@project)
+    result = service.call(page: 1, per_page: 1)
+    return nil unless result.success? && result.commits.present?
+    result.commits.first[:sha]
+  rescue => e
+    Rails.logger.error "[ProjectsController] Failed to fetch latest commit: #{e.message}"
+    nil
+  end
 end

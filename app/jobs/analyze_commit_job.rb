@@ -14,7 +14,7 @@ class AnalyzeCommitJob < ApplicationJob
 
   ANALYSIS_TIMEOUT = 300
 
-  def perform(project_id:, commit_sha:, commit_url:, commit_title:, commit_message:, source_repo: nil)
+  def perform(project_id:, commit_sha:, commit_url:, commit_title:, commit_message:, baseline_sha: nil, source_repo: nil)
     project = Project.find_by(id: project_id)
     return unless project
 
@@ -26,12 +26,25 @@ class AnalyzeCommitJob < ApplicationJob
     client = project_repo&.client || project.github_client
     return unless client
 
-    # Fetch the commit diff using the source repo
-    diff = client.commit(
-      @source_repo,
-      commit_sha,
-      accept: "application/vnd.github.v3.diff"
-    )
+    # Use baseline to get cumulative diff (baseline..commit), falling back to single commit diff
+    @baseline_sha = baseline_sha || project.analysis_commit_sha
+    if @baseline_sha.present? && @baseline_sha != commit_sha
+      Rails.logger.info "[AnalyzeCommitJob] Fetching compare diff: #{@baseline_sha[0..6]}..#{commit_sha[0..6]}"
+      comparison = client.compare(
+        @source_repo,
+        @baseline_sha,
+        commit_sha,
+        accept: "application/vnd.github.v3.diff"
+      )
+      diff = comparison
+    else
+      Rails.logger.info "[AnalyzeCommitJob] No baseline, fetching single commit diff for #{commit_sha[0..6]}"
+      diff = client.commit(
+        @source_repo,
+        commit_sha,
+        accept: "application/vnd.github.v3.diff"
+      )
+    end
 
     # Find existing update or create new one (supports re-analysis)
     update = project.updates.find_or_initialize_by(commit_sha: commit_sha, source_type: :commit)
@@ -52,13 +65,16 @@ class AnalyzeCommitJob < ApplicationJob
         update.update!(
           title: result[:title].presence || update.title,
           content: result[:content],
-          analysis_status: "completed"
+          analysis_status: "completed",
+          recommended_articles: result[:recommended_articles]
         )
 
         # Create Recommendation records from the articles
         create_recommendations(project, update, result[:recommended_articles])
 
-        Rails.logger.info "[AnalyzeCommitJob] AI analysis completed for commit #{commit_sha[0..6]} in project #{project.id}"
+        # Advance the baseline to this commit
+        project.update!(analysis_commit_sha: commit_sha, analyzed_at: Time.current)
+        Rails.logger.info "[AnalyzeCommitJob] AI analysis completed for commit #{commit_sha[0..6]} in project #{project.id}, baseline advanced"
       else
         # Fall back to placeholder content
         update.update!(
@@ -158,12 +174,18 @@ class AnalyzeCommitJob < ApplicationJob
         content = read_output_file(output_dir, "content.md")
         articles_json = read_output_file(output_dir, "articles.json")
 
+        Rails.logger.info "[AnalyzeCommitJob] Title: #{title}"
+        Rails.logger.info "[AnalyzeCommitJob] Content length: #{content&.length || 0} chars"
+        Rails.logger.info "[AnalyzeCommitJob] Articles JSON: #{articles_json}"
+
         if content.present?
+          recommended = parse_articles_json(articles_json)
+          Rails.logger.info "[AnalyzeCommitJob] Parsed recommendations: #{recommended&.dig('articles')&.size || 0} articles"
           {
             success: true,
             title: title,
             content: content,
-            recommended_articles: parse_articles_json(articles_json)
+            recommended_articles: recommended
           }
         else
           { success: false, error: "No content generated" }
@@ -221,15 +243,24 @@ class AnalyzeCommitJob < ApplicationJob
   end
 
   def create_recommendations(project, update, articles_data)
-    return if articles_data.blank?
+    Rails.logger.info "[AnalyzeCommitJob] create_recommendations called with: #{articles_data.inspect}"
+
+    if articles_data.blank?
+      Rails.logger.info "[AnalyzeCommitJob] No articles_data provided, skipping recommendations"
+      return
+    end
 
     articles = articles_data["articles"]
-    return if articles.blank?
+    if articles.blank?
+      Rails.logger.info "[AnalyzeCommitJob] articles_data present but no 'articles' key or empty array"
+      return
+    end
 
     # Clear any existing recommendations for this update (for re-analysis)
     update.recommendations.destroy_all
 
     articles.each do |article|
+      Rails.logger.info "[AnalyzeCommitJob] Creating recommendation: #{article['title']}"
       Recommendation.create!(
         project: project,
         source_update: update,

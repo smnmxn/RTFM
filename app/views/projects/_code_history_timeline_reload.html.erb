@@ -1,0 +1,10 @@
+<%= turbo_frame_tag "code-history-timeline",
+    src: code_history_project_path(project),
+    loading: "eager" do %>
+  <div class="flex items-center justify-center py-12">
+    <div class="flex items-center gap-2 text-gray-500">
+      <%= spinner_icon(size: "w-5 h-5") %>
+      <span>Refreshing code history...</span>
+    </div>
+  </div>
+<% end %>

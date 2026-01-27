@@ -24,12 +24,14 @@ class GenerateArticleJob < ApplicationJob
 
       if result[:success]
         if result[:structured_content]
-          article.update!(
+          update_attrs = {
             structured_content: result[:structured_content],
             content: generate_markdown_from_structured(result[:structured_content]),
             generation_status: :generation_completed,
             regeneration_guidance: nil  # Clear guidance after successful generation
-          )
+          }
+          update_attrs[:source_commit_sha] = result[:commit_sha] if result[:commit_sha].present?
+          article.update!(update_attrs)
 
           # Attach generated images to StepImage records
           if result[:generated_images].present?
@@ -40,11 +42,13 @@ class GenerateArticleJob < ApplicationJob
           cleanup_analysis_dir(result[:input_dir])
           cleanup_analysis_dir(result[:output_dir])
         else
-          article.update!(
+          update_attrs = {
             content: result[:content],
             generation_status: :generation_completed,
             regeneration_guidance: nil  # Clear guidance after successful generation
-          )
+          }
+          update_attrs[:source_commit_sha] = result[:commit_sha] if result[:commit_sha].present?
+          article.update!(update_attrs)
         end
         Rails.logger.info "[GenerateArticleJob] Article generation completed for article #{article.id}"
       else
@@ -156,6 +160,7 @@ class GenerateArticleJob < ApplicationJob
 
       if status.success?
         json_content = read_output_file(output_dir, "article.json")
+        commit_sha = read_output_file(output_dir, "commit_sha.txt")
         # Log usage.json for debugging
       usage_content = read_output_file(output_dir, "usage.json")
       Rails.logger.info "[GenerateArticleJob] usage.json: #{usage_content}"
@@ -176,20 +181,21 @@ class GenerateArticleJob < ApplicationJob
                 success: true,
                 structured_content: parsed,
                 generated_images: generated_images,
+                commit_sha: commit_sha,
                 input_dir: input_dir,
                 output_dir: output_dir
               }
             else
-              Rails.logger.warn "[GenerateArticleJob] JSON missing expected structure"
+              Rails.logger.warn "[GenerateArticleJob] JSON missing expected structure — treating as failure. Content preview: #{json_content&.slice(0, 200).inspect}"
               cleanup_analysis_dir(input_dir)
               cleanup_analysis_dir(output_dir)
-              { success: true, content: json_content }
+              { success: false, error: "Claude returned narrative text instead of structured JSON" }
             end
           rescue JSON::ParserError => e
-            Rails.logger.warn "[GenerateArticleJob] JSON parse error: #{e.message}, falling back to raw content"
+            Rails.logger.warn "[GenerateArticleJob] JSON parse error: #{e.message} — treating as failure. Content preview: #{json_content&.slice(0, 200).inspect}"
             cleanup_analysis_dir(input_dir)
             cleanup_analysis_dir(output_dir)
-            { success: true, content: json_content }
+            { success: false, error: "Claude output was not valid JSON: #{e.message}" }
           end
         else
           cleanup_analysis_dir(input_dir)

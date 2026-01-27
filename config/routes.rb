@@ -95,6 +95,15 @@ Rails.application.routes.draw do
       post :add_repository
       delete :remove_repository
       patch :set_primary_repository
+      # Maintenance / Article updates
+      post :create_article_update_check
+      get :article_update_check
+    end
+    resources :article_update_suggestions, only: [] do
+      member do
+        post :accept
+        post :dismiss
+      end
     end
     resources :recommendations, only: [] do
       member do

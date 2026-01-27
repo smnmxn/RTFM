@@ -42,6 +42,7 @@ class GithubPullRequestsService
       title: pr.title,
       html_url: pr.html_url,
       merged_at: pr.merged_at,
+      merge_commit_sha: pr.merge_commit_sha,
       user: {
         login: pr.user.login,
         avatar_url: pr.user.avatar_url

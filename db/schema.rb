@@ -10,7 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_26_123018) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_26_160052) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_catalog.plpgsql"
+
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -39,6 +42,36 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_123018) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "article_update_checks", force: :cascade do |t|
+    t.string "base_commit_sha"
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.bigint "project_id", null: false
+    t.json "results"
+    t.datetime "started_at"
+    t.string "status", default: "pending", null: false
+    t.string "target_commit_sha", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id", "status"], name: "index_article_update_checks_on_project_id_and_status"
+    t.index ["project_id"], name: "index_article_update_checks_on_project_id"
+  end
+
+  create_table "article_update_suggestions", force: :cascade do |t|
+    t.json "affected_files"
+    t.bigint "article_id"
+    t.bigint "article_update_check_id", null: false
+    t.datetime "created_at", null: false
+    t.string "priority", default: "medium", null: false
+    t.text "reason"
+    t.string "status", default: "pending", null: false
+    t.json "suggested_changes"
+    t.string "suggestion_type", null: false
+    t.datetime "updated_at", null: false
+    t.index ["article_id"], name: "index_article_update_suggestions_on_article_id"
+    t.index ["article_update_check_id", "suggestion_type"], name: "index_suggestions_on_check_and_type"
+    t.index ["article_update_check_id"], name: "index_article_update_suggestions_on_article_update_check_id"
+  end
+
   create_table "articles", force: :cascade do |t|
     t.text "content"
     t.datetime "created_at", null: false
@@ -52,6 +85,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_123018) do
     t.datetime "reviewed_at"
     t.integer "section_id"
     t.string "slug"
+    t.string "source_commit_sha"
     t.string "status", default: "draft", null: false
     t.json "structured_content"
     t.string "title", null: false
@@ -62,6 +96,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_123018) do
     t.index ["section_id", "position"], name: "index_articles_on_section_id_and_position"
     t.index ["section_id", "slug"], name: "index_articles_on_section_id_and_slug", unique: true
     t.index ["section_id"], name: "index_articles_on_section_id"
+    t.index ["source_commit_sha"], name: "index_articles_on_source_commit_sha"
   end
 
   create_table "claude_usages", force: :cascade do |t|
@@ -120,7 +155,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_123018) do
     t.bigint "github_installation_id", null: false
     t.string "github_repo", null: false
     t.boolean "is_primary", default: false, null: false
-    t.integer "project_id", null: false
+    t.bigint "project_id", null: false
     t.datetime "updated_at", null: false
     t.index ["github_repo"], name: "index_project_repositories_on_github_repo", unique: true
     t.index ["project_id"], name: "index_project_repositories_on_project_id"
@@ -251,6 +286,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_123018) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "article_update_checks", "projects"
+  add_foreign_key "article_update_suggestions", "article_update_checks"
+  add_foreign_key "article_update_suggestions", "articles"
   add_foreign_key "articles", "projects"
   add_foreign_key "articles", "recommendations"
   add_foreign_key "articles", "sections"
