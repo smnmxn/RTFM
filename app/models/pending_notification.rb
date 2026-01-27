@@ -28,13 +28,21 @@ class PendingNotification < ApplicationRecord
     when "article_generated"
       metadata["article_title"]
     when "pr_analyzed"
+      parts = []
       title = metadata["pr_title"]
       nr = metadata["pr_number"]
-      title.present? ? "PR ##{nr}: #{title}" : nil
+      parts << "PR ##{nr}: #{title}" if title.present?
+      article_count = metadata["article_titles"]&.size
+      parts << "#{article_count} #{"article".pluralize(article_count)} suggested" if article_count&.positive?
+      parts.any? ? parts.join(" — ") : nil
     when "commit_analyzed"
+      parts = []
       title = metadata["commit_title"]
       sha = metadata["commit_sha"]&.slice(0, 7)
-      title.present? ? "#{sha}: #{title}" : nil
+      parts << "#{sha}: #{title}" if title.present?
+      article_count = metadata["article_titles"]&.size
+      parts << "#{article_count} #{"article".pluralize(article_count)} suggested" if article_count&.positive?
+      parts.any? ? parts.join(" — ") : nil
     end
   end
 
@@ -50,7 +58,12 @@ class PendingNotification < ApplicationRecord
       when "article_generated"
         "Review it and publish when you're happy."
       when "pr_analyzed", "commit_analyzed"
-        "New article recommendations may be waiting."
+        count = metadata&.dig("article_titles")&.size
+        if count&.positive?
+          "Review the suggested articles in code history."
+        else
+          "Check code history for details."
+        end
       end
     else
       case event_type

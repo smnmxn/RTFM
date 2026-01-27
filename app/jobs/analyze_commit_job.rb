@@ -76,7 +76,8 @@ class AnalyzeCommitJob < ApplicationJob
         # Advance the baseline to this commit
         project.update!(analysis_commit_sha: commit_sha, analyzed_at: Time.current)
         Rails.logger.info "[AnalyzeCommitJob] AI analysis completed for commit #{commit_sha[0..6]} in project #{project.id}, baseline advanced"
-        broadcast_toast(project, message: "We've reviewed commit #{commit_sha[0..6]}", action_url: "/projects/#{project.slug}?tab=inbox", action_label: "View", event_type: "commit_analyzed", notification_metadata: { commit_sha: commit_sha, commit_title: commit_title })
+        article_titles = result[:recommended_articles]&.dig("articles")&.map { |a| a["title"] } || []
+        broadcast_toast(project, message: "We've reviewed code changes from commit #{commit_sha[0..6]}", action_url: "/projects/#{project.slug}?tab=code_history", action_label: "View", event_type: "commit_analyzed", notification_metadata: { commit_sha: commit_sha, commit_title: commit_title, article_titles: article_titles })
       else
         # Fall back to placeholder content
         update.update!(

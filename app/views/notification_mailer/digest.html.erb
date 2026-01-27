@@ -85,6 +85,14 @@
             <div style="margin-top: 8px;">
               <a href="<%= @preview[:url].start_with?("http") ? @preview[:url] : "#{root_url.chomp('/')}#{@preview[:url]}" %>" style="font-size: 13px; color: #7c3aed; text-decoration: none; font-weight: 500;">Review recommendations &rarr;</a>
             </div>
+          <% elsif @preview[:type] == :code_review %>
+            <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6d28d9; margin-bottom: 8px;">Suggested articles</div>
+            <% @preview[:titles].each do |title| %>
+              <div style="font-size: 13px; color: #4b5563; padding: 2px 0;">&bull;&ensp;<%= title %></div>
+            <% end %>
+            <div style="margin-top: 8px;">
+              <a href="<%= @preview[:url].start_with?("http") ? @preview[:url] : "#{root_url.chomp('/')}#{@preview[:url]}" %>" style="font-size: 13px; color: #7c3aed; text-decoration: none; font-weight: 500;">View code history &rarr;</a>
+            </div>
           <% elsif @preview[:type] == :sections %>
             <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6d28d9; margin-bottom: 8px;">Suggested sections</div>
             <% @preview[:titles].each do |title| %>

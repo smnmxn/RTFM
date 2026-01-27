@@ -81,7 +81,7 @@ class NotificationMailer < ApplicationMailer
       when "sections_suggested"
         return { text: "Choose Your Sections", url: n.action_url }
       when "pr_analyzed", "commit_analyzed"
-        return { text: "View Changes", url: n.action_url }
+        return { text: "View Suggestions", url: n.action_url }
       end
     end
 
@@ -118,6 +118,18 @@ class NotificationMailer < ApplicationMailer
 
       titles = project.recommendations.pending.order(created_at: :desc).limit(3).pluck(:title)
       return { type: :recommendations, titles: titles, url: recs_notif.action_url } if titles.any?
+    end
+
+    # PR/commit article suggestions preview
+    code_notif = notifications.find { |n| n.event_type.in?(%w[pr_analyzed commit_analyzed]) && n.status == "success" }
+    if code_notif
+      titles = code_notif.metadata&.dig("article_titles")
+      if sample_mode
+        titles = [ "Update Authentication Docs", "Add Dark Mode Configuration Guide" ]
+      end
+      if titles.present? && titles.any?
+        return { type: :code_review, titles: titles, url: code_notif.action_url }
+      end
     end
 
     # Sections preview
