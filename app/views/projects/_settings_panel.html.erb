@@ -103,8 +103,8 @@
           </div>
 
           <!-- Browser notifications (opt-in) -->
-          <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg" data-controller="browser-notification">
-            <div class="shrink-0 mt-0.5">
+          <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg" data-controller="browser-notification">
+            <div class="shrink-0">
               <button type="button"
                       data-browser-notification-target="toggle"
                       data-action="browser-notification#request"
@@ -112,9 +112,16 @@
                 Enable
               </button>
             </div>
-            <div>
+            <div class="flex-1">
               <p class="text-sm font-medium text-gray-900">Browser notifications</p>
               <p class="text-sm text-gray-500 mt-0.5" data-browser-notification-target="status">Get notified when background tasks finish, even if the tab is not focused.</p>
+            </div>
+            <div class="shrink-0 hidden" data-browser-notification-target="testButton">
+              <button type="button"
+                      data-action="browser-notification#test"
+                      class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md bg-white text-gray-700 ring-1 ring-gray-300 hover:bg-gray-50 transition-colors shadow-sm">
+                Test
+              </button>
             </div>
           </div>
         </div>

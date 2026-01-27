@@ -57,6 +57,7 @@ import RadioCardController from "controllers/radio_card_controller"
 import ToastController from "controllers/toast_controller"
 import ToastContainerController from "controllers/toast_container_controller"
 import BrowserNotificationController from "controllers/browser_notification_controller"
+import NotificationPromptController from "controllers/notification_prompt_controller"
 
 application.register("inline-edit", InlineEditController)
 application.register("array-edit", ArrayEditController)
@@ -87,3 +88,4 @@ application.register("radio-card", RadioCardController)
 application.register("toast", ToastController)
 application.register("toast-container", ToastContainerController)
 application.register("browser-notification", BrowserNotificationController)
+application.register("notification-prompt", NotificationPromptController)

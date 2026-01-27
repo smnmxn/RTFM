@@ -39,8 +39,13 @@
     <% current_step = @project&.onboarding_step_number.to_i %>
     <% current_step = 1 if current_step == 0 && controller_name == "projects" && controller_path == "onboarding/projects" %>
     <% if current_step.positive? %>
-      <div class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <%= render "onboarding/shared/progress", current_step: current_step %>
+      <div class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 flex items-center gap-6">
+        <div class="flex-1">
+          <%= render "onboarding/shared/progress", current_step: current_step %>
+        </div>
+        <% if current_step == 3 %>
+          <%= render "onboarding/shared/notification_prompt" %>
+        <% end %>
       </div>
     <% end %>
 
