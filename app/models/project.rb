@@ -42,7 +42,8 @@ class Project < ApplicationRecord
   # AI settings
   store :ai_settings, accessors: [
     :claude_model,
-    :claude_max_turns
+    :claude_max_turns,
+    :update_strategy
   ], coder: JSON
 
   CLAUDE_MODELS = [
@@ -59,6 +60,13 @@ class Project < ApplicationRecord
     [ "Unlimited", 0 ]
   ].freeze
 
+  UPDATE_STRATEGIES = [
+    [ "On every pull request", "pull_request", "Get recommendations as soon as a PR is merged. Best for staying on top of documentation in real time." ],
+    [ "Once a week", "weekly", "Collect all merged PRs and check for recommendations every Monday morning. Good for busy repos where real-time would be noisy." ],
+    [ "Manually", "manual", "Only check when you click the Analyze button in Code History. Nothing runs automatically." ]
+  ].freeze
+
+  DEFAULT_UPDATE_STRATEGY = "pull_request".freeze
   DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-5".freeze
   DEFAULT_CLAUDE_MAX_TURNS = 15
 
@@ -265,6 +273,10 @@ class Project < ApplicationRecord
   end
 
   # AI settings helper methods
+  def update_strategy_value
+    update_strategy.presence || DEFAULT_UPDATE_STRATEGY
+  end
+
   def claude_model_id
     claude_model.presence || DEFAULT_CLAUDE_MODEL
   end

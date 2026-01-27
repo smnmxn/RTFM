@@ -93,6 +93,12 @@ module Webhooks
         return
       end
 
+      unless project.update_strategy_value == "pull_request"
+        Rails.logger.info "[Webhook] Skipping auto-analysis for #{repo_full_name} (strategy: #{project.update_strategy_value})"
+        head :ok
+        return
+      end
+
       AnalyzePullRequestJob.perform_later(
         project_id: project.id,
         pull_request_number: pull_request["number"],

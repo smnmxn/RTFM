@@ -91,6 +91,8 @@ Rails.application.routes.draw do
       delete :remove_logo
       # AI settings
       patch :update_ai_settings
+      # Update strategy
+      patch :update_strategy
       # Repository management
       post :add_repository
       delete :remove_repository

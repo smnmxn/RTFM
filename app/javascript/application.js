@@ -53,6 +53,7 @@ import FolderArticleController from "controllers/folder_article_controller"
 import AddArticleButtonController from "controllers/add_article_button_controller"
 import StreamingAnswerController from "controllers/streaming_answer_controller"
 import RepoSelectController from "controllers/repo_select_controller"
+import RadioCardController from "controllers/radio_card_controller"
 
 application.register("inline-edit", InlineEditController)
 application.register("array-edit", ArrayEditController)
@@ -79,3 +80,4 @@ application.register("folder-article", FolderArticleController)
 application.register("add-article-button", AddArticleButtonController)
 application.register("streaming-answer", StreamingAnswerController)
 application.register("repo-select", RepoSelectController)
+application.register("radio-card", RadioCardController)

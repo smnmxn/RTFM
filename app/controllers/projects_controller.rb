@@ -549,6 +549,36 @@ class ProjectsController < ApplicationController
     end
   end
 
+  def update_strategy
+    current_ai_settings = @project.ai_settings || {}
+    new_ai_settings = current_ai_settings.merge("update_strategy" => params.dig(:project, :update_strategy))
+
+    if @project.update(ai_settings: new_ai_settings)
+      @project.reload
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            "update_strategy_form",
+            partial: "projects/update_strategy_form",
+            locals: { project: @project, saved: true }
+          )
+        end
+        format.html { redirect_to project_path(@project, anchor: "settings"), notice: "Update strategy saved." }
+      end
+    else
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            "update_strategy_form",
+            partial: "projects/update_strategy_form",
+            locals: { project: @project, saved: false }
+          )
+        end
+        format.html { redirect_to project_path(@project, anchor: "settings"), alert: "Failed to update strategy." }
+      end
+    end
+  end
+
   def destroy
     @project.destroy
     redirect_to projects_path, notice: "Project '#{@project.name}' disconnected."
@@ -662,7 +692,7 @@ class ProjectsController < ApplicationController
   end
 
   def ai_settings_params
-    params.require(:project).permit(:claude_model, :claude_max_turns)
+    params.require(:project).permit(:claude_model, :claude_max_turns, :update_strategy)
   end
 
   def load_inbox_items

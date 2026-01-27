@@ -30,20 +30,21 @@
       </button>
       <button type="button"
               data-tabs-target="tab"
+              data-tabs-name="update-strategy"
+              data-action="click->tabs#switch"
+              class="settings-nav-item w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 text-gray-600 hover:bg-gray-100">
+        <%= heroicon "light-bulb", options: { class: "w-4 h-4 text-gray-400" } %>
+        Recommendations
+      </button>
+      <button type="button"
+              data-tabs-target="tab"
               data-tabs-name="ai-settings"
               data-action="click->tabs#switch"
               class="settings-nav-item w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 text-gray-600 hover:bg-gray-100">
         <%= heroicon "cpu-chip", options: { class: "w-4 h-4 text-gray-400" } %>
         AI Settings
       </button>
-      <button type="button"
-              data-tabs-target="tab"
-              data-tabs-name="maintenance"
-              data-action="click->tabs#switch"
-              class="settings-nav-item w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 text-gray-600 hover:bg-gray-100">
-        <%= heroicon "arrow-path", options: { class: "w-4 h-4 text-gray-400" } %>
-        Maintenance
-      </button>
+
       <button type="button"
               data-tabs-target="tab"
               data-tabs-name="danger-zone"
@@ -62,14 +63,14 @@
       <%= render "projects/branding_form", project: @project, saved: false %>
     </div>
 
+    <!-- Update Strategy Panel -->
+    <div data-tabs-target="panel" data-tabs-name="update-strategy" class="hidden">
+      <%= render "projects/update_strategy_form", project: @project, saved: false %>
+    </div>
+
     <!-- AI Settings Panel -->
     <div data-tabs-target="panel" data-tabs-name="ai-settings" class="hidden">
       <%= render "projects/ai_settings_form", project: @project, saved: false %>
-    </div>
-
-    <!-- Maintenance Panel -->
-    <div data-tabs-target="panel" data-tabs-name="maintenance" class="hidden">
-      <%= render "projects/maintenance_panel", project: @project %>
     </div>
 
     <!-- Danger Zone Panel -->
