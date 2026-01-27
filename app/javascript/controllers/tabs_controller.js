@@ -9,6 +9,7 @@ export default class extends Controller {
   }
 
   connect() {
+    this._connected = false
     if (this.hashValue && window.location.hash) {
       const hash = window.location.hash.substring(1)
       const prefix = this.hashPrefixValue
@@ -32,6 +33,7 @@ export default class extends Controller {
         }
       }
     }
+    this._connected = true
     this.showActiveTab()
   }
 
@@ -45,7 +47,7 @@ export default class extends Controller {
 
   activeValueChanged() {
     this.showActiveTab()
-    if (this.hashValue) {
+    if (this.hashValue && this._connected) {
       const hashPath = this.hashPrefixValue + this.activeValue
       history.replaceState(null, null, `#${hashPath}`)
     }
