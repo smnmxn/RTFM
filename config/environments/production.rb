@@ -57,7 +57,8 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: ENV.fetch("BASE_DOMAIN", "example.com") }
+  config.action_mailer.default_url_options = { host: ENV.fetch("BASE_DOMAIN", "app.supportpages.io") }
+  config.action_mailer.asset_host = "https://#{ENV.fetch("BASE_DOMAIN", "app.supportpages.io")}"
 
   # Postmark email delivery
   config.action_mailer.delivery_method = :postmark
@@ -74,7 +75,7 @@ Rails.application.configure do
   config.active_record.attributes_for_inspect = [ :id ]
 
   # Subdomain support for public help centres
-  config.x.base_domain = ENV.fetch("BASE_DOMAIN", "example.com")
+  config.x.base_domain = ENV.fetch("BASE_DOMAIN", "app.supportpages.io")
 
   # Enable DNS rebinding protection and other `Host` header attacks.
   # Dynamically configure hosts based on BASE_DOMAIN to support subdomains
