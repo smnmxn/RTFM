@@ -48,7 +48,7 @@
           <div class="flex items-center gap-3">
             <%= link_to "#{project_path(project)}#code-history",
                 class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-md transition-colors",
-                data: { turbo_frame: "_top" } do %>
+                data: { turbo: false } do %>
               Review changes
               <%= heroicon "arrow-right", options: { class: "w-4 h-4" } %>
             <% end %>

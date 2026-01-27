@@ -51,11 +51,16 @@
           We're scanning your repository to understand your project structure.
         </p>
       </div>
-      <%= render "onboarding/shared/loading_banner",
-          stages: analysis_stages,
-          stage_duration: 25,
-          start_time: project.analysis_started_at,
-          variant: "checklist" %>
+      <div class="flex items-start gap-4">
+        <div class="flex-1">
+          <%= render "onboarding/shared/loading_banner",
+              stages: analysis_stages,
+              stage_duration: 25,
+              start_time: project.analysis_started_at,
+              variant: "checklist" %>
+        </div>
+        <%= render "onboarding/shared/notification_prompt" %>
+      </div>
     <% else %>
       <%# Questions not answered - show questions %>
       <div class="text-center mb-6">
@@ -103,11 +108,16 @@
           We're identifying the best documentation topics for your project.
         </p>
       </div>
-      <%= render "onboarding/shared/loading_banner",
-          stages: section_stages,
-          stage_duration: 15,
-          start_time: project.sections_generation_started_at,
-          variant: "checklist" %>
+      <div class="flex items-start gap-4">
+        <div class="flex-1">
+          <%= render "onboarding/shared/loading_banner",
+              stages: section_stages,
+              stage_duration: 15,
+              start_time: project.sections_generation_started_at,
+              variant: "checklist" %>
+        </div>
+        <%= render "onboarding/shared/notification_prompt" %>
+      </div>
       <%= render "onboarding/shared/page_warning" %>
     </div>
   <% elsif project.sections.pending.any? || project.sections.accepted.any? %>
@@ -137,11 +147,16 @@
           We're identifying the best documentation topics for your project.
         </p>
       </div>
-      <%= render "onboarding/shared/loading_banner",
-          stages: section_stages,
-          stage_duration: 15,
-          start_time: project.sections_generation_started_at,
-          variant: "checklist" %>
+      <div class="flex items-start gap-4">
+        <div class="flex-1">
+          <%= render "onboarding/shared/loading_banner",
+              stages: section_stages,
+              stage_duration: 15,
+              start_time: project.sections_generation_started_at,
+              variant: "checklist" %>
+        </div>
+        <%= render "onboarding/shared/notification_prompt" %>
+      </div>
       <%= render "onboarding/shared/page_warning" %>
     </div>
   <% end %>
