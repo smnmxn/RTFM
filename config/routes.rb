@@ -10,6 +10,11 @@ Rails.application.routes.draw do
     mount Sidekiq::Web => "/sidekiq"
   end
 
+  # Email preview UI (development only)
+  if Rails.env.development?
+    mount LetterOpenerWeb::Engine, at: "/letter_opener"
+  end
+
   # Health check
   get "up" => "rails/health#show", as: :rails_health_check
 

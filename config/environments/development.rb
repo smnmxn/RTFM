@@ -37,8 +37,8 @@ Rails.application.configure do
   # Make template changes take effect immediately.
   config.action_mailer.perform_caching = false
 
-  # Open emails in browser via letter_opener
-  config.action_mailer.delivery_method = :letter_opener
+  # Store emails and serve via web UI at /letter_opener (works inside Docker)
+  config.action_mailer.delivery_method = :letter_opener_web
 
   # Set localhost to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
