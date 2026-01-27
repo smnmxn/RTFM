@@ -1,0 +1,47 @@
+<%= @project.name %> — Summary
+<%= "=" * (@project.name.length + 10) %>
+<%= @sent_at.strftime("%-d %b %Y, %-I:%M %p") %>
+
+<% if @successes.any? %>
+COMPLETED
+---------
+<% @successes.each do |notification| %>
+[OK] <%= notification.message %><% if notification.respond_to?(:detail_text) && notification.detail_text.present? %>
+     <%= notification.detail_text %><% end %><% if notification.respond_to?(:next_step_text) && notification.next_step_text.present? %>
+     → <%= notification.next_step_text %><% end %><% if notification.action_url.present? %>
+     <%= root_url.chomp('/') %><%= notification.action_url %><% end %>
+<% end %>
+
+<% end %>
+<% if @failures.any? %>
+FAILED
+------
+<% @failures.each do |notification| %>
+[FAIL] <%= notification.message %><% if notification.respond_to?(:detail_text) && notification.detail_text.present? %>
+       <%= notification.detail_text %><% end %><% if notification.respond_to?(:next_step_text) && notification.next_step_text.present? %>
+       → <%= notification.next_step_text %><% end %><% if notification.action_url.present? %>
+       <%= root_url.chomp('/') %><%= notification.action_url %><% end %>
+<% end %>
+
+<% end %>
+<% if @preview.present? %>
+PREVIEW
+-------
+<% if @preview[:type] == :article %>
+"<%= @preview[:title] %>"
+<%= @preview[:intro] %>
+→ <%= @preview[:url].start_with?("http") ? @preview[:url] : "#{root_url.chomp('/')}#{@preview[:url]}" %>
+<% elsif @preview[:type] == :recommendations %>
+New recommendations:
+<% @preview[:titles].each do |title| %>
+• <%= title %>
+<% end %>
+→ <%= @preview[:url].start_with?("http") ? @preview[:url] : "#{root_url.chomp('/')}#{@preview[:url]}" %>
+<% end %>
+
+<% end %>
+<%= @cta_text %>: <%= @cta_url&.start_with?("http") ? @cta_url : "#{root_url.chomp('/')}#{@cta_url}" %>
+
+---
+You're receiving this because you have email notifications enabled for <%= @project.name %>.
+Change your preferences in project settings.

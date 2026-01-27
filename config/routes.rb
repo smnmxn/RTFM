@@ -92,6 +92,9 @@ Rails.application.routes.draw do
       delete :remove_logo
       # AI settings
       patch :update_ai_settings
+      # Notification preferences
+      patch :update_notification_preferences
+      get :preview_notification_email
       # Update strategy
       patch :update_strategy
       # Repository management

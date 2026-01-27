@@ -52,14 +52,14 @@ class GenerateArticleJob < ApplicationJob
           article.update!(update_attrs)
         end
         Rails.logger.info "[GenerateArticleJob] Article generation completed for article #{article.id}"
-        broadcast_toast(project, message: "Article ready: #{article.title}", action_url: "/projects/#{project.slug}?tab=inbox&selected=article_#{article.id}", action_label: "View")
+        broadcast_toast(project, message: "Your article is ready: #{article.title}", action_url: "/projects/#{project.slug}?tab=inbox&selected=article_#{article.id}", action_label: "View", event_type: "article_generated", notification_metadata: { article_title: article.title, article_id: article.id })
       else
         article.update!(
           content: placeholder_content(recommendation),
           generation_status: :generation_failed
         )
         Rails.logger.warn "[GenerateArticleJob] Article generation failed for article #{article.id}: #{result[:error]}"
-        broadcast_toast(project, message: "Article generation failed: #{article.title}", type: "error", action_url: "/projects/#{project.slug}?tab=inbox&selected=article_#{article.id}", action_label: "View")
+        broadcast_toast(project, message: "We couldn't generate #{article.title}", type: "error", action_url: "/projects/#{project.slug}?tab=inbox&selected=article_#{article.id}", action_label: "View", event_type: "article_generated", notification_metadata: { article_title: article.title, article_id: article.id })
       end
     rescue StandardError => e
       article.update!(
@@ -67,7 +67,7 @@ class GenerateArticleJob < ApplicationJob
         generation_status: :generation_failed
       )
       Rails.logger.error "[GenerateArticleJob] Error generating article #{article.id}: #{e.message}"
-      broadcast_toast(project, message: "Article generation failed: #{article.title}", type: "error")
+      broadcast_toast(project, message: "We couldn't generate #{article.title}", type: "error", event_type: "article_generated", notification_metadata: { article_title: article.title, article_id: article.id })
     end
   end
 

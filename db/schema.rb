@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_26_160052) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_27_151659) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -150,6 +150,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_160052) do
     t.index ["user_id"], name: "index_invites_on_user_id"
   end
 
+  create_table "pending_notifications", force: :cascade do |t|
+    t.string "action_url"
+    t.datetime "created_at", null: false
+    t.string "event_type", null: false
+    t.string "message"
+    t.json "metadata"
+    t.bigint "project_id", null: false
+    t.string "status", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["project_id"], name: "index_pending_notifications_on_project_id"
+    t.index ["user_id"], name: "index_pending_notifications_on_user_id"
+  end
+
   create_table "project_repositories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "github_installation_id", null: false
@@ -272,6 +286,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_160052) do
     t.string "github_uid"
     t.string "github_username"
     t.string "name"
+    t.json "notification_preferences"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["github_uid"], name: "index_users_on_github_uid", unique: true
@@ -295,6 +310,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_160052) do
   add_foreign_key "claude_usages", "projects"
   add_foreign_key "github_app_installations", "users"
   add_foreign_key "invites", "users"
+  add_foreign_key "pending_notifications", "projects"
+  add_foreign_key "pending_notifications", "users"
   add_foreign_key "project_repositories", "projects"
   add_foreign_key "projects", "github_app_installations"
   add_foreign_key "projects", "users"

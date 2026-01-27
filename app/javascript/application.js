@@ -58,6 +58,8 @@ import ToastController from "controllers/toast_controller"
 import ToastContainerController from "controllers/toast_container_controller"
 import BrowserNotificationController from "controllers/browser_notification_controller"
 import NotificationPromptController from "controllers/notification_prompt_controller"
+import PresenceController from "controllers/presence_controller"
+import EmailPreviewModalController from "controllers/email_preview_modal_controller"
 
 application.register("inline-edit", InlineEditController)
 application.register("array-edit", ArrayEditController)
@@ -89,3 +91,5 @@ application.register("toast", ToastController)
 application.register("toast-container", ToastContainerController)
 application.register("browser-notification", BrowserNotificationController)
 application.register("notification-prompt", NotificationPromptController)
+application.register("presence", PresenceController)
+application.register("email-preview-modal", EmailPreviewModalController)

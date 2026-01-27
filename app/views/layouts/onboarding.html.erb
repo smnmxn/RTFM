@@ -21,6 +21,7 @@
   </head>
 
   <body class="min-h-screen bg-slate-50">
+    <div data-controller="presence"></div>
     <% if @project&.persisted? %>
       <%= turbo_stream_from @project, :notifications %>
     <% end %>

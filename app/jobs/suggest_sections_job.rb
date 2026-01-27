@@ -32,7 +32,7 @@ class SuggestSectionsJob < ApplicationJob
         create_sections(project, result[:sections])
         project.reload.update!(sections_generation_status: "completed")
         Rails.logger.info "[SuggestSectionsJob] Suggested #{result[:sections]&.size || 0} sections for project #{project.id}"
-        broadcast_toast(project, message: "Section suggestions ready", action_url: "/projects/#{project.slug}", action_label: "View")
+        broadcast_toast(project, message: "We've suggested sections for your docs", action_url: "/projects/#{project.slug}", action_label: "View", event_type: "sections_suggested", notification_metadata: { section_count: project.sections.count })
 
         # Broadcast update to refresh the onboarding view
         broadcast_onboarding_update(project)
@@ -42,7 +42,7 @@ class SuggestSectionsJob < ApplicationJob
       else
         project.reload.update!(sections_generation_status: "failed")
         Rails.logger.warn "[SuggestSectionsJob] Suggestion failed for project #{project.id}: #{result[:error]}"
-        broadcast_toast(project, message: "Section suggestion failed", type: "error")
+        broadcast_toast(project, message: "We couldn't suggest sections", type: "error", event_type: "sections_suggested")
 
         # Broadcast update to show error state
         broadcast_onboarding_update(project)

@@ -596,6 +596,46 @@ class ProjectsController < ApplicationController
     head :ok
   end
 
+  def preview_notification_email
+    event_type = params[:event_type]
+    sample = build_sample_notifications(event_type)
+
+    @preview_html = NotificationMailer.digest(
+      user: current_user,
+      project: @project,
+      notifications: sample
+    ).html_part&.body&.decoded || NotificationMailer.digest(
+      user: current_user,
+      project: @project,
+      notifications: sample
+    ).body.decoded
+
+    render layout: false
+  end
+
+  def update_notification_preferences
+    prefs = current_user.notification_preferences || {}
+    prefs["email_notifications_enabled"] = params[:email_notifications_enabled] == "1"
+    prefs["email_events"] ||= {}
+
+    User::DEFAULT_NOTIFICATION_PREFERENCES["email_events"].each_key do |event|
+      prefs["email_events"][event] = params.dig(:email_events, event) == "1"
+    end
+
+    current_user.update!(notification_preferences: prefs)
+
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace(
+          "notification-preferences-form",
+          partial: "projects/notification_preferences_form",
+          locals: { project: @project, user: current_user, saved: true }
+        )
+      end
+      format.html { redirect_to project_path(@project, anchor: "settings/notifications"), notice: "Notification preferences saved." }
+    end
+  end
+
   def destroy
     @project.destroy
     redirect_to projects_path, notice: "Project '#{@project.name}' disconnected."
@@ -696,6 +736,35 @@ class ProjectsController < ApplicationController
   end
 
   private
+
+  SAMPLE_NOTIFICATIONS = {
+    "analysis_complete"         => { message: "We've finished analysing your codebase",      status: "success", metadata: { "repo_count" => 2 } },
+    "sections_suggested"        => { message: "We've suggested sections for your docs",      status: "success", metadata: { "section_count" => 5 } },
+    "recommendations_generated" => { message: "We've got 12 article ideas for you",          status: "success", metadata: { "recommendation_count" => 12, "section_count" => 4 } },
+    "article_generated"         => { message: "Your article is ready: Getting Started Guide", status: "success", metadata: { "article_title" => "Getting Started Guide", "article_id" => 1 } },
+    "pr_analyzed"               => { message: "We've reviewed PR #42",                       status: "success", metadata: { "pr_number" => 42, "pr_title" => "Add dark mode support" } },
+    "commit_analyzed"           => { message: "We've reviewed commit a1b2c3d",               status: "success", metadata: { "commit_sha" => "a1b2c3d4e5f6", "commit_title" => "Fix authentication flow" } },
+  }.freeze
+
+  def build_sample_notifications(event_type)
+    events = if event_type.present? && SAMPLE_NOTIFICATIONS.key?(event_type)
+      [[event_type, SAMPLE_NOTIFICATIONS[event_type]]]
+    else
+      SAMPLE_NOTIFICATIONS.to_a
+    end
+
+    events.map do |type, data|
+      PendingNotification.new(
+        user: current_user,
+        project: @project,
+        event_type: type,
+        status: data[:status],
+        message: data[:message],
+        action_url: "/projects/#{@project.slug}",
+        metadata: data[:metadata]
+      )
+    end
+  end
 
   def set_project
     @project = current_user.projects.find_by(slug: params[:slug])

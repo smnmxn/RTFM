@@ -17,6 +17,7 @@ class Project < ApplicationRecord
   has_many :claude_usages, dependent: :destroy
   has_many :project_repositories, dependent: :destroy
   has_many :article_update_checks, dependent: :destroy
+  has_many :pending_notifications, dependent: :destroy
 
   # Logo upload via Active Storage
   has_one_attached :logo
@@ -164,6 +165,13 @@ class Project < ApplicationRecord
     total = sections.accepted.count
     done = sections_recommendations_complete_count
     { done: done, total: total, percent: total > 0 ? (done * 100 / total) : 0 }
+  end
+
+  def has_running_jobs?
+    analysis_status == "running" ||
+      sections_generation_status.in?(%w[pending running]) ||
+      sections.where(recommendations_status: "running").exists? ||
+      articles.where(generation_status: [:generation_pending, :generation_running]).exists?
   end
 
   # Article review tracking

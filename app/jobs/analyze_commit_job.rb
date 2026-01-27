@@ -76,7 +76,7 @@ class AnalyzeCommitJob < ApplicationJob
         # Advance the baseline to this commit
         project.update!(analysis_commit_sha: commit_sha, analyzed_at: Time.current)
         Rails.logger.info "[AnalyzeCommitJob] AI analysis completed for commit #{commit_sha[0..6]} in project #{project.id}, baseline advanced"
-        broadcast_toast(project, message: "Commit #{commit_sha[0..6]} analyzed", action_url: "/projects/#{project.slug}?tab=inbox", action_label: "View")
+        broadcast_toast(project, message: "We've reviewed commit #{commit_sha[0..6]}", action_url: "/projects/#{project.slug}?tab=inbox", action_label: "View", event_type: "commit_analyzed", notification_metadata: { commit_sha: commit_sha, commit_title: commit_title })
       else
         # Fall back to placeholder content
         update.update!(
@@ -84,7 +84,7 @@ class AnalyzeCommitJob < ApplicationJob
           analysis_status: "failed"
         )
         Rails.logger.warn "[AnalyzeCommitJob] AI analysis failed, using placeholder for commit #{commit_sha[0..6]}: #{result[:error]}"
-        broadcast_toast(project, message: "Commit #{commit_sha[0..6]} analysis failed", type: "error", action_url: "/projects/#{project.slug}?tab=code_history", action_label: "View")
+        broadcast_toast(project, message: "We couldn't review commit #{commit_sha[0..6]}", type: "error", action_url: "/projects/#{project.slug}?tab=code_history", action_label: "View", event_type: "commit_analyzed", notification_metadata: { commit_sha: commit_sha, commit_title: commit_title })
       end
     rescue StandardError => e
       # Fall back to placeholder content on any error
@@ -93,7 +93,7 @@ class AnalyzeCommitJob < ApplicationJob
         analysis_status: "failed"
       )
       Rails.logger.error "[AnalyzeCommitJob] Error during AI analysis for commit #{commit_sha[0..6]}: #{e.message}"
-      broadcast_toast(project, message: "Commit analysis failed", type: "error")
+      broadcast_toast(project, message: "We couldn't review this commit", type: "error", event_type: "commit_analyzed", notification_metadata: { commit_sha: commit_sha, commit_title: commit_title })
     end
   end
 

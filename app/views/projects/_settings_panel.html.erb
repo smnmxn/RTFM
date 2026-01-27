@@ -83,48 +83,56 @@
 
     <!-- Notifications Panel -->
     <div data-tabs-target="panel" data-tabs-name="notifications" class="hidden">
-      <div class="max-w-2xl">
-        <h3 class="text-lg font-semibold text-gray-900 mb-1">Notifications</h3>
-        <p class="text-sm text-gray-500 mb-6">Configure how you're notified when background tasks complete.</p>
-
-        <div class="space-y-6">
-          <!-- In-app toasts (always on) -->
-          <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-            <div class="shrink-0">
-              <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Always on</span>
-            </div>
-            <div class="flex-1">
-              <p class="text-sm font-medium text-gray-900">In-app toast notifications</p>
-              <p class="text-sm text-gray-500 mt-0.5">Brief pop-up notifications appear in the bottom-right corner when tasks complete.</p>
-            </div>
-            <div class="shrink-0">
-              <%= button_to "Test", test_toast_project_path(project), params: { toast_type: "success" }, class: "inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md bg-white text-gray-700 ring-1 ring-gray-300 hover:bg-gray-50 transition-colors shadow-sm", data: { turbo: true } %>
-            </div>
+      <div class="space-y-6">
+        <!-- In-app & Browser Notifications -->
+        <div class="border border-gray-200 rounded-lg">
+          <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 rounded-t-lg">
+            <h3 class="text-lg font-medium text-gray-900">Notifications</h3>
+            <p class="text-sm text-gray-500 mt-1">Configure how you're notified when background tasks complete.</p>
           </div>
 
-          <!-- Browser notifications (opt-in) -->
-          <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg" data-controller="browser-notification">
-            <div class="shrink-0">
-              <button type="button"
-                      data-browser-notification-target="toggle"
-                      data-action="browser-notification#request"
-                      class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 hover:bg-gray-200 cursor-pointer transition-colors">
-                Enable
-              </button>
+          <div class="divide-y divide-gray-200">
+            <!-- In-app toasts (always on) -->
+            <div class="flex items-center gap-4 p-4">
+              <div class="shrink-0">
+                <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Always on</span>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-900">In-app toast notifications</p>
+                <p class="text-sm text-gray-500 mt-0.5">Brief pop-up notifications appear in the bottom-right corner when tasks complete.</p>
+              </div>
+              <div class="shrink-0">
+                <%= button_to "Test", test_toast_project_path(project), params: { toast_type: "success" }, class: "px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium cursor-pointer", data: { turbo: true } %>
+              </div>
             </div>
-            <div class="flex-1">
-              <p class="text-sm font-medium text-gray-900">Browser notifications</p>
-              <p class="text-sm text-gray-500 mt-0.5" data-browser-notification-target="status">Get notified when background tasks finish, even if the tab is not focused.</p>
-            </div>
-            <div class="shrink-0 hidden" data-browser-notification-target="testButton">
-              <button type="button"
-                      data-action="browser-notification#test"
-                      class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md bg-white text-gray-700 ring-1 ring-gray-300 hover:bg-gray-50 transition-colors shadow-sm">
-                Test
-              </button>
+
+            <!-- Browser notifications (opt-in) -->
+            <div class="flex items-center gap-4 p-4" data-controller="browser-notification">
+              <div class="shrink-0">
+                <button type="button"
+                        data-browser-notification-target="toggle"
+                        data-action="browser-notification#request"
+                        class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 hover:bg-gray-200 cursor-pointer transition-colors">
+                  Enable
+                </button>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-900">Browser notifications</p>
+                <p class="text-sm text-gray-500 mt-0.5" data-browser-notification-target="status">Get notified when background tasks finish, even if the tab is not focused.</p>
+              </div>
+              <div class="shrink-0 hidden" data-browser-notification-target="testButton">
+                <button type="button"
+                        data-action="browser-notification#test"
+                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium cursor-pointer">
+                  Test
+                </button>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- Email Notifications -->
+        <%= render "projects/notification_preferences_form", project: project, user: current_user, saved: false %>
       </div>
     </div>
 
