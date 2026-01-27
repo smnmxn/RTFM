@@ -120,6 +120,16 @@ class NotificationMailer < ApplicationMailer
       return { type: :recommendations, titles: titles, url: recs_notif.action_url } if titles.any?
     end
 
+    # Sections preview
+    sections_notif = notifications.find { |n| n.event_type == "sections_suggested" && n.status == "success" }
+    if sections_notif
+      names = sections_notif.metadata&.dig("section_names")
+      if sample_mode
+        names ||= [ "Getting Started", "Authentication", "API Reference", "Configuration", "Troubleshooting" ]
+      end
+      return { type: :sections, titles: Array(names), url: sections_notif.action_url } if names.present?
+    end
+
     nil
   end
 end

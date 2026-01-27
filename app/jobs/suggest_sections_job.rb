@@ -32,7 +32,8 @@ class SuggestSectionsJob < ApplicationJob
         create_sections(project, result[:sections])
         project.reload.update!(sections_generation_status: "completed")
         Rails.logger.info "[SuggestSectionsJob] Suggested #{result[:sections]&.size || 0} sections for project #{project.id}"
-        broadcast_toast(project, message: "We've suggested sections for your docs", action_url: "/projects/#{project.slug}", action_label: "View", event_type: "sections_suggested", notification_metadata: { section_count: project.sections.count })
+        section_names = project.sections.order(:position).pluck(:name)
+        broadcast_toast(project, message: "We've suggested sections for your docs", action_url: "/onboarding/projects/#{project.slug}/sections", action_label: "View", event_type: "sections_suggested", notification_metadata: { section_count: section_names.size, section_names: section_names })
 
         # Broadcast update to refresh the onboarding view
         broadcast_onboarding_update(project)

@@ -35,7 +35,7 @@ class AnalyzeCodebaseJob < ApplicationJob
           contextual_questions: result[:contextual_questions]
         )
         Rails.logger.info "[AnalyzeCodebaseJob] Analysis completed for project #{project.id}"
-        broadcast_toast(project, message: "We've finished analysing your codebase", action_url: "/projects/#{project.slug}", action_label: "View", event_type: "analysis_complete", notification_metadata: { repo_count: project.project_repositories.count })
+        broadcast_toast(project, message: "We've finished analysing your codebase", action_url: "/onboarding/projects/#{project.slug}/analyze", action_label: "View", event_type: "analysis_complete", notification_metadata: { repo_count: project.project_repositories.count })
         if result[:contextual_questions].present?
           Rails.logger.info "[AnalyzeCodebaseJob] Generated #{result[:contextual_questions].size} contextual questions"
         end
@@ -57,7 +57,7 @@ class AnalyzeCodebaseJob < ApplicationJob
       else
         project.update!(analysis_status: "failed")
         Rails.logger.error "[AnalyzeCodebaseJob] Analysis failed for project #{project.id}: #{result[:error]}"
-        broadcast_toast(project, message: "We couldn't analyse your codebase", type: "error", action_url: "/projects/#{project.slug}", action_label: "View", event_type: "analysis_complete")
+        broadcast_toast(project, message: "We couldn't analyse your codebase", type: "error", action_url: "/onboarding/projects/#{project.slug}/analyze", action_label: "View", event_type: "analysis_complete")
 
         # Broadcast update to show error state
         broadcast_onboarding_update(project)

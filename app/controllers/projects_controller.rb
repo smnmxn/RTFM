@@ -739,7 +739,7 @@ class ProjectsController < ApplicationController
 
   SAMPLE_NOTIFICATIONS = {
     "analysis_complete"         => { message: "We've finished analysing your codebase",      status: "success", metadata: { "repo_count" => 2 } },
-    "sections_suggested"        => { message: "We've suggested sections for your docs",      status: "success", metadata: { "section_count" => 5 } },
+    "sections_suggested"        => { message: "We've suggested sections for your docs",      status: "success", metadata: { "section_count" => 5, "section_names" => [ "Getting Started", "Authentication", "API Reference", "Configuration", "Troubleshooting" ] } },
     "recommendations_generated" => { message: "We've got 12 article ideas for you",          status: "success", metadata: { "recommendation_count" => 12, "section_count" => 4 } },
     "article_generated"         => { message: "Your article is ready: Getting Started Guide", status: "success", metadata: { "article_title" => "Getting Started Guide", "article_id" => 1 } },
     "pr_analyzed"               => { message: "We've reviewed PR #42",                       status: "success", metadata: { "pr_number" => 42, "pr_title" => "Add dark mode support" } },
@@ -754,13 +754,20 @@ class ProjectsController < ApplicationController
     end
 
     events.map do |type, data|
+      action_url = case type
+      when "sections_suggested"
+        "/onboarding/projects/#{@project.slug}/sections"
+      else
+        "/projects/#{@project.slug}"
+      end
+
       PendingNotification.new(
         user: current_user,
         project: @project,
         event_type: type,
         status: data[:status],
         message: data[:message],
-        action_url: "/projects/#{@project.slug}",
+        action_url: action_url,
         metadata: data[:metadata]
       )
     end

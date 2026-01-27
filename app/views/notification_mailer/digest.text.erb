@@ -37,6 +37,12 @@ New recommendations:
 • <%= title %>
 <% end %>
 → <%= @preview[:url].start_with?("http") ? @preview[:url] : "#{root_url.chomp('/')}#{@preview[:url]}" %>
+<% elsif @preview[:type] == :sections %>
+Suggested sections:
+<% @preview[:titles].each do |title| %>
+• <%= title %>
+<% end %>
+→ <%= @preview[:url].start_with?("http") ? @preview[:url] : "#{root_url.chomp('/')}#{@preview[:url]}" %>
 <% end %>
 
 <% end %>
