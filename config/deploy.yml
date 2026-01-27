@@ -54,6 +54,7 @@ env:
     - GITHUB_APP_ID
     - GITHUB_APP_PRIVATE_KEY
     - GITHUB_APP_WEBHOOK_SECRET
+    - POSTMARK_API_TOKEN
   clear:
     # Base domain for subdomain routing
     BASE_DOMAIN: supportpages.io

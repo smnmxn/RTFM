@@ -30,8 +30,8 @@
     <!-- Header -->
     <header class="bg-white border-b border-slate-200">
       <div class="max-w-4xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
-        <%= link_to projects_path, class: "text-2xl font-bold text-gradient-brand hover:opacity-80 transition-opacity" do %>
-          supportpages.io
+        <%= link_to projects_path, class: "hover:opacity-80 transition-opacity" do %>
+          <%= image_tag "logo.png", class: "h-12", alt: "supportpages.io" %>
         <% end %>
         <% if current_user.projects.where(onboarding_step: nil).any? %>
           <%= link_to "Back to Projects", projects_path, class: "text-sm text-slate-500 hover:text-slate-700" %>
