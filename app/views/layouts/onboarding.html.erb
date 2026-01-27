@@ -21,6 +21,11 @@
   </head>
 
   <body class="min-h-screen bg-slate-50">
+    <% if @project&.persisted? %>
+      <%= turbo_stream_from @project, :notifications %>
+    <% end %>
+    <%= render "shared/toasts" %>
+
     <!-- Header -->
     <header class="bg-white border-b border-slate-200">
       <div class="max-w-4xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
