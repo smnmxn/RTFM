@@ -139,6 +139,12 @@ class HelpCentreController < ApplicationController
       # Fall back to subdomain lookup
       subdomain = SubdomainConstraint.extract_subdomain(request)
       @project = Project.find_by(subdomain: subdomain)
+
+      # Redirect to custom domain if active
+      if @project&.custom_domain_active?
+        redirect_to_custom_domain
+        return
+      end
     end
     redirect_to_app if @project.nil?
   end
@@ -147,5 +153,11 @@ class HelpCentreController < ApplicationController
     base_domain = Rails.application.config.x.base_domain
     protocol = Rails.env.production? ? "https" : "http"
     redirect_to "#{protocol}://app.#{base_domain}", allow_other_host: true
+  end
+
+  def redirect_to_custom_domain
+    # Preserve the path when redirecting (e.g., /section/article)
+    custom_url = "https://#{@project.custom_domain}#{request.fullpath}"
+    redirect_to custom_url, allow_other_host: true, status: :moved_permanently
   end
 end

@@ -23,13 +23,13 @@ servers:
 # Enable SSL with Cloudflare Origin Certificate for wildcard subdomain support.
 # Using an SSL proxy like this requires turning on config.assume_ssl and config.force_ssl in production.rb!
 proxy:
-  ssl:
-    certificate_pem: CF_ORIGIN_CERT
-    private_key_pem: CF_ORIGIN_KEY
-  hosts:
-    - supportpages.io
-    - "*.supportpages.io"
-    - "*"  # Accept custom domains (SSL handled by Cloudflare for SaaS)
+  #ssl:
+  #certificate_pem: CF_ORIGIN_CERT
+  #private_key_pem: CF_ORIGIN_KEY
+  #hosts:
+  #- supportpages.io
+  #- "*.supportpages.io"
+  #- "*" # Accept custom domains (SSL handled by Cloudflare for SaaS)
   forward_headers: true
 
 # Where you keep your container images.
