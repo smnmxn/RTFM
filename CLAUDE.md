@@ -32,6 +32,7 @@ RTFM is a developer-first platform that automatically converts code changes into
 - **AI**: Claude Code CLI (in Docker), Anthropic API
 - **VCS**: GitHub API via Octokit
 - **Image Generation**: Puppeteer + Chromium (in Docker)
+- **Testing**: Minitest, Playwright (E2E)
 
 ## Development Commands
 
@@ -45,18 +46,96 @@ rails db:create db:migrate
 # Start all services (Rails server, Tailwind watcher, Sidekiq)
 bin/dev
 
-# Run tests
+# Run tests (see Testing section below for details)
+rails test              # Unit/integration tests
+rails test:e2e          # E2E browser tests
+
+# Rebuild Docker analyzer image (after changing docker/claude-analyzer/*)
+docker build -t rtfm/claude-analyzer:latest docker/claude-analyzer/
+```
+
+## Testing
+
+The project uses **Minitest** for unit/integration tests and **Playwright** for E2E browser tests.
+
+### Test Commands
+
+```bash
+# Run all unit and integration tests
 rails test
 
 # Run a single test file
 rails test test/path/to/test_file.rb
 
-# Run a specific test
+# Run a specific test by line number
 rails test test/path/to/test_file.rb:LINE_NUMBER
 
-# Rebuild Docker analyzer image (after changing docker/claude-analyzer/*)
-docker build -t rtfm/claude-analyzer:latest docker/claude-analyzer/
+# Run E2E tests (headless browser)
+rails test:e2e
+
+# Run E2E tests with visible browser (for debugging)
+HEADLESS=false rails test:e2e
+
+# Run E2E tests in slow motion (milliseconds delay between actions)
+SLOW_MO=500 rails test:e2e
 ```
+
+### Test Directory Structure
+
+```
+test/
+├── models/              # Model unit tests
+├── controllers/         # Controller integration tests
+├── services/            # Service object tests
+├── jobs/                # Sidekiq job tests
+├── constraints/         # Route constraint tests
+├── e2e/                 # Playwright E2E tests
+│   ├── flows/           # User journey tests
+│   ├── pages/           # Page Object models
+│   └── support/         # E2E helpers (auth, wait, etc.)
+├── fixtures/            # Test data (YAML)
+├── test_helper.rb       # Unit test configuration
+└── e2e_test_helper.rb   # E2E test configuration
+```
+
+### E2E Test Infrastructure
+
+E2E tests use Playwright to automate a real browser against a running Rails server:
+
+- **Server**: Puma starts automatically on a random port
+- **Browser**: Headless Chromium (configurable via `HEADLESS=false`)
+- **Screenshots**: Automatically captured on test failure in `tmp/screenshots/`
+
+**Writing E2E Tests:**
+
+```ruby
+require "e2e_test_helper"
+
+class MyFlowTest < E2ETestCase
+  test "user can visit login page" do
+    visit "/login"
+    assert_path "/login"
+    assert has_text?("Sign in")
+  end
+end
+```
+
+**Available Helpers:**
+- `visit(path)` - Navigate to a URL
+- `assert_path(path)` - Assert current URL contains path
+- `has_text?(text)` - Check if text is visible
+- `click_button(text)` / `click_link(text)` - Click elements
+- `fill_in(selector, with: value)` - Fill form fields
+- `wait_for_turbo` - Wait for Turbo navigation to complete
+
+### Test Fixtures
+
+Test data is defined in `test/fixtures/*.yml`. Key fixtures:
+- `users.yml` - Test users with GitHub OAuth credentials
+- `projects.yml` - Test projects with webhook secrets
+- `articles.yml` - Draft and published articles
+
+OmniAuth is configured in test mode (`test_helper.rb`) with a `sign_in_as(user)` helper for controller tests.
 
 ## Architecture
 
@@ -75,6 +154,8 @@ The application follows a **Webhook → Worker → Service** pattern:
 - `app/controllers/webhooks/` - Incoming API events from GitHub
 - `docker/claude-analyzer/` - Docker image with Claude Code CLI for codebase analysis and article generation
 - `docs/phases/` - Phase-by-phase implementation documentation
+- `test/` - Test suite (Minitest + Playwright E2E)
+- `test/e2e/` - End-to-end browser tests with Playwright
 
 ## Environment Variables
 
