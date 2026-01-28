@@ -703,6 +703,90 @@ class ProjectsController < ApplicationController
     redirect_to project_path(@project, anchor: "settings"), notice: "Primary repository updated."
   end
 
+  # Custom domain management
+
+  def update_custom_domain
+    custom_domain = params.dig(:project, :custom_domain).to_s.strip
+
+    if custom_domain.blank?
+      redirect_to project_path(@project, anchor: "settings/custom-domain"), alert: "Please enter a custom domain."
+      return
+    end
+
+    if @project.update(custom_domain: custom_domain)
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            "custom_domain_form",
+            partial: "projects/custom_domain_form",
+            locals: { project: @project, saved: true }
+          )
+        end
+        format.html { redirect_to project_path(@project, anchor: "settings/custom-domain"), notice: "Custom domain added. Follow the DNS instructions to complete setup." }
+      end
+    else
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            "custom_domain_form",
+            partial: "projects/custom_domain_form",
+            locals: { project: @project, saved: false }
+          )
+        end
+        format.html { redirect_to project_path(@project, anchor: "settings/custom-domain"), alert: @project.errors.full_messages.join(", ") }
+      end
+    end
+  end
+
+  def verify_custom_domain
+    unless @project.custom_domain.present? && @project.custom_domain_cloudflare_id.present?
+      redirect_to project_path(@project, anchor: "settings/custom-domain"), alert: "No custom domain configured."
+      return
+    end
+
+    # Trigger immediate status check
+    CheckCustomDomainStatusJob.perform_later(project_id: @project.id, retry_count: 0)
+
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace(
+          "custom_domain_form",
+          partial: "projects/custom_domain_form",
+          locals: { project: @project, saved: false, checking: true }
+        )
+      end
+      format.html { redirect_to project_path(@project, anchor: "settings/custom-domain"), notice: "Checking domain status..." }
+    end
+  end
+
+  def remove_custom_domain
+    old_cloudflare_id = @project.custom_domain_cloudflare_id
+
+    @project.update!(
+      custom_domain: nil,
+      custom_domain_status: nil,
+      custom_domain_cloudflare_id: nil,
+      custom_domain_ssl_status: nil,
+      custom_domain_verified_at: nil
+    )
+
+    # Clean up from Cloudflare
+    if old_cloudflare_id.present?
+      RemoveCustomDomainJob.perform_later(cloudflare_id: old_cloudflare_id)
+    end
+
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace(
+          "custom_domain_form",
+          partial: "projects/custom_domain_form",
+          locals: { project: @project, saved: true }
+        )
+      end
+      format.html { redirect_to project_path(@project, anchor: "settings/custom-domain"), notice: "Custom domain removed." }
+    end
+  end
+
   # Article update check actions (Maintenance)
 
   def create_article_update_check

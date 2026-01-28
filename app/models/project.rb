@@ -87,6 +87,19 @@ class Project < ApplicationRecord
   validates :support_email, format: { with: URI::MailTo::EMAIL_REGEXP, message: "must be a valid email address" }, allow_blank: true
   validates :support_phone, length: { maximum: 30 }, allow_blank: true
 
+  # Custom domain validations
+  validates :custom_domain,
+    uniqueness: true,
+    allow_blank: true,
+    length: { maximum: 255 },
+    format: {
+      with: /\A[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+\z/i,
+      message: "must be a valid domain name (e.g., help.example.com)"
+    }
+
+  validate :custom_domain_not_internal
+  validate :custom_domain_not_base_domain
+
   # Subdomain validations
   RESERVED_SUBDOMAINS = %w[
     www api admin app mail smtp ftp cdn assets static
@@ -118,6 +131,8 @@ class Project < ApplicationRecord
   validate :slug_not_conflicting_with_subdomains
 
   before_validation :generate_slug, on: :create
+  before_validation :normalize_custom_domain
+  after_save :handle_custom_domain_change
 
   # Onboarding
   ONBOARDING_STEPS = %w[repository setup analyze sections generating].freeze
@@ -318,6 +333,35 @@ class Project < ApplicationRecord
     find_by!(subdomain: subdomain)
   end
 
+  # Custom domain helper methods
+  CUSTOM_DOMAIN_STATUSES = %w[pending verifying active failed].freeze
+
+  def custom_domain_active?
+    custom_domain.present? && custom_domain_status == "active"
+  end
+
+  def custom_domain_pending?
+    custom_domain.present? && custom_domain_status == "pending"
+  end
+
+  def custom_domain_verifying?
+    custom_domain.present? && custom_domain_status == "verifying"
+  end
+
+  def custom_domain_failed?
+    custom_domain.present? && custom_domain_status == "failed"
+  end
+
+  def custom_domain_cname_target
+    base_domain = Rails.application.config.x.base_domain&.split(":")&.first
+    "#{effective_subdomain}.#{base_domain}"
+  end
+
+  def self.find_by_custom_domain(domain)
+    return nil if domain.blank?
+    find_by(custom_domain: domain.downcase, custom_domain_status: "active")
+  end
+
   private
 
   def generate_slug
@@ -362,6 +406,83 @@ class Project < ApplicationRecord
     return if slug.blank?
     if Project.where.not(id: id).exists?(subdomain: slug)
       errors.add(:slug, "conflicts with an existing subdomain")
+    end
+  end
+
+  def normalize_custom_domain
+    return if custom_domain.blank?
+
+    # Lowercase and strip whitespace
+    self.custom_domain = custom_domain.strip.downcase
+
+    # Remove protocol if present
+    self.custom_domain = custom_domain.sub(%r{\Ahttps?://}, "")
+
+    # Remove trailing slash/path
+    self.custom_domain = custom_domain.split("/").first
+
+    # Blank out if empty after normalization
+    self.custom_domain = nil if custom_domain.blank?
+  end
+
+  def custom_domain_not_internal
+    return if custom_domain.blank?
+
+    base_domain = Rails.application.config.x.base_domain&.split(":")&.first
+    return if base_domain.blank?
+
+    if custom_domain == base_domain || custom_domain.end_with?(".#{base_domain}")
+      errors.add(:custom_domain, "cannot be the application domain or a subdomain of it")
+    end
+  end
+
+  def custom_domain_not_base_domain
+    return if custom_domain.blank?
+
+    # Reject common TLDs without subdomain
+    if custom_domain.count(".") < 2 && !custom_domain.match?(/\A[a-z0-9-]+\.[a-z]{2,}\z/i)
+      errors.add(:custom_domain, "must include a subdomain (e.g., help.example.com)")
+    end
+  end
+
+  def handle_custom_domain_change
+    return unless saved_change_to_custom_domain?
+
+    old_domain, new_domain = saved_change_to_custom_domain
+
+    # If domain was removed, clean up Cloudflare
+    if old_domain.present? && new_domain.blank?
+      old_cloudflare_id = custom_domain_cloudflare_id_before_last_save
+      if old_cloudflare_id.present?
+        RemoveCustomDomainJob.perform_later(cloudflare_id: old_cloudflare_id)
+      end
+      # Reset status fields (already nil since domain is blank)
+      update_columns(
+        custom_domain_status: nil,
+        custom_domain_cloudflare_id: nil,
+        custom_domain_ssl_status: nil,
+        custom_domain_verified_at: nil
+      )
+      return
+    end
+
+    # If domain changed (not just added), remove old one from Cloudflare
+    if old_domain.present? && new_domain.present? && old_domain != new_domain
+      old_cloudflare_id = custom_domain_cloudflare_id_before_last_save
+      if old_cloudflare_id.present?
+        RemoveCustomDomainJob.perform_later(cloudflare_id: old_cloudflare_id)
+      end
+    end
+
+    # If new domain was set, reset status and trigger setup
+    if new_domain.present?
+      update_columns(
+        custom_domain_status: "pending",
+        custom_domain_cloudflare_id: nil,
+        custom_domain_ssl_status: nil,
+        custom_domain_verified_at: nil
+      )
+      SetupCustomDomainJob.perform_later(project_id: id)
     end
   end
 end

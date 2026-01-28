@@ -132,8 +132,14 @@ class HelpCentreController < ApplicationController
   end
 
   def set_project
-    subdomain = SubdomainConstraint.extract_subdomain(request)
-    @project = Project.find_by(subdomain: subdomain)
+    # Check custom domain first
+    if CustomDomainConstraint.matches?(request)
+      @project = CustomDomainConstraint.find_project(request)
+    else
+      # Fall back to subdomain lookup
+      subdomain = SubdomainConstraint.extract_subdomain(request)
+      @project = Project.find_by(subdomain: subdomain)
+    end
     redirect_to_app if @project.nil?
   end
 

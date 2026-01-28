@@ -29,6 +29,7 @@ proxy:
   hosts:
     - supportpages.io
     - "*.supportpages.io"
+    # Custom domains are handled via Cloudflare for SaaS and route through the same proxy
   forward_headers: true
 
 # Where you keep your container images.
@@ -55,9 +56,14 @@ env:
     - GITHUB_APP_PRIVATE_KEY
     - GITHUB_APP_WEBHOOK_SECRET
     - POSTMARK_API_TOKEN
+    - CLOUDFLARE_ZONE_ID
+    - CLOUDFLARE_API_TOKEN
   clear:
     # Base domain for subdomain routing
     BASE_DOMAIN: supportpages.io
+
+    # Cloudflare custom domain fallback origin
+    CLOUDFLARE_FALLBACK_ORIGIN: supportpages.io
 
     # Redis for Sidekiq
     REDIS_URL: redis://supportpages-redis:6379/1

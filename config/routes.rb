@@ -116,6 +116,10 @@ Rails.application.routes.draw do
         post :add_repository
         delete :remove_repository
         patch :set_primary_repository
+        # Custom domain management
+        patch :update_custom_domain
+        post :verify_custom_domain
+        delete :remove_custom_domain
         # Maintenance / Article updates
         post :create_article_update_check
         get :article_update_check
@@ -168,6 +172,15 @@ Rails.application.routes.draw do
 
     # App subdomain root -> projects
     root "projects#index", as: :app_root
+  end
+
+  # Public Help Centre (custom domain, e.g., help.acme.com)
+  # Must be checked before subdomain constraint
+  constraints CustomDomainConstraint do
+    root "help_centre#index", as: :custom_domain_help_centre
+    get "ask", to: "help_centre#ask", as: :custom_domain_help_centre_ask
+    get ":section_slug/:article_slug", to: "help_centre#show", as: :custom_domain_help_centre_article
+    get ":section_slug", to: "help_centre#section", as: :custom_domain_help_centre_section
   end
 
   # Public Help Centre (subdomain-based, e.g., acme.supportpages.io)

@@ -78,12 +78,16 @@ Rails.application.configure do
   config.x.base_domain = ENV.fetch("BASE_DOMAIN", "supportpages.io")
 
   # Enable DNS rebinding protection and other `Host` header attacks.
-  # Dynamically configure hosts based on BASE_DOMAIN to support subdomains
+  # Dynamically configure hosts based on BASE_DOMAIN to support subdomains and custom domains
   if ENV["BASE_DOMAIN"].present?
-    config.hosts = [
-      ENV["BASE_DOMAIN"],
-      /.*\.#{Regexp.escape(ENV["BASE_DOMAIN"])}/
-    ]
+    config.hosts = ->(host) {
+      base_domain = ENV["BASE_DOMAIN"]
+      # Allow base domain and all subdomains
+      return true if host == base_domain
+      return true if host.end_with?(".#{base_domain}")
+      # Allow verified custom domains
+      Project.exists?(custom_domain: host.downcase, custom_domain_status: "active")
+    }
   end
 
   # Skip DNS rebinding protection for the default health check endpoint.

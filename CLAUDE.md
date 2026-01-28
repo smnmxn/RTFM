@@ -118,3 +118,17 @@ docker-compose run --rm web bin/rails claude:test_auth
 ```
 
 The system uses `CLAUDE_CODE_OAUTH_TOKEN` if present, otherwise falls back to `ANTHROPIC_API_KEY`.
+
+### Custom Domain Support (Cloudflare for SaaS)
+
+For custom domain functionality (e.g., `help.yourdomain.com`):
+
+- `CLOUDFLARE_ZONE_ID` - Cloudflare zone ID for the base domain
+- `CLOUDFLARE_API_TOKEN` - API token with Custom Hostnames permissions
+- `CLOUDFLARE_FALLBACK_ORIGIN` - Fallback origin (default: `supportpages.io`)
+
+**Cloudflare API Token Permissions:**
+- Zone > SSL and Certificates > Edit
+- Zone > Custom Hostnames > Edit
+
+The Cloudflare for SaaS feature must be enabled on the zone (requires Business/Enterprise plan, or add-on).

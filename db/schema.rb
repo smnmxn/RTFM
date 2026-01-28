@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_28_092725) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_28_122241) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -187,6 +187,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_28_092725) do
     t.json "branding"
     t.json "contextual_questions"
     t.datetime "created_at", null: false
+    t.string "custom_domain"
+    t.string "custom_domain_cloudflare_id"
+    t.string "custom_domain_ssl_status"
+    t.string "custom_domain_status", default: "pending"
+    t.datetime "custom_domain_verified_at"
     t.bigint "github_app_installation_id"
     t.string "github_repo"
     t.integer "help_centre_cache_version", default: 0, null: false
@@ -203,6 +208,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_28_092725) do
     t.datetime "updated_at", null: false
     t.json "user_context"
     t.integer "user_id", null: false
+    t.index ["custom_domain"], name: "index_projects_on_custom_domain", unique: true, where: "(custom_domain IS NOT NULL)"
     t.index ["github_app_installation_id"], name: "index_projects_on_github_app_installation_id"
     t.index ["onboarding_step"], name: "index_projects_on_onboarding_step"
     t.index ["slug"], name: "index_projects_on_slug", unique: true

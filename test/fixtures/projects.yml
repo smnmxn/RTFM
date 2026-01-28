@@ -3,18 +3,18 @@ one:
   name: RTFM
   slug: rtfm
   github_repo: alice/rtfm
-  webhook_secret: secret123
+  subdomain: rtfm
 
 one_second:
   user: one
   name: Second Project
   slug: second-project
   github_repo: alice/second-project
-  webhook_secret: secret789
+  subdomain: second-project
 
 two:
   user: two
   name: Another Project
   slug: another-project
   github_repo: bob/another-project
-  webhook_secret: secret456
+  subdomain: another-project
