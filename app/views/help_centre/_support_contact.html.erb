@@ -1,0 +1,23 @@
+<%# locals: (project:) %>
+<% if project.has_support_contact? %>
+  <div class="mt-8 bg-white shadow rounded-xl p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">Still need help?</h3>
+    <p class="text-sm text-gray-500 mb-4">Get in touch with our support team directly.</p>
+    <div class="flex flex-wrap gap-3">
+      <% if project.support_email.present? %>
+        <%= link_to "mailto:#{project.support_email}",
+            class: "inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand rounded-lg hover:opacity-90 transition-opacity" do %>
+          <%= heroicon "envelope", options: { class: "w-4 h-4" } %>
+          <%= project.support_email %>
+        <% end %>
+      <% end %>
+      <% if project.support_phone.present? %>
+        <%= link_to "tel:#{project.support_phone}",
+            class: "inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors" do %>
+          <%= heroicon "phone", options: { class: "w-4 h-4 text-gray-500" } %>
+          <%= project.support_phone %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

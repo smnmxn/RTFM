@@ -37,7 +37,9 @@ class Project < ApplicationRecord
     :accent_color,
     :title_text_color,
     :help_centre_title,
-    :help_centre_tagline
+    :help_centre_tagline,
+    :support_email,
+    :support_phone
   ], coder: JSON
 
   # AI settings
@@ -82,6 +84,8 @@ class Project < ApplicationRecord
   validates :primary_color, format: { with: /\A#[0-9a-fA-F]{6}\z/, message: "must be a valid hex color" }, allow_blank: true
   validates :accent_color, format: { with: /\A#[0-9a-fA-F]{6}\z/, message: "must be a valid hex color" }, allow_blank: true
   validates :title_text_color, format: { with: /\A#[0-9a-fA-F]{6}\z/, message: "must be a valid hex color" }, allow_blank: true
+  validates :support_email, format: { with: URI::MailTo::EMAIL_REGEXP, message: "must be a valid email address" }, allow_blank: true
+  validates :support_phone, length: { maximum: 30 }, allow_blank: true
 
   # Subdomain validations
   RESERVED_SUBDOMAINS = %w[
@@ -278,6 +282,10 @@ class Project < ApplicationRecord
 
   def help_centre_tagline_or_default
     help_centre_tagline.presence || "How can we help you?"
+  end
+
+  def has_support_contact?
+    support_email.present? || support_phone.present?
   end
 
   # AI settings helper methods

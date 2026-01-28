@@ -142,6 +142,16 @@ module Onboarding
       @project.assign_attributes(name: name, subdomain: subdomain)
       @project.slug = subdomain.presence || name.to_s.parameterize
 
+      # Save optional support contact fields to branding
+      support_email = params.dig(:project, :support_email).presence
+      support_phone = params.dig(:project, :support_phone).presence
+      if support_email.present? || support_phone.present?
+        branding = @project.branding || {}
+        branding["support_email"] = support_email
+        branding["support_phone"] = support_phone
+        @project.branding = branding
+      end
+
       # Validate name and subdomain
       @project.validate
       errors_to_check = @project.errors.select { |e| e.attribute.in?([ :name, :subdomain, :slug ]) }

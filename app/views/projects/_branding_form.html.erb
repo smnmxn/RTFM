@@ -90,6 +90,27 @@
         </div>
       </div>
 
+      <!-- Support Contact -->
+      <div class="p-4 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-900 mb-1">Support Email <span class="text-gray-400 font-normal">(optional)</span></label>
+          <%= form.email_field :support_email,
+              value: project.support_email,
+              placeholder: "support@yourcompany.com",
+              class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm" %>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-900 mb-1">Support Phone <span class="text-gray-400 font-normal">(optional)</span></label>
+          <%= form.telephone_field :support_phone,
+              value: project.support_phone,
+              placeholder: "+1 (555) 123-4567",
+              class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm" %>
+        </div>
+
+        <p class="text-xs text-gray-500">These will appear in the help centre header and after articles, giving visitors a way to reach you directly.</p>
+      </div>
+
       <!-- Colors -->
       <div class="p-4 space-y-4">
         <div class="grid grid-cols-3 gap-4">
