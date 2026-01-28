@@ -3,17 +3,16 @@ module ApplicationCable
     identified_by :current_user
 
     def connect
-      self.current_user = find_verified_user
+      # Allow both authenticated and unauthenticated connections
+      # Unauthenticated connections are needed for public Help Centre streaming
+      self.current_user = find_user
     end
 
     private
 
-    def find_verified_user
-      if (user = User.find_by(id: request.session[:user_id]))
-        user
-      else
-        reject_unauthorized_connection
-      end
+    def find_user
+      User.find_by(id: request.session[:user_id])
+      # Returns nil for unauthenticated users, which is fine for public channels
     end
   end
 end
