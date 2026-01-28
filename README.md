@@ -34,6 +34,15 @@ A developer-first platform that automatically generates and maintains help docum
 
 Docker development uses `bin/docker-dev` to manage all services in containers.
 
+**Dependencies:**
+
+The development environment requires two separate Docker components:
+
+1. **Docker Compose services** - PostgreSQL, Redis, Rails, Sidekiq, Tailwind (managed by `docker-compose.yml`)
+2. **Claude Analyzer image** - `rtfm/claude-analyzer:latest` (built separately, spawned on-demand by worker)
+
+The `bin/docker-dev setup` command builds both automatically.
+
 **Quick Start:**
 
 ```bash
@@ -59,7 +68,7 @@ bin/docker-dev up
 | `bin/docker-dev upd` | Start all services (detached/background) |
 | `bin/docker-dev down` | Stop all services |
 | `bin/docker-dev restart` | Restart all services |
-| `bin/docker-dev rebuild` | Rebuild containers without cache |
+| `bin/docker-dev rebuild` | Rebuild docker-compose containers (not claude-analyzer) |
 | `bin/docker-dev console` | Open Rails console |
 | `bin/docker-dev bash` | Open shell in web container |
 | `bin/docker-dev logs [service]` | Follow container logs |
@@ -68,6 +77,14 @@ bin/docker-dev up
 | `bin/docker-dev bundle` | Install gems |
 | `bin/docker-dev reset` | Full reset - removes containers and volumes |
 | `bin/docker-dev status` | Show container status |
+
+**Rebuilding the Claude Analyzer:**
+
+If you modify files in `docker/claude-analyzer/`, rebuild the image:
+
+```bash
+docker build -t rtfm/claude-analyzer:latest docker/claude-analyzer/
+```
 
 ### Option B: Local Development
 
@@ -238,12 +255,44 @@ Deployment configuration is in `config/deploy.yml`. Key settings:
 
 ### Claude Analyzer Container
 
-A specialized Docker container spawned on-demand for AI-powered code analysis:
+A specialized Docker container spawned on-demand for AI-powered code analysis. This container is **not** part of docker-compose - it's built separately and spawned by the worker when needed.
 
+**What it does:**
+- Analyzes pull requests and commits to generate changelog entries
+- Generates help articles from codebase context
+- Renders HTML mockups to images using Puppeteer/Chromium
+- Suggests documentation sections based on code
+
+**Container contents:**
 - **Base**: Node 20 with Chromium
 - **Tools**: Claude Code CLI, Puppeteer, jsdom
-- **Purpose**: PR analysis, commit analysis, article generation, mockup rendering
-- **Spawning**: Via Docker socket (Docker-from-Docker pattern)
+- **Scripts**: `analyze_pr.sh`, `analyze_commit.sh`, `generate_article.sh`, `render_mockup.sh`, and more
+
+**When to rebuild:**
+
+Rebuild the claude-analyzer image when you modify any files in `docker/claude-analyzer/`:
+- Analysis scripts (`analyze_pr.sh`, `generate_article.sh`, etc.)
+- The Dockerfile itself
+- The entrypoint script
+
+**How to rebuild:**
+
+```bash
+# Standalone rebuild
+docker build -t rtfm/claude-analyzer:latest docker/claude-analyzer/
+
+# Or as part of full setup
+bin/docker-dev setup
+```
+
+**Note:** The `bin/docker-dev rebuild` command only rebuilds docker-compose services, not the claude-analyzer. You must explicitly rebuild it using the commands above.
+
+**How it's spawned:**
+
+The worker container has access to the Docker socket (`/var/run/docker.sock`), allowing it to spawn claude-analyzer containers as siblings. This "Docker-from-Docker" pattern means:
+- The worker doesn't run analysis directly
+- Each analysis runs in an isolated container
+- The `rtfm/claude-analyzer:latest` image must exist locally
 
 ## Environment Variables Reference
 
