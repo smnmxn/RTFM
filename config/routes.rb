@@ -29,6 +29,13 @@ Rails.application.routes.draw do
   # Defined outside subdomain constraint so it's available on all hosts
   if Rails.env.test?
     post "test/login/:user_id", to: "application#test_login", as: :test_login
+
+    # Test-only help centre routes - bypass subdomain routing for E2E tests
+    scope "test/help_centre/:project_slug", as: :test_help_centre do
+      get "/", to: "test_help_centre#index"
+      get "/:section_slug/:article_slug", to: "test_help_centre#show", as: :article
+      get "/:section_slug", to: "test_help_centre#section", as: :section
+    end
   end
 
   # Authenticated app routes (app. subdomain)
