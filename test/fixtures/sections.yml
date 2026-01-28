@@ -1,0 +1,35 @@
+# Sections for testing
+# These belong to project :one (owned by user :one)
+
+getting_started:
+  project: one
+  name: Getting Started
+  slug: getting-started
+  description: Set up and configure the basics to get up and running
+  icon: paper-airplane
+  position: 0
+  section_type: template
+  status: accepted
+  visible: true
+
+troubleshooting:
+  project: one
+  name: Troubleshooting
+  slug: troubleshooting
+  description: Solve common problems and find answers to FAQs
+  icon: wrench-screwdriver
+  position: 1
+  section_type: template
+  status: accepted
+  visible: true
+
+advanced_usage:
+  project: one
+  name: Advanced Usage
+  slug: advanced-usage
+  description: Power user features, customization, and integrations
+  icon: cog-6-tooth
+  position: 2
+  section_type: template
+  status: accepted
+  visible: true

@@ -3,6 +3,7 @@
 pending_recommendation:
   project: one
   source_update: draft_update
+  section: getting_started
   title: How to enable dark mode
   description: A step-by-step guide to using dark mode
   justification: This PR adds dark mode support that users need to learn about
@@ -12,6 +13,7 @@ pending_recommendation:
 rejected_recommendation:
   project: one
   source_update: published_update
+  section: troubleshooting
   title: How to use the faster app
   description: Tips for taking advantage of performance improvements
   justification: Users may want to know about the performance changes
@@ -21,8 +23,46 @@ rejected_recommendation:
 generated_recommendation:
   project: one
   source_update: draft_update
+  section: getting_started
   title: How to handle errors
   description: A guide about error handling in the app
   justification: Users need to understand error scenarios
   status: generated
+  rejected_at:
+
+# ========================================
+# INBOX RECOMMENDATIONS - For E2E testing
+# ========================================
+
+# Pending recommendation for inbox testing
+inbox_recommendation_webhooks:
+  project: one
+  source_update: draft_update
+  section: advanced_usage
+  title: How to set up webhooks
+  description: Guide users through webhook configuration for real-time event notifications
+  justification: New webhook feature added in recent PR enables powerful integrations
+  status: pending
+  rejected_at:
+
+# Another pending recommendation
+inbox_recommendation_authentication:
+  project: one
+  source_update: draft_update
+  section: getting_started
+  title: Setting up two-factor authentication
+  description: Secure your account with 2FA using authenticator apps or SMS
+  justification: Security feature that all users should be aware of
+  status: pending
+  rejected_at:
+
+# Third pending recommendation for testing multiple items
+inbox_recommendation_export:
+  project: one
+  source_update: published_update
+  section: advanced_usage
+  title: Exporting your data
+  description: Learn how to export your data in various formats (CSV, JSON, PDF)
+  justification: Data portability feature requested by enterprise customers
+  status: pending
   rejected_at:

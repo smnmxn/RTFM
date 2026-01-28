@@ -1,12 +1,29 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
+# Published article (approved, published) - appears in Help Centre and Articles tab
+published_article:
+  project: one
+  recommendation: generated_recommendation
+  section: getting_started
+  title: How to use the faster app
+  slug: how-to-use-the-faster-app
+  content: This is a guide about using performance improvements.
+  status: published
+  generation_status: generation_completed
+  review_status: approved
+  published_at: 2025-12-01 10:00:00
+
+# Draft article (approved, not published) - appears in Articles tab only
 draft_article:
   project: one
-  recommendation: pending_recommendation
+  recommendation: rejected_recommendation
+  section: getting_started
   title: How to enable dark mode
+  slug: how-to-enable-dark-mode
   content: This is a guide about enabling dark mode.
   status: draft
-  generation_status: completed
+  generation_status: generation_completed
+  review_status: approved
   published_at:
   structured_content:
     introduction: "This guide will show you how to enable dark mode."
@@ -23,20 +40,116 @@ draft_article:
       - "Some apps have auto-switching based on time."
     summary: "You've now learned how to enable dark mode!"
 
-published_article:
-  project: one
-  recommendation: rejected_recommendation
-  title: How to use the faster app
-  content: This is a guide about using performance improvements.
-  status: published
-  generation_status: completed
-  published_at: 2025-12-01 10:00:00
-
+# Failed article - appears in inbox
 failed_article:
   project: one
-  recommendation: generated_recommendation
+  recommendation: pending_recommendation
   title: How to handle errors
+  slug: how-to-handle-errors
   content: Article generation failed. Please try again.
   status: draft
-  generation_status: failed
+  generation_status: generation_failed
+  review_status: unreviewed
   published_at:
+
+# ========================================
+# INBOX ARTICLES - For E2E testing
+# ========================================
+
+# Completed article waiting for review - no section assigned
+# Should show section picker when approving
+inbox_article_completed:
+  project: one
+  recommendation: pending_recommendation
+  title: How to enable notifications
+  slug: how-to-enable-notifications
+  content: This guide explains how to enable push notifications in your app.
+  status: draft
+  generation_status: generation_completed
+  review_status: unreviewed
+  published_at:
+  structured_content:
+    introduction: "Push notifications help you stay informed about important updates."
+    prerequisites:
+      - "A supported browser (Chrome, Firefox, Safari)"
+      - "Notification permissions enabled"
+    steps:
+      - title: "Open notification settings"
+        content: "Go to Settings > Notifications in the app."
+      - title: "Enable notifications"
+        content: "Toggle the 'Enable push notifications' switch to ON."
+      - title: "Choose notification types"
+        content: "Select which types of notifications you want to receive."
+    tips:
+      - "You can customize notification sounds in your device settings."
+      - "Consider enabling 'Do Not Disturb' hours for non-critical notifications."
+    summary: "You've successfully configured push notifications!"
+
+# Completed article with section already assigned
+# Should approve directly without section picker
+inbox_article_with_section:
+  project: one
+  recommendation: pending_recommendation
+  section: troubleshooting
+  title: Fixing connection issues
+  slug: fixing-connection-issues
+  content: Troubleshooting guide for connection problems.
+  status: draft
+  generation_status: generation_completed
+  review_status: unreviewed
+  published_at:
+  structured_content:
+    introduction: "Connection issues can be frustrating, but they're usually easy to fix."
+    prerequisites:
+      - "Access to your network settings"
+    steps:
+      - title: "Check your internet connection"
+        content: "Verify that other websites and apps are working."
+      - title: "Restart the app"
+        content: "Close the app completely and reopen it."
+      - title: "Clear cache"
+        content: "Go to Settings > Storage > Clear Cache."
+    tips:
+      - "Try switching between WiFi and mobile data."
+    summary: "Most connection issues can be resolved with these simple steps."
+
+# Article currently generating - shows spinner
+inbox_article_running:
+  project: one
+  recommendation: pending_recommendation
+  title: Setting up webhooks
+  slug: setting-up-webhooks
+  content: Generating article content...
+  status: draft
+  generation_status: generation_running
+  review_status: unreviewed
+  published_at:
+
+# Second completed article for testing auto-selection after actions
+inbox_article_second:
+  project: one
+  recommendation: pending_recommendation
+  section: advanced_usage
+  title: Configuring API access
+  slug: configuring-api-access
+  content: Learn how to set up API access for your application.
+  status: draft
+  generation_status: generation_completed
+  review_status: unreviewed
+  published_at:
+  structured_content:
+    introduction: "API access allows you to integrate with other systems."
+    prerequisites:
+      - "Admin access to your account"
+      - "Basic understanding of REST APIs"
+    steps:
+      - title: "Navigate to API settings"
+        content: "Go to Settings > Developer > API."
+      - title: "Generate an API key"
+        content: "Click 'Generate New Key' and copy the key."
+      - title: "Configure permissions"
+        content: "Select which scopes the API key should have access to."
+    tips:
+      - "Never share your API key publicly."
+      - "Rotate keys regularly for security."
+    summary: "Your API access is now configured!"

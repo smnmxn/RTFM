@@ -24,6 +24,13 @@ Rails.application.routes.draw do
   get "/auth/github/callback", to: "sessions#create"
   get "/auth/failure", to: "sessions#failure"
 
+  # Test-only login endpoint for E2E tests
+  # Bypasses OAuth since OmniAuth mocks don't work across threads
+  # Defined outside subdomain constraint so it's available on all hosts
+  if Rails.env.test?
+    post "test/login/:user_id", to: "application#test_login", as: :test_login
+  end
+
   # Authenticated app routes (app. subdomain)
   constraints AppSubdomainConstraint do
     # Logout from app subdomain

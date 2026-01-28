@@ -4,13 +4,13 @@ module E2E
   module Pages
     class DashboardPage < BasePage
       def visit(project_slug)
-        page.goto("#{test_case.send(:base_url)}/projects/#{project_slug}")
+        page.goto("#{test_case.send(:app_url)}/projects/#{project_slug}")
         wait_for_turbo
         self
       end
 
       def visit_projects_list
-        page.goto("#{test_case.send(:base_url)}/projects")
+        page.goto("#{test_case.send(:app_url)}/projects")
         wait_for_turbo
         self
       end

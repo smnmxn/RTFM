@@ -1,0 +1,9 @@
+valid_invite:
+  token: valid-test-token-123
+  user: # null - available invite
+  used_at: # null
+
+used_invite:
+  token: used-test-token-456
+  user: one
+  used_at: 2024-01-01 00:00:00

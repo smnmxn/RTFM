@@ -43,8 +43,17 @@ class E2ETestCase < ActionDispatch::IntegrationTest
 
     @@server_port = find_available_port
 
+    # Skip subdomain constraints in E2E tests - subdomain routing is hard to test
+    ENV["SKIP_SUBDOMAIN_CONSTRAINT"] = "true"
+
+    # Use simple localhost URL for E2E tests
+    @@base_domain = "127.0.0.1:#{@@server_port}"
+
     # Set BASE_DOMAIN for the server to use
-    ENV["BASE_DOMAIN"] = "127.0.0.1:#{@@server_port}"
+    ENV["BASE_DOMAIN"] = @@base_domain
+
+    # Reload Rails config to pick up new base_domain
+    Rails.application.config.x.base_domain = @@base_domain
 
     # Start Rails server in a thread
     @@server_thread = Thread.new do
@@ -53,6 +62,7 @@ class E2ETestCase < ActionDispatch::IntegrationTest
       Rack::Handler::Puma.run(
         Rails.application,
         Port: @@server_port,
+        Host: "0.0.0.0",  # Listen on all interfaces
         Silent: true,
         Threads: "1:1"
       )
@@ -108,6 +118,11 @@ class E2ETestCase < ActionDispatch::IntegrationTest
   end
 
   def base_url
+    "http://127.0.0.1:#{@@server_port}"
+  end
+
+  def app_url
+    # In E2E tests, we skip subdomain constraints so app_url is same as base_url
     "http://127.0.0.1:#{@@server_port}"
   end
 
