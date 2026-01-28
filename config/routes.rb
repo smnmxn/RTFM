@@ -49,10 +49,10 @@ Rails.application.routes.draw do
   namespace :onboarding do
     resources :projects, only: [ :new, :create ], param: :slug do
       member do
-        get :basics
-        patch :update_basics
         get :repository
         post :connect
+        get :setup
+        post :save_setup
         get :analyze
         post :start_analysis
         post :retry_sections

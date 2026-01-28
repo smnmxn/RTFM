@@ -116,7 +116,7 @@ class Project < ApplicationRecord
   before_validation :generate_slug, on: :create
 
   # Onboarding
-  ONBOARDING_STEPS = %w[basics repository analyze sections generating].freeze
+  ONBOARDING_STEPS = %w[repository setup analyze sections generating].freeze
 
   scope :onboarding_incomplete, -> { where.not(onboarding_step: [ nil, "complete" ]) }
 
@@ -135,7 +135,7 @@ class Project < ApplicationRecord
   def onboarding_step_number
     step_index = ONBOARDING_STEPS.index(onboarding_step)
     return 0 unless step_index
-    # Map to UI steps: 1=Setup, 2=Connect, 3=Analyze, 4=Review (sections+generating)
+    # Map to UI steps: 1=Connect, 2=Setup, 3=Analyze, 4=Review (sections+generating)
     [ step_index + 1, 4 ].min
   end
 

@@ -6,7 +6,7 @@ module Onboarding
     before_action :ensure_onboarding_active, except: [ :new, :create ]
     before_action :ensure_correct_step, except: [ :new, :create ]
 
-    # Step 0: Show form for project name and subdomain
+    # Step 0: Landing page to start onboarding
     def new
       # Clean up any incomplete onboarding projects so user starts fresh
       current_user.projects.onboarding_incomplete.destroy_all
@@ -15,46 +15,23 @@ module Onboarding
     end
 
     def create
-      @project = current_user.projects.build(basics_params)
-      @project.onboarding_step = "repository"
-      @project.onboarding_started_at = Time.current
-      # Use subdomain as slug, or generate from name
-      @project.slug = @project.subdomain.presence || @project.name.parameterize
-      # Placeholder repo until they select one
+      # Create a bare project with temporary values — name/subdomain collected in setup step
+      @project = current_user.projects.build(
+        name: "New Project",
+        onboarding_step: "repository",
+        onboarding_started_at: Time.current
+      )
+      @project.slug = "project-#{SecureRandom.hex(4)}"
       @project.github_repo = "placeholder/placeholder"
 
-      # Validate name and subdomain before saving (skip github_repo validation during onboarding)
-      @project.validate
-      errors_to_check = @project.errors.select { |e| e.attribute.in?([:name, :subdomain, :slug]) }
-
-      if errors_to_check.empty? && @project.save(validate: false)
+      if @project.save(validate: false)
         redirect_to repository_onboarding_project_path(@project)
       else
-        # Copy relevant errors back for display
-        @project.errors.clear
-        errors_to_check.each { |e| @project.errors.add(e.attribute, e.message) }
-        render :new, status: :unprocessable_entity
+        redirect_to projects_path, alert: "Could not start onboarding"
       end
     end
 
-    # Step 1: Edit project basics (name and subdomain)
-    def basics
-    end
-
-    def update_basics
-      if @project.update(basics_params)
-        # Update slug to match subdomain if provided
-        new_slug = @project.subdomain.presence || @project.name.parameterize
-        @project.update_column(:slug, new_slug) if new_slug != @project.slug
-
-        @project.advance_onboarding!("repository")
-        redirect_to repository_onboarding_project_path(@project)
-      else
-        render :basics, status: :unprocessable_entity
-      end
-    end
-
-    # Step 2: Connect Repository
+    # Step 1: Connect Repository
     def repository
       @repositories = [] # Loaded via Turbo Frame
     end
@@ -128,11 +105,81 @@ module Onboarding
         @project.save!
       end
 
+      @project.advance_onboarding!("setup")
+      redirect_to setup_onboarding_project_path(@project)
+    end
+
+    # Step 2: Setup — project name, subdomain, and branch per repo
+    def setup
+      @project_repositories = @project.project_repositories.order(:created_at)
+      @branches_by_repo = {}
+
+      @project_repositories.each do |pr|
+        result = GithubBranchesService.new(
+          github_repo: pr.github_repo,
+          installation_id: pr.github_installation_id
+        ).call
+
+        if result.success?
+          @branches_by_repo[pr.id] = {
+            branches: result.branches,
+            default_branch: result.default_branch
+          }
+        else
+          @branches_by_repo[pr.id] = {
+            branches: [],
+            default_branch: nil
+          }
+        end
+      end
+    end
+
+    def save_setup
+      # Update project name and subdomain
+      name = params.dig(:project, :name)
+      subdomain = params.dig(:project, :subdomain)
+
+      @project.assign_attributes(name: name, subdomain: subdomain)
+      @project.slug = subdomain.presence || name.to_s.parameterize
+
+      # Validate name and subdomain
+      @project.validate
+      errors_to_check = @project.errors.select { |e| e.attribute.in?([ :name, :subdomain, :slug ]) }
+
+      if errors_to_check.any?
+        @project.errors.clear
+        errors_to_check.each { |e| @project.errors.add(e.attribute, e.message) }
+        @project_repositories = @project.project_repositories.order(:created_at)
+        @branches_by_repo = {}
+        @project_repositories.each do |pr|
+          result = GithubBranchesService.new(
+            github_repo: pr.github_repo,
+            installation_id: pr.github_installation_id
+          ).call
+          @branches_by_repo[pr.id] = if result.success?
+            { branches: result.branches, default_branch: result.default_branch }
+          else
+            { branches: [], default_branch: nil }
+          end
+        end
+        render :setup, status: :unprocessable_entity
+        return
+      end
+
+      @project.save(validate: false)
+
+      # Save branch selections per repo
+      repo_branches = params[:repo_branches] || {}
+      @project.project_repositories.each do |pr|
+        branch = repo_branches[pr.id.to_s]
+        pr.update!(branch: branch.presence)
+      end
+
       @project.advance_onboarding!("analyze")
       redirect_to analyze_onboarding_project_path(@project)
     end
 
-    # Step 2: Analyze Codebase
+    # Step 3: Analyze Codebase
     def analyze
       # Auto-start analysis if not already running
       if @project.analysis_status.nil? || @project.analysis_status.blank?
@@ -175,7 +222,7 @@ module Onboarding
       head :ok
     end
 
-    # Step 3: Review Sections
+    # Step 4: Review Sections
     def sections
       @pending_sections = @project.sections.pending.ordered
       @accepted_sections = @project.sections.accepted.ordered
@@ -205,7 +252,7 @@ module Onboarding
       redirect_to generating_onboarding_project_path(@project)
     end
 
-    # Step 4: Generating Recommendations (loading state)
+    # Step 5: Generating Recommendations (loading state)
     def generating
       # If all recommendations are generated, complete onboarding and redirect
       if @project.all_recommendations_generated?
@@ -226,24 +273,6 @@ module Onboarding
       end
     end
 
-    def create_and_start_onboarding
-      @project = current_user.projects.build(
-        name: "New Project",
-        onboarding_step: "repository",
-        onboarding_started_at: Time.current
-      )
-      # Generate temporary values that will be replaced in step 1
-      @project.slug = "project-#{SecureRandom.hex(4)}"
-      @project.github_repo = "placeholder/placeholder"
-
-      # Skip validations for the placeholder values
-      if @project.save(validate: false)
-        redirect_to repository_onboarding_project_path(@project)
-      else
-        redirect_to projects_path, alert: "Could not start onboarding"
-      end
-    end
-
     def ensure_onboarding_active
       unless @project.in_onboarding?
         redirect_to project_path(@project)
@@ -251,7 +280,7 @@ module Onboarding
     end
 
     def ensure_correct_step
-      return if request.post? # Allow POST actions for current step
+      return if request.post? || request.patch? # Allow POST/PATCH actions for current step
 
       current_action = action_name.to_s
       expected_step = @project.onboarding_step
@@ -265,8 +294,8 @@ module Onboarding
 
       # Map action names to step names
       action_to_step = {
-        "basics" => "basics",
         "repository" => "repository",
+        "setup" => "setup",
         "analyze" => "analyze",
         "sections" => "sections",
         "generating" => "generating"
@@ -277,10 +306,6 @@ module Onboarding
 
       # Redirect to correct step
       redirect_to send("#{expected_step}_onboarding_project_path", @project)
-    end
-
-    def basics_params
-      params.require(:project).permit(:name, :subdomain)
     end
 
     def context_params

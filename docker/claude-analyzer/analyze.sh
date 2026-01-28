@@ -30,9 +30,16 @@ if [ "$MULTI_REPO" = true ]; then
         REPO=$(echo "$GITHUB_REPOS_JSON" | jq -r ".[$i].repo")
         DIR=$(echo "$GITHUB_REPOS_JSON" | jq -r ".[$i].directory")
         TOKEN=$(echo "$GITHUB_REPOS_JSON" | jq -r ".[$i].token")
+        BRANCH=$(echo "$GITHUB_REPOS_JSON" | jq -r ".[$i].branch // empty")
 
-        echo "Cloning $REPO to /repos/$DIR..."
-        if ! git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/${REPO}.git" "/repos/$DIR" 2>&1; then
+        BRANCH_ARGS=""
+        if [ -n "$BRANCH" ]; then
+            BRANCH_ARGS="--branch ${BRANCH}"
+            echo "Cloning $REPO ($BRANCH) to /repos/$DIR..."
+        else
+            echo "Cloning $REPO to /repos/$DIR..."
+        fi
+        if ! git clone --depth 1 $BRANCH_ARGS "https://x-access-token:${TOKEN}@github.com/${REPO}.git" "/repos/$DIR" 2>&1; then
             echo "ERROR: Failed to clone repository $REPO"
             exit 1
         fi

@@ -99,6 +99,16 @@ module Webhooks
         return
       end
 
+      # Filter by tracked branch if configured
+      if project_repo&.branch.present?
+        target_branch = pull_request.dig("base", "ref")
+        unless target_branch == project_repo.branch
+          Rails.logger.info "[Webhook] Skipping PR for #{repo_full_name} (target: #{target_branch}, tracked: #{project_repo.branch})"
+          head :ok
+          return
+        end
+      end
+
       AnalyzePullRequestJob.perform_later(
         project_id: project.id,
         pull_request_number: pull_request["number"],

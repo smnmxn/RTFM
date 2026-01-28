@@ -91,6 +91,12 @@
                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700">
                       Connected
                     </span>
+                    <% pr = @onboarding_project.project_repositories.find_by(github_repo: repo[:full_name]) %>
+                    <% if pr&.branch.present? %>
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-violet-100 text-violet-700">
+                        <%= pr.branch %>
+                      </span>
+                    <% end %>
                   <% elsif connected_to_other %>
                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-500">
                       In another project

@@ -310,11 +310,13 @@ class AnalyzePullRequestJob < ApplicationJob
     project.project_repositories.filter_map do |pr|
       begin
         token = GithubAppService.installation_token(pr.github_installation_id)
-        {
+        entry = {
           repo: pr.github_repo,
           directory: pr.clone_directory_name,
           token: token
         }
+        entry[:branch] = pr.branch if pr.branch.present?
+        entry
       rescue => e
         Rails.logger.error "[AnalyzePullRequestJob] Failed to get token for repo #{pr.github_repo}: #{e.message}"
         nil
