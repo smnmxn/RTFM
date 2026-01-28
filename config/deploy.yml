@@ -29,7 +29,7 @@ proxy:
   hosts:
     - supportpages.io
     - "*.supportpages.io"
-    # Custom domains are handled via Cloudflare for SaaS and route through the same proxy
+    - "*"  # Accept custom domains (SSL handled by Cloudflare for SaaS)
   forward_headers: true
 
 # Where you keep your container images.
