@@ -92,4 +92,27 @@ Rails.application.configure do
 
   # Skip DNS rebinding protection for the default health check endpoint.
   config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+
+  # Action Cable: Allow WebSocket connections from base domain, subdomains, and custom domains
+  # This is required for Turbo Streams to work on Help Centre pages (e.g., streaming AI responses)
+  config.action_cable.allowed_request_origins = ->(origin) {
+    return false if origin.blank?
+
+    begin
+      uri = URI.parse(origin)
+      host = uri.host&.downcase
+      return false if host.blank?
+
+      base_domain = ENV["BASE_DOMAIN"]
+
+      # Allow base domain and all subdomains
+      return true if host == base_domain
+      return true if host.end_with?(".#{base_domain}")
+
+      # Allow verified custom domains
+      Project.exists?(custom_domain: host, custom_domain_status: "active")
+    rescue URI::InvalidURIError
+      false
+    end
+  }
 end
