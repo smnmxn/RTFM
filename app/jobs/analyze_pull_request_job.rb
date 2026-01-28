@@ -82,7 +82,7 @@ class AnalyzePullRequestJob < ApplicationJob
 
         Rails.logger.info "[AnalyzePullRequestJob] AI analysis completed for PR ##{pull_request_number} in project #{project.id}"
         article_titles = result[:recommended_articles]&.dig("articles")&.map { |a| a["title"] } || []
-        broadcast_toast(project, message: "We've reviewed code changes from PR ##{pull_request_number}", action_url: "/projects/#{project.slug}?tab=code_history", action_label: "View", event_type: "pr_analyzed", notification_metadata: { pr_number: pull_request_number, pr_title: pull_request_title, article_titles: article_titles })
+        broadcast_toast(project, message: "We've reviewed code changes from PR ##{pull_request_number}", action_url: "/projects/#{project.slug}#code-history", action_label: "View", event_type: "pr_analyzed", notification_metadata: { pr_number: pull_request_number, pr_title: pull_request_title, article_titles: article_titles })
       else
         # Fall back to placeholder content
         update.update!(
@@ -90,7 +90,7 @@ class AnalyzePullRequestJob < ApplicationJob
           analysis_status: "failed"
         )
         Rails.logger.warn "[AnalyzePullRequestJob] AI analysis failed, using placeholder for PR ##{pull_request_number}: #{result[:error]}"
-        broadcast_toast(project, message: "We couldn't review PR ##{pull_request_number}", type: "error", action_url: "/projects/#{project.slug}?tab=code_history", action_label: "View", event_type: "pr_analyzed", notification_metadata: { pr_number: pull_request_number, pr_title: pull_request_title })
+        broadcast_toast(project, message: "We couldn't review PR ##{pull_request_number}", type: "error", action_url: "/projects/#{project.slug}#code-history", action_label: "View", event_type: "pr_analyzed", notification_metadata: { pr_number: pull_request_number, pr_title: pull_request_title })
       end
     rescue StandardError => e
       # Fall back to placeholder content on any error

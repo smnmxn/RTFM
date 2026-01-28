@@ -78,7 +78,7 @@ class AnalyzeCommitJob < ApplicationJob
         create_recommendations(project, update, result[:recommended_articles])
         Rails.logger.info "[AnalyzeCommitJob] AI analysis completed for commit #{commit_sha[0..6]} in project #{project.id}, baseline advanced"
         article_titles = result[:recommended_articles]&.dig("articles")&.map { |a| a["title"] } || []
-        broadcast_toast(project, message: "We've reviewed code changes from commit #{commit_sha[0..6]}", action_url: "/projects/#{project.slug}?tab=code_history", action_label: "View", event_type: "commit_analyzed", notification_metadata: { commit_sha: commit_sha, commit_title: commit_title, article_titles: article_titles })
+        broadcast_toast(project, message: "We've reviewed code changes from commit #{commit_sha[0..6]}", action_url: "/projects/#{project.slug}#code-history", action_label: "View", event_type: "commit_analyzed", notification_metadata: { commit_sha: commit_sha, commit_title: commit_title, article_titles: article_titles })
       else
         # Fall back to placeholder content
         update.update!(
@@ -86,7 +86,7 @@ class AnalyzeCommitJob < ApplicationJob
           analysis_status: "failed"
         )
         Rails.logger.warn "[AnalyzeCommitJob] AI analysis failed, using placeholder for commit #{commit_sha[0..6]}: #{result[:error]}"
-        broadcast_toast(project, message: "We couldn't review commit #{commit_sha[0..6]}", type: "error", action_url: "/projects/#{project.slug}?tab=code_history", action_label: "View", event_type: "commit_analyzed", notification_metadata: { commit_sha: commit_sha, commit_title: commit_title })
+        broadcast_toast(project, message: "We couldn't review commit #{commit_sha[0..6]}", type: "error", action_url: "/projects/#{project.slug}#code-history", action_label: "View", event_type: "commit_analyzed", notification_metadata: { commit_sha: commit_sha, commit_title: commit_title })
       end
     rescue StandardError => e
       # Fall back to placeholder content on any error
