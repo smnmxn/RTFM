@@ -63,6 +63,10 @@ class AnalyzeCommitJob < ApplicationJob
       result = run_commit_analysis(project, update, diff, commit_title, commit_message)
 
       if result[:success]
+        # Advance the baseline BEFORE updating analysis_status, since that triggers
+        # the broadcast_code_history_refresh which needs the new baseline
+        project.update!(analysis_commit_sha: commit_sha, analyzed_at: Time.current)
+
         update.update!(
           title: result[:title].presence || update.title,
           content: result[:content],
@@ -72,9 +76,6 @@ class AnalyzeCommitJob < ApplicationJob
 
         # Create Recommendation records from the articles
         create_recommendations(project, update, result[:recommended_articles])
-
-        # Advance the baseline to this commit
-        project.update!(analysis_commit_sha: commit_sha, analyzed_at: Time.current)
         Rails.logger.info "[AnalyzeCommitJob] AI analysis completed for commit #{commit_sha[0..6]} in project #{project.id}, baseline advanced"
         article_titles = result[:recommended_articles]&.dig("articles")&.map { |a| a["title"] } || []
         broadcast_toast(project, message: "We've reviewed code changes from commit #{commit_sha[0..6]}", action_url: "/projects/#{project.slug}?tab=code_history", action_label: "View", event_type: "commit_analyzed", notification_metadata: { commit_sha: commit_sha, commit_title: commit_title, article_titles: article_titles })
