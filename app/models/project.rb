@@ -103,7 +103,7 @@ class Project < ApplicationRecord
   # Subdomain validations
   RESERVED_SUBDOMAINS = %w[
     www api admin app mail smtp ftp cdn assets static
-    help support docs blog status dashboard
+    host fallback support docs blog status dashboard
     dev staging test demo preview sandbox
     login signin signup register logout signout auth oauth sso
     account profile settings preferences user users me
@@ -190,7 +190,7 @@ class Project < ApplicationRecord
     analysis_status == "running" ||
       sections_generation_status.in?(%w[pending running]) ||
       sections.where(recommendations_status: "running").exists? ||
-      articles.where(generation_status: [:generation_pending, :generation_running]).exists?
+      articles.where(generation_status: [ :generation_pending, :generation_running ]).exists?
   end
 
   # Article review tracking
@@ -374,10 +374,10 @@ class Project < ApplicationRecord
 
     Rails.logger.info "[Project#broadcast_refreshes] Broadcasting refresh for project #{id}"
     Rails.logger.info "[Project#broadcast_refreshes] Changed: analysis_status=#{saved_change_to_analysis_status?}"
-    Turbo::StreamsChannel.broadcast_refresh_to([self, :onboarding])
-    Turbo::StreamsChannel.broadcast_refresh_to([self, :analysis])
-    Turbo::StreamsChannel.broadcast_refresh_to([self, :updates])
-    Turbo::StreamsChannel.broadcast_refresh_to([self, :inbox])
+    Turbo::StreamsChannel.broadcast_refresh_to([ self, :onboarding ])
+    Turbo::StreamsChannel.broadcast_refresh_to([ self, :analysis ])
+    Turbo::StreamsChannel.broadcast_refresh_to([ self, :updates ])
+    Turbo::StreamsChannel.broadcast_refresh_to([ self, :inbox ])
   end
 
   def status_fields_changed?
