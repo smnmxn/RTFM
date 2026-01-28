@@ -1,5 +1,5 @@
-<%= turbo_stream.replace "article_#{@field_section}" do %>
-  <%= render "articles/editable/#{@field_section}", article: @article %>
+<%= turbo_stream.replace "#{@dom_prefix}_#{@article.id}_#{@field_section}" do %>
+  <%= render "articles/editable/#{@field_section}", article: @article, dom_prefix: @dom_prefix %>
 <% end %>
 
 <% if @field_section == "title" %>

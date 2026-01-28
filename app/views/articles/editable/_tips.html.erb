@@ -1,26 +1,29 @@
-<%= turbo_frame_tag "article_tips" do %>
+<% dom_prefix = local_assigns[:dom_prefix] || "article" %>
+<%= tag.div id: "#{dom_prefix}_#{article.id}_tips" do %>
   <div data-controller="array-edit"
        data-array-edit-url-value="<%= project_article_path(article.project, article) %>"
        data-array-edit-field-value="tips"
+       data-array-edit-dom-prefix-value="<%= dom_prefix %>"
        class="mb-8 bg-amber-50 border border-amber-200 rounded-lg p-4">
 
-<h3 class="text-lg font-semibold text-amber-800 mb-3 flex items-center gap-2">
+    <h3 class="text-lg font-semibold text-amber-800 mb-3 flex items-center gap-2">
       <%= heroicon "light-bulb", options: { class: "w-5 h-5" } %>
       Tips
     </h3>
 
     <ul data-array-edit-target="list" class="space-y-2">
       <% article.tips.each_with_index do |tip, index| %>
-        <%= render "articles/editable/tip_item", article: article, tip: tip, index: index %>
+        <%= render "articles/editable/tip_item", article: article, tip: tip, index: index, dom_prefix: dom_prefix %>
       <% end %>
     </ul>
 
     <!-- Add Button -->
-    <button type="button"
-            data-action="click->array-edit#add"
-            class="mt-3 inline-flex items-center gap-1 text-sm text-amber-700 hover:text-amber-900 cursor-pointer">
-<%= heroicon "plus", options: { class: "w-4 h-4" } %>
+    <%= button_to add_array_item_project_article_path(article.project, article, field: "tips", dom_prefix: dom_prefix),
+        method: :post,
+        form: { data: { turbo_stream: true } },
+        class: "mt-3 inline-flex items-center gap-1 text-sm text-amber-700 hover:text-amber-900 cursor-pointer" do %>
+      <%= heroicon "plus", options: { class: "w-4 h-4" } %>
       Add tip
-    </button>
+    <% end %>
   </div>
 <% end %>

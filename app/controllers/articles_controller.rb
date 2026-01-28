@@ -122,6 +122,7 @@ class ArticlesController < ApplicationController
     if field_path == "title"
       if @article.update(title: new_value)
         @field_section = "title"
+        @dom_prefix = params[:dom_prefix] || "article"
         respond_to do |format|
           format.turbo_stream
           format.json { render json: { success: true } }
@@ -142,6 +143,7 @@ class ArticlesController < ApplicationController
 
     if @article.update(structured_content: updated_content)
       @field_section = field_path.split(".").first
+      @dom_prefix = params[:dom_prefix] || "article"
       respond_to do |format|
         format.turbo_stream
         format.json { render json: { success: true } }
@@ -171,6 +173,7 @@ class ArticlesController < ApplicationController
 
     if @article.update(structured_content: updated_content)
       @field = field
+      @dom_prefix = params[:dom_prefix] || "article"
       respond_to do |format|
         format.turbo_stream
       end
@@ -189,6 +192,7 @@ class ArticlesController < ApplicationController
     if @article.update(structured_content: updated_content)
       @article.reindex_step_images_after_removal(index) if field == "steps"
       @field = field
+      @dom_prefix = params[:dom_prefix] || "article"
       respond_to do |format|
         format.turbo_stream
       end
@@ -216,6 +220,7 @@ class ArticlesController < ApplicationController
     if @article.update(structured_content: updated_content)
       @article.reindex_step_images_after_reorder(old_index, new_index) if field == "steps"
       @field = field
+      @dom_prefix = params[:dom_prefix] || "article"
       respond_to do |format|
         format.turbo_stream
         format.json { head :ok }
@@ -309,6 +314,7 @@ class ArticlesController < ApplicationController
     if step_image.save
       @article.touch if @article.published? # Invalidate help centre cache
       @step_index = step_index
+      @dom_prefix = params[:dom_prefix] || "article"
       respond_to do |format|
         format.turbo_stream
         format.json { render json: { success: true, url: url_for(step_image.display) } }
@@ -328,6 +334,7 @@ class ArticlesController < ApplicationController
     if step_image&.destroy
       @article.touch if @article.published? # Invalidate help centre cache
       @step_index = step_index
+      @dom_prefix = params[:dom_prefix] || "article"
       respond_to do |format|
         format.turbo_stream
         format.json { render json: { success: true } }

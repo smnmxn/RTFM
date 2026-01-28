@@ -2,7 +2,7 @@
   <div class="h-full flex flex-col bg-white">
     <!-- Header with Title and Section -->
     <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
-      <%= render "articles/editable/title", article: article %>
+      <%= render "articles/editable/title", article: article, dom_prefix: "articles_editor" %>
       <div class="flex items-center gap-2 mt-1">
         <% if article.section %>
           <span class="inline-flex items-center gap-1 text-sm text-gray-500">
@@ -112,11 +112,11 @@
           </div>
         <% elsif article.structured? %>
           <!-- Structured Content Rendering (Editable) -->
-          <%= render "articles/editable/introduction", article: article %>
-          <%= render "articles/editable/prerequisites", article: article %>
-          <%= render "articles/editable/steps", article: article %>
-          <%= render "articles/editable/tips", article: article %>
-          <%= render "articles/editable/summary", article: article %>
+          <%= render "articles/editable/introduction", article: article, dom_prefix: "articles_editor" %>
+          <%= render "articles/editable/prerequisites", article: article, dom_prefix: "articles_editor" %>
+          <%= render "articles/editable/steps", article: article, dom_prefix: "articles_editor" %>
+          <%= render "articles/editable/tips", article: article, dom_prefix: "articles_editor" %>
+          <%= render "articles/editable/summary", article: article, dom_prefix: "articles_editor" %>
         <% else %>
           <!-- Fallback: Markdown Rendering -->
           <div class="prose prose-lg max-w-none">

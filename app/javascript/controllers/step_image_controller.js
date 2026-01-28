@@ -1,5 +1,4 @@
 import { Controller } from "@hotwired/stimulus"
-import { Turbo } from "@hotwired/turbo-rails"
 
 export default class extends Controller {
   static targets = ["input", "preview", "placeholder", "uploading"]
@@ -65,7 +64,7 @@ export default class extends Controller {
 
       if (response.ok) {
         const html = await response.text()
-        Turbo.renderStreamMessage(html)
+        window.Turbo.renderStreamMessage(html)
       } else {
         this.showError()
         this.hideUploading()
@@ -83,7 +82,8 @@ export default class extends Controller {
     if (!confirm("Remove this image?")) return
 
     try {
-      const response = await fetch(`${this.removeUrlValue}?step_index=${this.stepIndexValue}`, {
+      const separator = this.removeUrlValue.includes('?') ? '&' : '?'
+      const response = await fetch(`${this.removeUrlValue}${separator}step_index=${this.stepIndexValue}`, {
         method: "DELETE",
         headers: {
           "Accept": "text/vnd.turbo-stream.html",
@@ -93,7 +93,7 @@ export default class extends Controller {
 
       if (response.ok) {
         const html = await response.text()
-        Turbo.renderStreamMessage(html)
+        window.Turbo.renderStreamMessage(html)
       }
     } catch (error) {
       console.error("Remove failed:", error)

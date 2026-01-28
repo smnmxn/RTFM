@@ -1,5 +1,4 @@
 import { Controller } from "@hotwired/stimulus"
-import { Turbo } from "@hotwired/turbo-rails"
 
 export default class extends Controller {
   static targets = ["input", "placeholder"]
@@ -60,7 +59,7 @@ export default class extends Controller {
 
       if (response.ok) {
         const html = await response.text()
-        Turbo.renderStreamMessage(html)
+        window.Turbo.renderStreamMessage(html)
       } else {
         this.showError()
       }
@@ -85,7 +84,7 @@ export default class extends Controller {
 
       if (response.ok) {
         const html = await response.text()
-        Turbo.renderStreamMessage(html)
+        window.Turbo.renderStreamMessage(html)
       }
     } catch (error) {
       console.error("Logo remove failed:", error)

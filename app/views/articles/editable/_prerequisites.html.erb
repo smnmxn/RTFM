@@ -1,26 +1,29 @@
-<%= turbo_frame_tag "article_prerequisites" do %>
+<% dom_prefix = local_assigns[:dom_prefix] || "article" %>
+<%= tag.div id: "#{dom_prefix}_#{article.id}_prerequisites" do %>
   <div data-controller="array-edit"
        data-array-edit-url-value="<%= project_article_path(article.project, article) %>"
        data-array-edit-field-value="prerequisites"
+       data-array-edit-dom-prefix-value="<%= dom_prefix %>"
        class="mb-8">
 
-<h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
       <%= heroicon "clipboard-document-check", options: { class: "w-5 h-5 text-indigo-600" } %>
       Prerequisites
     </h3>
 
     <ul data-array-edit-target="list" class="space-y-2">
       <% article.prerequisites.each_with_index do |prereq, index| %>
-        <%= render "articles/editable/prerequisite_item", article: article, prereq: prereq, index: index %>
+        <%= render "articles/editable/prerequisite_item", article: article, prereq: prereq, index: index, dom_prefix: dom_prefix %>
       <% end %>
     </ul>
 
     <!-- Add Button -->
-    <button type="button"
-            data-action="click->array-edit#add"
-            class="mt-3 inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800 cursor-pointer">
-<%= heroicon "plus", options: { class: "w-4 h-4" } %>
+    <%= button_to add_array_item_project_article_path(article.project, article, field: "prerequisites", dom_prefix: dom_prefix),
+        method: :post,
+        form: { data: { turbo_stream: true } },
+        class: "mt-3 inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800 cursor-pointer" do %>
+      <%= heroicon "plus", options: { class: "w-4 h-4" } %>
       Add prerequisite
-    </button>
+    <% end %>
   </div>
 <% end %>

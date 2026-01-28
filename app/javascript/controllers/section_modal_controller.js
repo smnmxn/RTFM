@@ -1,5 +1,4 @@
 import { Controller } from "@hotwired/stimulus"
-import { Turbo } from "@hotwired/turbo-rails"
 
 export default class extends Controller {
   static targets = ["dialog", "backdrop", "name", "description", "visible", "submitButton", "icon", "iconGrid"]
@@ -108,9 +107,9 @@ export default class extends Controller {
         const data = await response.json()
         this.close()
         if (data.redirect_url) {
-          Turbo.visit(data.redirect_url)
+          window.Turbo.visit(data.redirect_url)
         } else {
-          Turbo.visit(window.location.href)
+          window.Turbo.visit(window.location.href)
         }
       } else {
         console.error("Section creation failed:", response.status)

@@ -1,5 +1,4 @@
 import { Controller } from "@hotwired/stimulus"
-import { Turbo } from "@hotwired/turbo-rails"
 
 export default class extends Controller {
   static targets = ["menu"]
@@ -72,9 +71,9 @@ export default class extends Controller {
       if (response.ok) {
         const data = await response.json()
         if (data.redirect_url) {
-          Turbo.visit(data.redirect_url)
+          window.Turbo.visit(data.redirect_url)
         } else {
-          Turbo.visit(window.location.href)
+          window.Turbo.visit(window.location.href)
         }
       } else {
         console.error("Section deletion failed:", response.status)

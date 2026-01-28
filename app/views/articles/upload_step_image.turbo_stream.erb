@@ -1,3 +1,3 @@
-<%= turbo_stream.replace "step_image_#{@article.id}_#{@step_index}" do %>
-  <%= render "articles/editable/step_image", article: @article, index: @step_index %>
+<%= turbo_stream.replace "#{@dom_prefix}_step_image_#{@article.id}_#{@step_index}" do %>
+  <%= render "articles/editable/step_image", article: @article, index: @step_index, dom_prefix: @dom_prefix %>
 <% end %>

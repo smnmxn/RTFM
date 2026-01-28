@@ -1,5 +1,4 @@
 import { Controller } from "@hotwired/stimulus"
-import { Turbo } from "@hotwired/turbo-rails"
 
 export default class extends Controller {
   static targets = ["display", "form", "input", "saving"]
@@ -53,7 +52,7 @@ export default class extends Controller {
 
       if (response.ok) {
         const html = await response.text()
-        Turbo.renderStreamMessage(html)
+        window.Turbo.renderStreamMessage(html)
         // Turbo replaces the DOM with fresh server content - no need to call cancel()
       } else {
         this.showError()

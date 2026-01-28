@@ -1,12 +1,12 @@
 import { Controller } from "@hotwired/stimulus"
-import { Turbo } from "@hotwired/turbo-rails"
 import Sortable from "sortablejs"
 
 export default class extends Controller {
   static targets = ["list"]
   static values = {
     url: String,
-    field: String
+    field: String,
+    domPrefix: { type: String, default: "article" }
   }
 
   connect() {
@@ -38,13 +38,14 @@ export default class extends Controller {
         body: JSON.stringify({
           field: this.fieldValue,
           old_index: evt.oldIndex,
-          new_index: evt.newIndex
+          new_index: evt.newIndex,
+          dom_prefix: this.domPrefixValue
         })
       })
 
       if (response.ok) {
         const html = await response.text()
-        Turbo.renderStreamMessage(html)
+        window.Turbo.renderStreamMessage(html)
       } else {
         console.error("Reorder failed")
         window.location.reload()
@@ -70,7 +71,7 @@ export default class extends Controller {
 
       if (response.ok) {
         const html = await response.text()
-        Turbo.renderStreamMessage(html)
+        window.Turbo.renderStreamMessage(html)
       }
     } catch (error) {
       console.error("Add failed:", error)
@@ -100,7 +101,7 @@ export default class extends Controller {
 
       if (response.ok) {
         const html = await response.text()
-        Turbo.renderStreamMessage(html)
+        window.Turbo.renderStreamMessage(html)
       }
     } catch (error) {
       console.error("Remove failed:", error)

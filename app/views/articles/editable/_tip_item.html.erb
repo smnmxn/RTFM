@@ -1,6 +1,7 @@
+<% dom_prefix = local_assigns[:dom_prefix] || "article" %>
 <li class="flex items-start gap-2 text-amber-900 group"
     data-controller="inline-edit"
-    data-inline-edit-url-value="<%= update_field_project_article_path(article.project, article) %>"
+    data-inline-edit-url-value="<%= update_field_project_article_path(article.project, article, dom_prefix: dom_prefix) %>"
     data-inline-edit-field-value="tips.<%= index %>">
 
   <!-- Drag Handle -->
@@ -27,10 +28,10 @@
   </div>
 
   <!-- Delete Button -->
-  <button type="button"
-          data-action="click->array-edit#remove"
-          data-array-edit-index-param="<%= index %>"
-          class="invisible group-hover:visible text-red-400 hover:text-red-600 p-1 cursor-pointer">
-<%= heroicon "trash", options: { class: "w-4 h-4" } %>
-  </button>
+  <%= button_to remove_array_item_project_article_path(article.project, article, field: "tips", index: index, dom_prefix: dom_prefix),
+      method: :delete,
+      form: { data: { turbo_stream: true, turbo_confirm: "Are you sure you want to delete this item?" } },
+      class: "invisible group-hover:visible text-red-400 hover:text-red-600 p-1 cursor-pointer" do %>
+    <%= heroicon "trash", options: { class: "w-4 h-4" } %>
+  <% end %>
 </li>

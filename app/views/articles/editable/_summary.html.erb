@@ -1,7 +1,8 @@
-<%= turbo_frame_tag "article_summary" do %>
+<% dom_prefix = local_assigns[:dom_prefix] || "article" %>
+<%= tag.div id: "#{dom_prefix}_#{article.id}_summary" do %>
   <% if article.summary.present? %>
     <div data-controller="inline-edit"
-         data-inline-edit-url-value="<%= update_field_project_article_path(article.project, article) %>"
+         data-inline-edit-url-value="<%= update_field_project_article_path(article.project, article, dom_prefix: dom_prefix) %>"
          data-inline-edit-field-value="summary"
          class="border-t border-gray-200 pt-6 group relative">
 

@@ -1,23 +1,26 @@
-<%= turbo_frame_tag "article_steps" do %>
+<% dom_prefix = local_assigns[:dom_prefix] || "article" %>
+<%= tag.div id: "#{dom_prefix}_#{article.id}_steps" do %>
   <div data-controller="array-edit"
        data-array-edit-url-value="<%= project_article_path(article.project, article) %>"
        data-array-edit-field-value="steps"
+       data-array-edit-dom-prefix-value="<%= dom_prefix %>"
        class="mb-8">
 
     <h3 class="text-lg font-semibold text-gray-900 mb-4">Steps</h3>
 
     <div data-array-edit-target="list" class="space-y-4">
       <% article.steps.each_with_index do |step, index| %>
-        <%= render "articles/editable/step_item", article: article, step: step, index: index %>
+        <%= render "articles/editable/step_item", article: article, step: step, index: index, dom_prefix: dom_prefix %>
       <% end %>
     </div>
 
     <!-- Add Step Button -->
-    <button type="button"
-            data-action="click->array-edit#add"
-            class="mt-4 inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800 cursor-pointer">
-<%= heroicon "plus", options: { class: "w-4 h-4" } %>
+    <%= button_to add_array_item_project_article_path(article.project, article, field: "steps", dom_prefix: dom_prefix),
+        method: :post,
+        form: { data: { turbo_stream: true } },
+        class: "mt-4 inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800 cursor-pointer" do %>
+      <%= heroicon "plus", options: { class: "w-4 h-4" } %>
       Add step
-    </button>
+    <% end %>
   </div>
 <% end %>

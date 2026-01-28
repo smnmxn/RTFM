@@ -1,5 +1,4 @@
 import { Controller } from "@hotwired/stimulus"
-import { Turbo } from "@hotwired/turbo-rails"
 
 export default class extends Controller {
   static targets = ["editor", "notification", "notificationContainer"]
@@ -55,7 +54,7 @@ export default class extends Controller {
 
       if (response.ok) {
         const html = await response.text()
-        Turbo.renderStreamMessage(html)
+        window.Turbo.renderStreamMessage(html)
 
         // After refresh, select the first item if nothing is selected
         requestAnimationFrame(() => this.selectFirstItemIfNeeded())

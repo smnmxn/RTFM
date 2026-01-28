@@ -1,6 +1,7 @@
-<div id="article_title"
+<% dom_prefix = local_assigns[:dom_prefix] || "article" %>
+<div id="<%= dom_prefix %>_<%= article.id %>_title"
      data-controller="inline-edit"
-     data-inline-edit-url-value="<%= update_field_project_article_path(article.project, article) %>"
+     data-inline-edit-url-value="<%= update_field_project_article_path(article.project, article, dom_prefix: dom_prefix) %>"
      data-inline-edit-field-value="title"
      class="group">
   <!-- Display Mode -->
