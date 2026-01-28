@@ -50,4 +50,7 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Base domain for E2E tests - defaults to localhost, can be overridden
+  config.x.base_domain = ENV.fetch("BASE_DOMAIN", "localhost:3001")
 end

@@ -1,0 +1,8 @@
+{
+  "name": "rtfm-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "playwright:install": "npx playwright install chromium --with-deps"
+  }
+}
