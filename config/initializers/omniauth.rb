@@ -1,3 +1,16 @@
+# Override callback_url to point to app. subdomain
+module OmniAuth
+  module Strategies
+    class GitHub
+      def callback_url
+        base_domain = ENV.fetch("BASE_DOMAIN", "lvh.me:3000")
+        protocol = request.scheme
+        "#{protocol}://app.#{base_domain}/auth/github/callback"
+      end
+    end
+  end
+end
+
 Rails.application.config.middleware.use OmniAuth::Builder do
   provider :github,
            ENV["GITHUB_CLIENT_ID"],

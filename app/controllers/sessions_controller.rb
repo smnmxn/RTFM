@@ -2,7 +2,7 @@ class SessionsController < ApplicationController
   skip_before_action :require_authentication, only: [ :new, :create, :failure, :destroy ]
 
   def new
-    redirect_to default_landing_path if logged_in?
+    redirect_to app_subdomain_url(default_landing_path), allow_other_host: true if logged_in?
   end
 
   def create
@@ -20,7 +20,7 @@ class SessionsController < ApplicationController
       )
       session[:user_id] = user.id
       session.delete(:invite_token)
-      redirect_to default_landing_path(user), notice: "Welcome back, #{user.name || user.github_username}!"
+      redirect_to app_subdomain_url(default_landing_path(user)), allow_other_host: true, notice: "Welcome back, #{user.name || user.github_username}!"
     else
       # New user - require valid invite
       invite = Invite.available.find_by(token: session[:invite_token])
@@ -42,7 +42,7 @@ class SessionsController < ApplicationController
       session.delete(:invite_token)
       session[:user_id] = user.id
 
-      redirect_to default_landing_path(user), notice: "Welcome, #{user.name || user.github_username}!"
+      redirect_to app_subdomain_url(default_landing_path(user)), allow_other_host: true, notice: "Welcome, #{user.name || user.github_username}!"
     end
   rescue ActiveRecord::RecordInvalid => e
     redirect_to login_path, alert: "Authentication failed: #{e.message}"
@@ -55,7 +55,7 @@ class SessionsController < ApplicationController
 
   def destroy
     session.delete(:user_id)
-    redirect_to root_path, notice: "You have been logged out."
+    redirect_to bare_domain_url("/"), allow_other_host: true, notice: "You have been logged out."
   end
 
   private

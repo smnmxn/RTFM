@@ -7,7 +7,7 @@ class ApplicationController < ActionController::Base
 
   before_action :require_authentication
 
-  helper_method :current_user, :logged_in?
+  helper_method :current_user, :logged_in?, :app_subdomain_url, :bare_domain_url
 
   private
 
@@ -21,8 +21,26 @@ class ApplicationController < ActionController::Base
 
   def require_authentication
     unless logged_in?
-      redirect_to login_path, alert: "Please sign in with GitHub to continue."
+      redirect_to bare_domain_url("/login"), allow_other_host: true, alert: "Please sign in with GitHub to continue."
     end
+  end
+
+  def base_domain
+    Rails.application.config.x.base_domain
+  end
+
+  def app_subdomain_url(path = "/")
+    port = request.port unless [ 80, 443 ].include?(request.port)
+    host = "app.#{base_domain.split(':').first}"
+    host_with_port = port ? "#{host}:#{port}" : host
+    "#{request.protocol}#{host_with_port}#{path}"
+  end
+
+  def bare_domain_url(path = "/")
+    port = request.port unless [ 80, 443 ].include?(request.port)
+    host = base_domain.split(":").first
+    host_with_port = port ? "#{host}:#{port}" : host
+    "#{request.protocol}#{host_with_port}#{path}"
   end
 
   def rollbar_custom_data
