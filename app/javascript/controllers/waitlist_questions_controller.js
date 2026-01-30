@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["card", "completionCard", "input", "dot", "nextButton", "skipButton"]
+  static targets = ["card", "completionCard", "input", "textInput", "dot", "nextButton", "skipButton"]
   static values = {
     saveUrl: String,
     redirectUrl: String,
@@ -16,6 +16,17 @@ export default class extends Controller {
   selectOption(event) {
     // Radio button selection - enable next button
     this.nextButtonTarget.disabled = false
+  }
+
+  validateText(event) {
+    // Text input validation - enable next if required fields are filled
+    const currentCard = this.cardTargets[this.currentIndexValue]
+    const nameInput = currentCard.querySelector('input[name="name"]')
+    const companyInput = currentCard.querySelector('input[name="company"]')
+
+    // Name and company are required, website is optional
+    const isValid = nameInput?.value.trim().length > 0 && companyInput?.value.trim().length > 0
+    this.nextButtonTarget.disabled = !isValid
   }
 
   async next() {
@@ -61,13 +72,27 @@ export default class extends Controller {
 
   async saveCurrentAnswer() {
     const currentCard = this.cardTargets[this.currentIndexValue]
-    const questionKey = currentCard.dataset.question
-
-    const checked = currentCard.querySelector('input[type="radio"]:checked')
-    if (!checked) return
-
+    const cardType = currentCard.dataset.cardType
     const payload = {}
-    payload[questionKey] = checked.value
+
+    if (cardType === 'text') {
+      // Text input card - collect all text inputs
+      const textInputs = currentCard.querySelectorAll('input[type="text"], input[type="url"]')
+      textInputs.forEach(input => {
+        if (input.value.trim()) {
+          payload[input.name] = input.value.trim()
+        }
+      })
+    } else {
+      // Radio button card
+      const checked = currentCard.querySelector('input[type="radio"]:checked')
+      if (!checked) return
+
+      const questionKey = currentCard.dataset.question
+      payload[questionKey] = checked.value
+    }
+
+    if (Object.keys(payload).length === 0) return
 
     try {
       await fetch(this.saveUrlValue, {
@@ -119,11 +144,22 @@ export default class extends Controller {
     // Reset next button state for new card
     this.nextButtonTarget.disabled = true
 
-    // Check if current card has a selection
+    // Check if current card has valid input
     const currentCard = this.cardTargets[this.currentIndexValue]
     if (currentCard) {
-      const hasRadioSelection = currentCard.querySelector('input[type="radio"]:checked')
-      this.nextButtonTarget.disabled = !hasRadioSelection
+      const cardType = currentCard.dataset.cardType
+
+      if (cardType === 'text') {
+        // Text card - check if required fields are filled
+        const nameInput = currentCard.querySelector('input[name="name"]')
+        const companyInput = currentCard.querySelector('input[name="company"]')
+        const isValid = nameInput?.value.trim().length > 0 && companyInput?.value.trim().length > 0
+        this.nextButtonTarget.disabled = !isValid
+      } else {
+        // Radio card - check if an option is selected
+        const hasRadioSelection = currentCard.querySelector('input[type="radio"]:checked')
+        this.nextButtonTarget.disabled = !hasRadioSelection
+      }
     }
 
     // Update button text on last card

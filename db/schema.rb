@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_30_091503) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_30_094432) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -300,8 +300,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_30_091503) do
   end
 
   create_table "waitlist_entries", force: :cascade do |t|
+    t.string "company"
     t.datetime "created_at", null: false
     t.string "email", null: false
+    t.string "name"
     t.string "platform_type"
     t.datetime "questions_completed_at"
     t.string "repo_structure"
@@ -309,6 +311,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_30_091503) do
     t.datetime "updated_at", null: false
     t.string "user_base"
     t.string "vcs_provider"
+    t.string "website"
     t.string "workflow"
     t.index ["email"], name: "index_waitlist_entries_on_email", unique: true
     t.index ["token"], name: "index_waitlist_entries_on_token", unique: true

@@ -10,7 +10,7 @@ class WaitlistQuestionsController < ApplicationController
   end
 
   def update
-    permitted = params.permit(:platform_type, :repo_structure, :vcs_provider, :workflow, :user_base, :completed)
+    permitted = params.permit(:name, :company, :website, :platform_type, :repo_structure, :vcs_provider, :workflow, :user_base, :completed)
 
     # Update individual answers
     answers = permitted.to_h.except("completed")

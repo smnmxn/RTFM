@@ -10,7 +10,7 @@
       <!-- Card 1: Target Audience -->
     <div data-onboarding-questions-target="card"
          data-question="target_audience"
-         class="question-card absolute inset-0 transition-transform duration-300 ease-in-out">
+         class="question-card absolute inset-0 bg-slate-50 overflow-hidden transition-transform duration-300 ease-in-out">
       <h3 class="text-base font-medium text-slate-900 mb-3">Who's reading these docs?</h3>
       <div class="space-y-2">
         <% [
@@ -33,7 +33,7 @@
     <!-- Card 2: Industry -->
     <div data-onboarding-questions-target="card"
          data-question="industry"
-         class="question-card absolute inset-0 transition-transform duration-300 ease-in-out translate-x-full">
+         class="question-card absolute inset-0 bg-slate-50 overflow-hidden transition-transform duration-300 ease-in-out translate-x-full">
       <h3 class="text-base font-medium text-slate-900 mb-3">What kind of product is this?</h3>
       <div class="space-y-2">
         <% [
@@ -58,7 +58,7 @@
     <!-- Card 3: Documentation Goals (multi-select) -->
     <div data-onboarding-questions-target="card"
          data-question="documentation_goals"
-         class="question-card absolute inset-0 transition-transform duration-300 ease-in-out translate-x-full">
+         class="question-card absolute inset-0 bg-slate-50 overflow-hidden transition-transform duration-300 ease-in-out translate-x-full">
       <h3 class="text-base font-medium text-slate-900 mb-3">What should the docs help with?</h3>
       <div class="space-y-2">
         <% [
@@ -82,7 +82,7 @@
     <!-- Card 4: Tone Preference -->
     <div data-onboarding-questions-target="card"
          data-question="tone_preference"
-         class="question-card absolute inset-0 transition-transform duration-300 ease-in-out translate-x-full">
+         class="question-card absolute inset-0 bg-slate-50 overflow-hidden transition-transform duration-300 ease-in-out translate-x-full">
       <h3 class="text-base font-medium text-slate-900 mb-3">What tone feels right?</h3>
       <div class="space-y-2">
         <% [
@@ -105,7 +105,7 @@
     <!-- Card 5: Product Stage -->
     <div data-onboarding-questions-target="card"
          data-question="product_stage"
-         class="question-card absolute inset-0 transition-transform duration-300 ease-in-out translate-x-full">
+         class="question-card absolute inset-0 bg-slate-50 overflow-hidden transition-transform duration-300 ease-in-out translate-x-full">
       <h3 class="text-base font-medium text-slate-900 mb-3">Where's the product at?</h3>
       <div class="space-y-2">
         <% [
@@ -127,7 +127,7 @@
 
     <!-- Completion Card -->
     <div data-onboarding-questions-target="completionCard"
-         class="absolute inset-0 transition-transform duration-300 ease-in-out translate-x-full flex flex-col items-center justify-center text-center">
+         class="absolute inset-0 bg-slate-50 transition-transform duration-300 ease-in-out translate-x-full flex flex-col items-center justify-center text-center">
       <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-4">
         <%= heroicon "check-circle", variant: :solid, options: { class: "w-6 h-6 text-green-600" } %>
       </div>
@@ -138,25 +138,27 @@
 
     <!-- Navigation -->
     <div class="mt-4 flex items-center justify-between">
-    <button type="button"
-            data-action="click->onboarding-questions#skip"
-            data-onboarding-questions-target="skipButton"
-            class="text-sm text-slate-500 hover:text-slate-700 transition-smooth">
-      Skip
-    </button>
+      <button type="button"
+              tabindex="2"
+              data-action="click->onboarding-questions#skip"
+              data-onboarding-questions-target="skipButton"
+              class="text-sm text-slate-500 hover:text-slate-700 transition-smooth">
+        Skip
+      </button>
 
-    <div class="flex space-x-2" data-onboarding-questions-target="dots">
-      <% 5.times do |i| %>
-        <span class="h-1.5 w-1.5 rounded-full transition-smooth <%= i == 0 ? 'bg-violet-600' : 'bg-slate-300' %>"
-              data-onboarding-questions-target="dot"></span>
-      <% end %>
-    </div>
+      <div class="flex space-x-2" data-onboarding-questions-target="dots">
+        <% 5.times do |i| %>
+          <span class="h-1.5 w-1.5 rounded-full transition-smooth <%= i == 0 ? 'bg-violet-600' : 'bg-slate-300' %>"
+                data-onboarding-questions-target="dot"></span>
+        <% end %>
+      </div>
 
-    <button type="button"
-            data-action="click->onboarding-questions#next"
-            data-onboarding-questions-target="nextButton"
-            class="btn-primary-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled>
+      <button type="button"
+              tabindex="1"
+              data-action="click->onboarding-questions#next"
+              data-onboarding-questions-target="nextButton"
+              class="btn-primary-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled>
         Next
       </button>
     </div>

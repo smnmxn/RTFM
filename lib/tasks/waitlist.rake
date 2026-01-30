@@ -10,9 +10,9 @@ namespace :waitlist do
     if entries.any?
       entries.each do |entry|
         status = entry.questions_completed_at ? "[completed]" : "[incomplete]"
-        answers = [ entry.platform_type, entry.repo_structure, entry.vcs_provider, entry.workflow, entry.user_base ].compact.join(", ")
-        answers = answers.empty? ? "" : " - #{answers}"
-        puts "  #{status} #{entry.email} (joined #{entry.created_at.strftime('%Y-%m-%d %H:%M')})#{answers}"
+        name_info = entry.name.present? ? "#{entry.name} <#{entry.email}>" : entry.email
+        company_info = entry.company.present? ? " (#{entry.company})" : ""
+        puts "  #{status} #{name_info}#{company_info} - joined #{entry.created_at.strftime('%Y-%m-%d %H:%M')}"
       end
     else
       puts "  (empty)"
@@ -35,6 +35,9 @@ namespace :waitlist do
 
     puts "=== Waitlist Entry ==="
     puts "  Email: #{entry.email}"
+    puts "  Name: #{entry.name || '(not provided)'}"
+    puts "  Company: #{entry.company || '(not provided)'}"
+    puts "  Website: #{entry.website || '(not provided)'}"
     puts "  Joined: #{entry.created_at.strftime('%Y-%m-%d %H:%M')}"
     puts "  Status: #{entry.questions_completed_at ? 'Completed' : 'Incomplete'}"
     puts ""
@@ -52,10 +55,10 @@ namespace :waitlist do
     if entries.empty?
       puts "Waitlist is empty."
     else
-      puts "email,joined_at,completed_at,platform_type,repo_structure,vcs_provider,workflow,user_base"
+      puts "email,name,company,website,joined_at,completed_at,platform_type,repo_structure,vcs_provider,workflow,user_base"
       entries.each do |entry|
         completed = entry.questions_completed_at&.iso8601 || ""
-        puts "#{entry.email},#{entry.created_at.iso8601},#{completed},#{entry.platform_type},#{entry.repo_structure},#{entry.vcs_provider},#{entry.workflow},#{entry.user_base}"
+        puts "#{entry.email},#{entry.name},#{entry.company},#{entry.website},#{entry.created_at.iso8601},#{completed},#{entry.platform_type},#{entry.repo_structure},#{entry.vcs_provider},#{entry.workflow},#{entry.user_base}"
       end
     end
   end

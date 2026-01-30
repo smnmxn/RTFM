@@ -31,7 +31,18 @@ module E2E
         wait_for_turbo
       end
 
+      def fill_contact_info(name: "Test User", company: "Test Co", website: "")
+        fill("input[name='name']", name)
+        fill("input[name='company']", company)
+        fill("input[name='website']", website) if website.present?
+        sleep 0.1
+      end
+
       def complete_all_questions
+        # Step 0: Contact info
+        fill_contact_info(name: "Test User", company: "Test Company")
+        click_next
+
         # Question 1: Platform type
         select_option("Web application / SaaS")
         click_next
@@ -59,7 +70,7 @@ module E2E
       end
 
       def skip_all_questions
-        5.times do
+        6.times do
           click_skip
           sleep 0.3 # Wait for animation
         end
