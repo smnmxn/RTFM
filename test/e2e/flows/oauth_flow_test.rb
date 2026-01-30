@@ -1,11 +1,13 @@
 require "e2e_test_helper"
 require_relative "../pages/login_page"
 require_relative "../pages/dashboard_page"
+require_relative "../pages/waitlist_questions_page"
 
 class OAuthFlowTest < E2ETestCase
   setup do
     @login_page = E2E::Pages::LoginPage.new(@page, self)
     @dashboard_page = E2E::Pages::DashboardPage.new(@page, self)
+    @waitlist_questions_page = E2E::Pages::WaitlistQuestionsPage.new(@page, self)
   end
 
   # =============================================================
@@ -65,29 +67,56 @@ class OAuthFlowTest < E2ETestCase
   # Waitlist Flow Tests
   # =============================================================
 
-  test "join waitlist with valid email shows success message" do
+  test "join waitlist redirects to questions page" do
     unique_email = "newuser_#{SecureRandom.hex(4)}@example.com"
     @login_page.visit
     @login_page.join_waitlist(unique_email)
 
-    assert has_text?("You're on the list"), "Expected success message"
+    assert @waitlist_questions_page.on_questions_page?, "Expected to be on questions page"
+    assert @waitlist_questions_page.has_question?("What type of product"), "Expected first question to be visible"
   end
 
-  test "join waitlist with duplicate email shows already registered message" do
-    # First, add an email to the waitlist
-    unique_email = "duplicate_#{SecureRandom.hex(4)}@example.com"
+  test "completing waitlist questions shows success and redirects to login" do
+    unique_email = "complete_#{SecureRandom.hex(4)}@example.com"
     @login_page.visit
     @login_page.join_waitlist(unique_email)
 
-    # Wait for success message to confirm first submission worked
-    wait_for_text("You're on the list")
+    # Complete all questions
+    @waitlist_questions_page.complete_all_questions
 
-    # Now try to add the same email again
+    # Should show completion message then redirect
+    assert has_text?("You're on the list") || @page.url.include?("/login"), "Expected to complete and redirect to login"
+  end
+
+  test "skipping all waitlist questions still completes signup" do
+    unique_email = "skipper_#{SecureRandom.hex(4)}@example.com"
+    @login_page.visit
     @login_page.join_waitlist(unique_email)
 
-    # Wait for and assert the duplicate message
+    # Skip all questions
+    @waitlist_questions_page.skip_all_questions
+
+    # Should show completion or redirect to login
+    assert has_text?("You're on the list") || @page.url.include?("/login"), "Expected to complete even when skipping"
+  end
+
+  test "join waitlist with duplicate completed email shows already registered" do
+    # Use the fixture with completed questions
+    @login_page.visit
+    @login_page.join_waitlist("completed@example.com")
+
+    # Should redirect back to login with message
     wait_for_text("already on the waitlist")
     assert has_text?("already on the waitlist"), "Expected already registered message"
+  end
+
+  test "join waitlist with duplicate incomplete email continues to questions" do
+    # Use the fixture without completed questions
+    @login_page.visit
+    @login_page.join_waitlist("existing@example.com")
+
+    # Should continue to questions page
+    assert @waitlist_questions_page.on_questions_page?, "Expected to continue to questions page for incomplete entry"
   end
 
   test "join waitlist with invalid email shows error" do

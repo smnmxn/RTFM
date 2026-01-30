@@ -19,6 +19,8 @@ Rails.application.routes.draw do
 
   # Waitlist (bare domain)
   post "/waitlist", to: "waitlist#create", as: :waitlist
+  get "/waitlist/questions/:token", to: "waitlist_questions#show", as: :waitlist_questions
+  patch "/waitlist/questions/:token", to: "waitlist_questions#update"
 
   # OmniAuth callbacks (bare domain)
   get "/auth/github/callback", to: "sessions#create"

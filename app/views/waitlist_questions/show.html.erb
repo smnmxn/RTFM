@@ -1,0 +1,175 @@
+<div class="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
+  <div class="max-w-lg w-full bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
+
+    <div class="text-center mb-6">
+      <%= image_tag "logo.png", alt: "supportpages.io", class: "h-16 mx-auto" %>
+      <p class="mt-3 text-slate-600">Help us understand your project</p>
+    </div>
+
+    <div data-controller="waitlist-questions"
+         data-waitlist-questions-save-url-value="<%= waitlist_questions_path(@entry.token) %>"
+         data-waitlist-questions-redirect-url-value="<%= login_path(waitlist: 'completed') %>">
+
+      <div class="bg-slate-50 rounded-lg p-4">
+        <div class="relative overflow-hidden" style="min-height: 320px;">
+
+          <!-- Card 1: Platform Type -->
+          <div data-waitlist-questions-target="card"
+               data-question="platform_type"
+               class="question-card absolute inset-0 transition-transform duration-300 ease-in-out">
+            <h3 class="text-base font-medium text-slate-900 mb-3">What type of product are you building?</h3>
+            <div class="space-y-2">
+              <% [
+                ["web_app", "Web application / SaaS"],
+                ["mobile", "Mobile app (iOS/Android)"],
+                ["desktop", "Desktop application"],
+                ["cli", "CLI / Developer tool"],
+                ["library", "Library / SDK / API"]
+              ].each do |value, label| %>
+                <label class="flex items-center p-3 bg-white border border-slate-300 rounded-lg shadow-sm cursor-pointer hover:bg-slate-50 hover:border-slate-400 transition-smooth"
+                       data-action="click->waitlist-questions#selectOption">
+                  <input type="radio" name="platform_type" value="<%= value %>"
+                         class="h-4 w-4 text-violet-600 border-slate-300 focus:ring-violet-500"
+                         data-waitlist-questions-target="input"
+                         <%= "checked" if @entry.platform_type == value %>>
+                  <span class="ml-3 text-slate-700"><%= label %></span>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Card 2: Repo Structure -->
+          <div data-waitlist-questions-target="card"
+               data-question="repo_structure"
+               class="question-card absolute inset-0 transition-transform duration-300 ease-in-out translate-x-full">
+            <h3 class="text-base font-medium text-slate-900 mb-3">How is your codebase organized?</h3>
+            <div class="space-y-2">
+              <% [
+                ["single_repo", "Single repository"],
+                ["monorepo", "Monorepo (multiple apps in one repo)"],
+                ["multi_repo", "Multiple separate repositories"]
+              ].each do |value, label| %>
+                <label class="flex items-center p-3 bg-white border border-slate-300 rounded-lg shadow-sm cursor-pointer hover:bg-slate-50 hover:border-slate-400 transition-smooth"
+                       data-action="click->waitlist-questions#selectOption">
+                  <input type="radio" name="repo_structure" value="<%= value %>"
+                         class="h-4 w-4 text-violet-600 border-slate-300 focus:ring-violet-500"
+                         data-waitlist-questions-target="input"
+                         <%= "checked" if @entry.repo_structure == value %>>
+                  <span class="ml-3 text-slate-700"><%= label %></span>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Card 3: VCS Provider -->
+          <div data-waitlist-questions-target="card"
+               data-question="vcs_provider"
+               class="question-card absolute inset-0 transition-transform duration-300 ease-in-out translate-x-full">
+            <h3 class="text-base font-medium text-slate-900 mb-3">Where do you host your code?</h3>
+            <div class="space-y-2">
+              <% [
+                ["github", "GitHub"],
+                ["gitlab", "GitLab"],
+                ["bitbucket", "Bitbucket"],
+                ["self_hosted", "Self-hosted / Other"]
+              ].each do |value, label| %>
+                <label class="flex items-center p-3 bg-white border border-slate-300 rounded-lg shadow-sm cursor-pointer hover:bg-slate-50 hover:border-slate-400 transition-smooth"
+                       data-action="click->waitlist-questions#selectOption">
+                  <input type="radio" name="vcs_provider" value="<%= value %>"
+                         class="h-4 w-4 text-violet-600 border-slate-300 focus:ring-violet-500"
+                         data-waitlist-questions-target="input"
+                         <%= "checked" if @entry.vcs_provider == value %>>
+                  <span class="ml-3 text-slate-700"><%= label %></span>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Card 4: Workflow -->
+          <div data-waitlist-questions-target="card"
+               data-question="workflow"
+               class="question-card absolute inset-0 transition-transform duration-300 ease-in-out translate-x-full">
+            <h3 class="text-base font-medium text-slate-900 mb-3">How do changes get merged?</h3>
+            <div class="space-y-2">
+              <% [
+                ["pull_requests", "Pull requests / Merge requests"],
+                ["direct_commits", "Direct commits to main branch"],
+                ["other", "Other workflow"]
+              ].each do |value, label| %>
+                <label class="flex items-center p-3 bg-white border border-slate-300 rounded-lg shadow-sm cursor-pointer hover:bg-slate-50 hover:border-slate-400 transition-smooth"
+                       data-action="click->waitlist-questions#selectOption">
+                  <input type="radio" name="workflow" value="<%= value %>"
+                         class="h-4 w-4 text-violet-600 border-slate-300 focus:ring-violet-500"
+                         data-waitlist-questions-target="input"
+                         <%= "checked" if @entry.workflow == value %>>
+                  <span class="ml-3 text-slate-700"><%= label %></span>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Card 5: User Base -->
+          <div data-waitlist-questions-target="card"
+               data-question="user_base"
+               class="question-card absolute inset-0 transition-transform duration-300 ease-in-out translate-x-full">
+            <h3 class="text-base font-medium text-slate-900 mb-3">How many users do you have?</h3>
+            <div class="space-y-2">
+              <% [
+                ["none_yet", "None yet / Pre-launch"],
+                ["small", "1-100 users"],
+                ["medium", "100-1,000 users"],
+                ["large", "1,000+ users"]
+              ].each do |value, label| %>
+                <label class="flex items-center p-3 bg-white border border-slate-300 rounded-lg shadow-sm cursor-pointer hover:bg-slate-50 hover:border-slate-400 transition-smooth"
+                       data-action="click->waitlist-questions#selectOption">
+                  <input type="radio" name="user_base" value="<%= value %>"
+                         class="h-4 w-4 text-violet-600 border-slate-300 focus:ring-violet-500"
+                         data-waitlist-questions-target="input"
+                         <%= "checked" if @entry.user_base == value %>>
+                  <span class="ml-3 text-slate-700"><%= label %></span>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Completion Card -->
+          <div data-waitlist-questions-target="completionCard"
+               class="absolute inset-0 transition-transform duration-300 ease-in-out translate-x-full flex flex-col items-center justify-center text-center">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-4">
+              <%= heroicon "check-circle", variant: :solid, options: { class: "w-6 h-6 text-green-600" } %>
+            </div>
+            <p class="text-slate-900 font-medium mb-1">You're on the list!</p>
+            <p class="text-slate-500 text-sm">We'll be in touch when invites are available.</p>
+          </div>
+
+        </div>
+
+        <!-- Navigation -->
+        <div class="mt-4 flex items-center justify-between">
+          <button type="button"
+                  data-action="click->waitlist-questions#skip"
+                  data-waitlist-questions-target="skipButton"
+                  class="text-sm text-slate-500 hover:text-slate-700 transition-smooth">
+            Skip
+          </button>
+
+          <div class="flex space-x-2">
+            <% 5.times do |i| %>
+              <span class="h-1.5 w-1.5 rounded-full transition-smooth <%= i == 0 ? 'bg-violet-600' : 'bg-slate-300' %>"
+                    data-waitlist-questions-target="dot"></span>
+            <% end %>
+          </div>
+
+          <button type="button"
+                  data-action="click->waitlist-questions#next"
+                  data-waitlist-questions-target="nextButton"
+                  class="btn-primary-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled>
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

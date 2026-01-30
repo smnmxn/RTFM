@@ -1,2 +1,13 @@
 existing_entry:
   email: existing@example.com
+  token: existing_entry_token
+
+completed_entry:
+  email: completed@example.com
+  token: completed_entry_token
+  platform_type: web_app
+  repo_structure: single_repo
+  vcs_provider: github
+  workflow: pull_requests
+  user_base: medium
+  questions_completed_at: <%= 1.day.ago %>
