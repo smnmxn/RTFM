@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Legal - supportpages.io" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+  </head>
+
+  <body class="bg-slate-50 min-h-screen">
+    <%= render "shared/public_header", active: "trust" %>
+
+    <!-- Main content -->
+    <main>
+      <%= yield %>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-16">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div class="flex items-center gap-2 text-slate-500 text-sm">
+            <span>&copy; <%= Date.current.year %> supportpages.io</span>
+          </div>
+          <nav class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+            <a href="/legal/privacy" class="text-slate-600 hover:text-slate-900 transition-colors">Privacy</a>
+            <a href="/legal/terms" class="text-slate-600 hover:text-slate-900 transition-colors">Terms</a>
+            <a href="/legal/dpa" class="text-slate-600 hover:text-slate-900 transition-colors">DPA</a>
+            <a href="/legal/subprocessors" class="text-slate-600 hover:text-slate-900 transition-colors">Sub-processors</a>
+            <a href="/legal/security" class="text-slate-600 hover:text-slate-900 transition-colors">Security</a>
+          </nav>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

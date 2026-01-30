@@ -1,0 +1,97 @@
+<% content_for(:title) { "Trust Center - supportpages.io" } %>
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <!-- Hero -->
+  <div class="text-center mb-12">
+    <h1 class="text-3xl font-bold text-slate-900 mb-4">Trust Center</h1>
+    <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+      We take your privacy and security seriously. Here's everything you need to know about how we handle your data.
+    </p>
+  </div>
+
+  <!-- Quick facts -->
+  <div class="bg-white rounded-xl border border-slate-200 p-6 mb-12">
+    <h2 class="text-lg font-semibold text-slate-900 mb-4">Quick Facts</h2>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="flex items-start gap-3">
+        <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <div>
+          <p class="font-medium text-slate-900">EU-based hosting</p>
+          <p class="text-sm text-slate-600">Data stored in Finland (Hetzner)</p>
+        </div>
+      </div>
+      <div class="flex items-start gap-3">
+        <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <div>
+          <p class="font-medium text-slate-900">GDPR compliant</p>
+          <p class="text-sm text-slate-600">DPA available for customers</p>
+        </div>
+      </div>
+      <div class="flex items-start gap-3">
+        <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <div>
+          <p class="font-medium text-slate-900">Code not stored</p>
+          <p class="text-sm text-slate-600">Processed temporarily, then deleted</p>
+        </div>
+      </div>
+      <div class="flex items-start gap-3">
+        <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <div>
+          <p class="font-medium text-slate-900">No data selling</p>
+          <p class="text-sm text-slate-600">We never sell your data</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Documents -->
+  <h2 class="text-lg font-semibold text-slate-900 mb-4">Documentation</h2>
+  <div class="space-y-4">
+    <% @documents.each do |key, doc| %>
+      <a href="/legal/<%= key %>" class="block bg-white rounded-xl border border-slate-200 p-6 hover:border-violet-300 hover:shadow-sm transition-all">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-semibold text-slate-900"><%= doc[:title] %></h3>
+            <p class="text-sm text-slate-600 mt-1"><%= doc[:description] %></p>
+          </div>
+          <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </a>
+    <% end %>
+  </div>
+
+  <!-- Contact -->
+  <div class="mt-12 bg-slate-100 rounded-xl p-6 text-center">
+    <h2 class="text-lg font-semibold text-slate-900 mb-2">Questions?</h2>
+    <p class="text-slate-600 mb-4">
+      If you have questions about our privacy practices or need a signed DPA, we're happy to help.
+    </p>
+    <div class="flex flex-wrap justify-center gap-4 text-sm">
+      <a href="mailto:privacy@supportpages.io" class="text-violet-600 hover:text-violet-700 font-medium">
+        privacy@supportpages.io
+      </a>
+      <span class="text-slate-400">|</span>
+      <a href="mailto:security@supportpages.io" class="text-violet-600 hover:text-violet-700 font-medium">
+        security@supportpages.io
+      </a>
+    </div>
+  </div>
+</div>

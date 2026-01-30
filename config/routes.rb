@@ -22,6 +22,16 @@ Rails.application.routes.draw do
   get "/waitlist/questions/:token", to: "waitlist_questions#show", as: :waitlist_questions
   patch "/waitlist/questions/:token", to: "waitlist_questions#update"
 
+  # Legal pages (bare domain, public)
+  scope "/legal" do
+    get "/", to: "legal#index", as: :legal
+    get "/privacy", to: "legal#privacy", as: :privacy_policy
+    get "/terms", to: "legal#terms", as: :terms_of_service
+    get "/dpa", to: "legal#dpa", as: :dpa
+    get "/subprocessors", to: "legal#subprocessors", as: :subprocessors
+    get "/security", to: "legal#security", as: :security
+  end
+
   # OmniAuth callbacks (bare domain)
   get "/auth/github/callback", to: "sessions#create"
   get "/auth/failure", to: "sessions#failure"

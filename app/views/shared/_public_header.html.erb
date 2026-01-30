@@ -1,0 +1,28 @@
+<!-- Public header for unauthenticated pages -->
+<!-- Pass active: "help" | "trust" | "login" to highlight the current page -->
+<% active ||= nil %>
+<header class="bg-white border-b border-slate-200">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div class="flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+        <%= image_tag "logo.png", alt: "supportpages.io", class: "h-8" %>
+      </a>
+      <nav class="flex items-center gap-6 text-sm">
+        <a href="https://help.supportpages.io"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="<%= active == 'help' ? 'text-slate-900 font-semibold' : 'text-slate-600 hover:text-slate-900' %> transition-colors">
+          Help
+        </a>
+        <a href="/legal"
+           class="<%= active == 'trust' ? 'text-slate-900 font-semibold' : 'text-slate-600 hover:text-slate-900' %> transition-colors">
+          Trust Center
+        </a>
+        <a href="/login"
+           class="<%= active == 'login' ? 'text-violet-700 font-semibold' : 'text-violet-600 hover:text-violet-700' %> transition-colors">
+          Sign in
+        </a>
+      </nav>
+    </div>
+  </div>
+</header>
