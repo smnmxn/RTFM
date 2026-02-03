@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="scroll-smooth">
+<html class="scroll-smooth <%= 'dark' if @project.dark_mode_enabled? %>">
   <head>
     <title><%= content_for(:title) || "#{@project.name} #{@project.help_centre_title_or_default}" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -12,6 +12,27 @@
         --brand-primary: <%= @project.primary_color_or_default %>;
         --brand-accent: <%= @project.accent_color_or_default %>;
         --brand-title: <%= @project.title_text_color_or_default %>;
+
+        /* Light mode semantic colors */
+        --bg-primary: #f9fafb;
+        --bg-secondary: #ffffff;
+        --bg-tertiary: #f3f4f6;
+        --text-primary: #111827;
+        --text-secondary: #6b7280;
+        --text-tertiary: #9ca3af;
+        --border-color: #e5e7eb;
+        --border-light: #f3f4f6;
+      }
+
+      .dark {
+        --bg-primary: #111827;
+        --bg-secondary: #1f2937;
+        --bg-tertiary: #374151;
+        --text-primary: #f9fafb;
+        --text-secondary: #9ca3af;
+        --text-tertiary: #6b7280;
+        --border-color: #374151;
+        --border-light: #1f2937;
       }
 
       /* Brand color utilities */
@@ -19,15 +40,26 @@
       .text-brand-title { color: var(--brand-title); }
       .bg-brand { background-color: var(--brand-primary); }
       .border-brand { border-color: var(--brand-primary); }
-      .bg-brand-light { background-color: color-mix(in srgb, var(--brand-primary) 15%, white); }
+      .bg-brand-light { background-color: color-mix(in srgb, var(--brand-primary) 15%, var(--bg-secondary)); }
+
+      /* Semantic color utilities */
+      .bg-surface { background-color: var(--bg-primary); }
+      .bg-card { background-color: var(--bg-secondary); }
+      .bg-muted { background-color: var(--bg-tertiary); }
+      .text-heading { color: var(--text-primary); }
+      .text-body { color: var(--text-secondary); }
+      .text-muted { color: var(--text-tertiary); }
+      .border-default { border-color: var(--border-color); }
+      .border-subtle { border-color: var(--border-light); }
 
       /* Hover states */
       .hover\:text-brand:hover { color: var(--brand-primary); }
       .hover\:bg-brand:hover { background-color: var(--brand-primary); }
       .hover\:border-brand:hover { border-color: var(--brand-primary); }
+      .hover\:bg-muted:hover { background-color: var(--bg-tertiary); }
       .group:hover .group-hover\:text-brand { color: var(--brand-primary); }
       .group:hover .group-hover\:bg-brand { background-color: var(--brand-primary); }
-      .group:hover .group-hover\:bg-brand-light { background-color: color-mix(in srgb, var(--brand-primary) 15%, white); }
+      .group:hover .group-hover\:bg-brand-light { background-color: color-mix(in srgb, var(--brand-primary) 15%, var(--bg-secondary)); }
 
       /* Focus states */
       .focus\:ring-brand:focus { --tw-ring-color: var(--brand-primary); }
@@ -49,8 +81,8 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="min-h-screen bg-gray-50 flex flex-col">
-    <header class="bg-white/95 backdrop-blur-sm shadow-sm sticky top-0 z-50">
+  <body class="min-h-screen bg-surface flex flex-col">
+    <header class="bg-card/95 backdrop-blur-sm shadow-sm sticky top-0 z-50 border-b border-default">
       <div class="max-w-6xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
         <div class="flex items-center gap-3">
           <% if @project.logo.attached? %>
@@ -64,7 +96,7 @@
                     class: "hover:opacity-80 transition-opacity",
                     style: "color: var(--brand-primary)" %>
               </h1>
-              <p class="text-sm text-gray-500"><%= @project.help_centre_title_or_default %></p>
+              <p class="text-sm text-body"><%= @project.help_centre_title_or_default %></p>
             </div>
           <% end %>
         </div>
@@ -79,9 +111,9 @@
                 <input type="text"
                        name="q"
                        placeholder="Ask a question..."
-                       class="w-48 lg:w-64 px-4 py-2 pl-10 text-sm border border-gray-300 rounded-lg
+                       class="w-48 lg:w-64 px-4 py-2 pl-10 text-sm border border-default rounded-lg bg-card text-heading placeholder:text-muted
                               focus:ring-2 focus:ring-brand focus:border-brand">
-                <%= heroicon "sparkles", options: { class: "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" } %>
+                <%= heroicon "sparkles", options: { class: "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" } %>
               </div>
             <% end %>
           <% end %>
@@ -92,35 +124,35 @@
               <div class="relative" data-controller="dropdown">
                 <button type="button"
                         data-action="click->dropdown#toggle"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
-                  <%= heroicon "chat-bubble-left-right", options: { class: "w-4 h-4 text-gray-500" } %>
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-heading rounded-lg border border-default hover:bg-muted transition-colors">
+                  <%= heroicon "chat-bubble-left-right", options: { class: "w-4 h-4 text-body" } %>
                   <span class="hidden sm:inline">Contact Support</span>
-                  <%= heroicon "chevron-down", options: { class: "w-3 h-3 text-gray-400" } %>
+                  <%= heroicon "chevron-down", options: { class: "w-3 h-3 text-muted" } %>
                 </button>
                 <div data-dropdown-target="menu"
-                     class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                     class="hidden absolute right-0 mt-2 w-48 bg-card rounded-lg shadow-lg border border-default py-1 z-50">
                   <%= link_to "mailto:#{@project.support_email}",
-                      class: "flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" do %>
-                    <%= heroicon "envelope", options: { class: "w-4 h-4 text-gray-400" } %>
+                      class: "flex items-center gap-2 px-4 py-2 text-sm text-heading hover:bg-muted" do %>
+                    <%= heroicon "envelope", options: { class: "w-4 h-4 text-muted" } %>
                     <%= @project.support_email %>
                   <% end %>
                   <%= link_to "tel:#{@project.support_phone}",
-                      class: "flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" do %>
-                    <%= heroicon "phone", options: { class: "w-4 h-4 text-gray-400" } %>
+                      class: "flex items-center gap-2 px-4 py-2 text-sm text-heading hover:bg-muted" do %>
+                    <%= heroicon "phone", options: { class: "w-4 h-4 text-muted" } %>
                     <%= @project.support_phone %>
                   <% end %>
                 </div>
               </div>
             <% elsif @project.support_email.present? %>
               <%= link_to "mailto:#{@project.support_email}",
-                  class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors" do %>
-                <%= heroicon "envelope", options: { class: "w-4 h-4 text-gray-500" } %>
+                  class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-heading rounded-lg border border-default hover:bg-muted transition-colors" do %>
+                <%= heroicon "envelope", options: { class: "w-4 h-4 text-body" } %>
                 <span class="hidden sm:inline">Contact Support</span>
               <% end %>
             <% else %>
               <%= link_to "tel:#{@project.support_phone}",
-                  class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors" do %>
-                <%= heroicon "phone", options: { class: "w-4 h-4 text-gray-500" } %>
+                  class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-heading rounded-lg border border-default hover:bg-muted transition-colors" do %>
+                <%= heroicon "phone", options: { class: "w-4 h-4 text-body" } %>
                 <span class="hidden sm:inline"><%= @project.support_phone %></span>
               <% end %>
             <% end %>
@@ -131,7 +163,7 @@
           <% app_url = "#{protocol}://app.#{base_domain}" %>
           <% if logged_in? %>
             <% edit_url = @article ? "#{app_url}/projects/#{@project.slug}?article=#{@article.id}" : "#{app_url}/projects/#{@project.slug}" %>
-            <%= link_to edit_url, class: "text-sm text-gray-500 hover:text-gray-700" do %>
+            <%= link_to edit_url, class: "text-sm text-body hover:text-heading" do %>
               Edit
             <% end %>
           <% end %>
@@ -145,8 +177,8 @@
       <%= yield %>
     </main>
 
-    <footer class="bg-gray-100 mt-auto">
-      <div class="max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
+    <footer class="bg-muted mt-auto border-t border-default">
+      <div class="max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8 text-center text-sm text-body">
         Powered by <a href="/" style="color: var(--brand-primary)" class="hover:opacity-80">supportpages.io</a>
       </div>
     </footer>

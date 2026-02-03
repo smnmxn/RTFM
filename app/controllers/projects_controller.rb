@@ -869,7 +869,7 @@ class ProjectsController < ApplicationController
   end
 
   def branding_params
-    params.require(:project).permit(:primary_color, :accent_color, :title_text_color, :help_centre_title, :help_centre_tagline, :support_email, :support_phone)
+    params.require(:project).permit(:primary_color, :accent_color, :title_text_color, :help_centre_title, :help_centre_tagline, :support_email, :support_phone, :dark_mode)
   end
 
   def ai_settings_params
