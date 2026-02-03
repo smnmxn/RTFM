@@ -91,9 +91,10 @@ We implement appropriate technical and organizational measures to protect person
 - **Training:** Security awareness for team members
 
 ### 5.3 Code Handling
-- Code diffs are processed temporarily and deleted after analysis
-- Raw code is not stored long-term
-- Generated documentation is stored; raw code is not
+- Code is processed in isolated, ephemeral environments
+- Environments are destroyed after each analysis
+- Your source code is never stored in our database
+- Only generated documentation is retained
 
 See our [Security Overview](/legal/security) for more details.
 
