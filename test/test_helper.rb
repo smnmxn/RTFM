@@ -1,3 +1,22 @@
+# Run with: COVERAGE=1 rails test
+if ENV['COVERAGE']
+  require 'simplecov'
+  SimpleCov.start 'rails' do
+    enable_coverage :branch
+
+    add_filter '/test/'
+    add_filter '/config/'
+    add_filter '/vendor/'
+
+    add_group 'Models', 'app/models'
+    add_group 'Controllers', 'app/controllers'
+    add_group 'Services', 'app/services'
+    add_group 'Jobs', 'app/jobs'
+    add_group 'Helpers', 'app/helpers'
+    add_group 'Mailers', 'app/mailers'
+  end
+end
+
 ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
@@ -7,7 +26,8 @@ OmniAuth.config.test_mode = true
 module ActiveSupport
   class TestCase
     # Run tests in parallel with specified workers
-    parallelize(workers: :number_of_processors)
+    # Disable parallelization when measuring coverage (COVERAGE=1 rails test)
+    parallelize(workers: ENV['COVERAGE'] ? 1 : :number_of_processors)
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all

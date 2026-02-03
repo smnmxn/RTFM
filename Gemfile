@@ -103,4 +103,7 @@ end
 group :test do
   # E2E testing with Playwright
   gem "playwright-ruby-client", "~> 1.47"
+
+  # Code coverage
+  gem "simplecov", require: false
 end

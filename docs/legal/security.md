@@ -63,9 +63,9 @@ When you use supportpages.io:
 - Even we can't see data in transit (end-to-end encryption)
 
 ### API Security
-- All GitHub API calls use HTTPS
-- All Anthropic API calls use HTTPS
+- All external API calls use HTTPS
 - Webhook payloads are signed and verified
+- API tokens are never exposed in logs
 
 ---
 
@@ -91,36 +91,33 @@ When you use supportpages.io:
 
 ## Code Handling
 
-This is the most sensitive part of what we do. Here's exactly how we handle your code:
+This is the most sensitive part of what we do. Here's how we protect your code:
 
 ### Initial Codebase Analysis
 1. **Trigger** – You connect a repository and initiate analysis
-2. **Clone** – We perform a shallow `git clone` (latest commit only) into a Docker container
-3. **AI analysis** – Claude reads your code to understand structure, patterns, and purpose
-4. **Output** – AI generates a summary and documentation suggestions
-5. **Cleanup** – Docker container is destroyed, your code is deleted
-6. **Storage** – Only the generated summary and metadata are stored
+2. **Isolation** – Your code is copied into a secure, sandboxed environment
+3. **Analysis** – AI reads your code to understand structure and purpose
+4. **Cleanup** – The isolated environment is destroyed, your code is deleted
+5. **Storage** – Only the generated summary and metadata are stored
 
 ### PR Analysis
-1. **Webhook received** – GitHub notifies us of a merged PR
-2. **Clone** – We shallow-clone your repository into a fresh Docker container
-3. **Diff fetched** – We also fetch the specific PR diff from GitHub
-4. **AI analysis** – Claude analyzes changes in context of the full codebase
-5. **Cleanup** – Docker container is destroyed, your code is deleted
-6. **Storage** – Only generated changelog/documentation is stored
+1. **Notification** – GitHub notifies us of a merged PR
+2. **Isolation** – A fresh sandboxed environment is created
+3. **Analysis** – AI analyzes changes in context of your codebase
+4. **Cleanup** – The environment is destroyed, your code is deleted
+5. **Storage** – Only generated documentation is stored
 
-### Key Points
-- **We do clone your full repository** (shallow—no git history)
-- **Code exists only in ephemeral Docker containers**
-- **Containers are destroyed after each analysis** (`docker run --rm`)
-- **Your source code is never stored in our database**
-- **Only AI-generated content persists**
-- **Code is sent to one third party: Anthropic**
+### Security Measures
+- **Isolated environments** – Your code runs in sandboxed containers
+- **Ephemeral processing** – Each analysis uses a fresh environment
+- **No persistent storage** – Environments are destroyed after each use
+- **No code retention** – Your source code is never stored in our database
+- **Single AI provider** – Code is only shared with our AI provider (Anthropic)
 
-### Anthropic's Handling
+### Our AI Provider
 Per our Data Processing Agreement with Anthropic:
-- They process your code via API to generate responses
-- They don't store your code after the API request completes
+- They process your code to generate documentation
+- They don't store your code after processing completes
 - They don't train models on your data
 - They don't share your code with third parties
 
@@ -160,12 +157,12 @@ We'll notify you if we access your data (unless legally prohibited).
 - Your private usage patterns
 
 ### Error Logging
-We use Rollbar for error monitoring. We filter out:
-- OAuth tokens
+Our error monitoring filters out:
+- Authentication tokens
 - Code content
 - Sensitive personal data
 
-Errors include stack traces and request info, but not your code.
+Error logs include diagnostic info, but never your code.
 
 ---
 

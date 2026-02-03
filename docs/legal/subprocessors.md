@@ -12,7 +12,7 @@ supportpages.io uses the following third-party sub-processors to provide our ser
 
 | Company | Purpose | Location | Data Processed |
 |---------|---------|----------|----------------|
-| **Anthropic** | AI analysis and documentation generation | USA | Code diffs, project context, generated content |
+| **Anthropic** | AI analysis and documentation generation | USA | Source code (temporarily), project context |
 | **GitHub** | Authentication, repository access, webhooks | USA | User identity, repository metadata, code diffs |
 | **Hetzner** | Cloud infrastructure and hosting | Finland (EU) | All stored data |
 | **Cloudflare** | DNS, custom domains, SSL certificates | Global | Domain names, traffic routing |
@@ -26,8 +26,8 @@ supportpages.io uses the following third-party sub-processors to provide our ser
 **Website:** [anthropic.com](https://www.anthropic.com)
 **Privacy Policy:** [anthropic.com/privacy](https://www.anthropic.com/privacy)
 
-Anthropic provides the Claude AI that powers our documentation generation. When you analyze code:
-- Code diffs and context are sent to Anthropic's API
+Anthropic provides the AI that powers our documentation generation. When you analyze code:
+- Your code and context are sent to Anthropic for analysis
 - Anthropic processes the data to generate documentation
 - Data is not retained after processing
 - Data is not used to train AI models
