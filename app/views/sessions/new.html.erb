@@ -25,16 +25,46 @@
       </div>
     <% end %>
 
-    <!-- Video placeholder -->
-    <div class="mb-8">
-      <div class="bg-slate-100 rounded-xl flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-smooth group" style="aspect-ratio: 16/9;">
-        <div class="w-20 h-20 bg-gradient-brand rounded-full flex items-center justify-center group-hover:scale-105 transition-transform shadow-lg">
-          <svg class="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M8 5v14l11-7z"/>
-          </svg>
+    <!-- Explainer Video -->
+    <div class="mb-8" data-controller="video-player">
+      <!-- Clickable poster overlay -->
+      <div
+        data-video-player-target="poster"
+        data-action="click->video-player#play"
+        class="relative rounded-xl overflow-hidden cursor-pointer group"
+        style="aspect-ratio: 16/9;"
+      >
+        <!-- Gradient background with subtle pattern -->
+        <div class="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700"></div>
+        <div class="absolute inset-0 opacity-10" style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%23ffffff&quot; fill-opacity=&quot;0.4&quot;%3E%3Cpath d=&quot;M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+
+        <!-- Content -->
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-white p-6">
+          <!-- Play button -->
+          <div class="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:bg-white/30 group-hover:scale-110 transition-all duration-300 shadow-2xl mb-4">
+            <svg class="w-10 h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </div>
+          <!-- Text -->
+          <p class="text-xl font-semibold mb-1">See it in action</p>
+          <p class="text-white/80 text-sm">90 second demo</p>
         </div>
+
+        <!-- Hover shimmer effect -->
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
       </div>
-      <p class="text-center text-sm text-slate-500 mt-3">Watch how it works</p>
+
+      <!-- Hidden video (revealed on click) -->
+      <video
+        data-video-player-target="video"
+        class="hidden w-full rounded-xl shadow-lg"
+        controls
+        preload="metadata"
+      >
+        <source src="/videos/supportpagesexplainer.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
     </div>
 
     <!-- Divider -->

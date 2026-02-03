@@ -62,6 +62,7 @@ import PresenceController from "controllers/presence_controller"
 import EmailPreviewModalController from "controllers/email_preview_modal_controller"
 import SectionPickerModalController from "controllers/section_picker_modal_controller"
 import WaitlistQuestionsController from "controllers/waitlist_questions_controller"
+import VideoPlayerController from "controllers/video_player_controller"
 
 application.register("inline-edit", InlineEditController)
 application.register("array-edit", ArrayEditController)
@@ -97,3 +98,4 @@ application.register("presence", PresenceController)
 application.register("email-preview-modal", EmailPreviewModalController)
 application.register("section-picker-modal", SectionPickerModalController)
 application.register("waitlist-questions", WaitlistQuestionsController)
+application.register("video-player", VideoPlayerController)
