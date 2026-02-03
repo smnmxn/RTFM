@@ -11,16 +11,16 @@
   <aside class="hidden lg:block lg:col-span-1">
     <div class="sticky top-24 space-y-6">
       <!-- Ask Another Question -->
-      <div class="bg-gray-50 rounded-lg p-4">
-        <h4 class="text-sm font-semibold text-gray-900 mb-3">Ask another question</h4>
+      <div class="bg-muted rounded-lg p-4">
+        <h4 class="text-sm font-semibold text-heading mb-3">Ask another question</h4>
         <%= form_with url: help_centre_ask_path, method: :get do %>
           <div class="space-y-2">
             <input type="text"
                    name="q"
                    placeholder="Type your question..."
-                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg
+                   class="w-full px-3 py-2 text-sm border border-default rounded-lg bg-card text-heading
                           focus:ring-2 focus:ring-brand focus:border-brand
-                          placeholder:text-gray-400">
+                          placeholder:text-muted">
             <button type="submit"
                     class="w-full px-3 py-2 bg-brand text-white text-sm rounded-lg hover:opacity-90 transition-opacity font-medium">
               Ask
@@ -30,14 +30,14 @@
       </div>
 
       <!-- Browse Categories -->
-      <nav class="bg-gray-50 rounded-lg p-4">
-        <h4 class="text-sm font-semibold text-gray-900 mb-3">Browse categories</h4>
+      <nav class="bg-muted rounded-lg p-4">
+        <h4 class="text-sm font-semibold text-heading mb-3">Browse categories</h4>
         <ul class="space-y-2 text-sm">
           <% @project.sections.visible.ordered.limit(6).each do |section| %>
             <li>
               <%= link_to section.name,
                   help_centre_section_path(section_slug: section.slug),
-                  class: "text-gray-600 hover:text-brand transition-colors" %>
+                  class: "text-body hover:text-brand transition-colors" %>
             </li>
           <% end %>
           <%= link_to "View all...", help_centre_path, class: "text-brand hover:opacity-80 text-xs font-medium" %>
@@ -48,18 +48,18 @@
 
   <!-- Main Content -->
   <div class="lg:col-span-3">
-    <div class="bg-white shadow rounded-xl">
+    <div class="bg-card shadow rounded-xl border border-subtle">
       <!-- Header -->
-      <div class="px-6 py-5 border-b border-gray-200">
+      <div class="px-6 py-5 border-b border-default">
         <nav class="text-sm mb-3">
           <%= link_to "Help Centre",
               help_centre_path,
               class: "text-brand hover:opacity-80 transition-colors" %>
-          <span class="mx-2 text-gray-400">/</span>
-          <span class="text-gray-600">Ask</span>
+          <span class="mx-2 text-muted">/</span>
+          <span class="text-body">Ask</span>
         </nav>
-        <h1 class="text-2xl font-bold text-gray-900"><%= @question %></h1>
-        <p class="mt-2 text-sm text-gray-500 flex items-center gap-1.5">
+        <h1 class="text-2xl font-bold text-heading"><%= @question %></h1>
+        <p class="mt-2 text-sm text-body flex items-center gap-1.5">
           <%= heroicon "sparkles", options: { class: "w-4 h-4 text-brand" } %>
           AI-generated answer
         </p>
@@ -68,15 +68,15 @@
       <!-- Answer Content -->
       <div class="px-6 py-6">
         <!-- Mobile: Ask Another Question -->
-        <div class="lg:hidden mb-6 p-4 bg-gray-50 rounded-lg">
+        <div class="lg:hidden mb-6 p-4 bg-muted rounded-lg">
           <%= form_with url: help_centre_ask_path, method: :get do %>
             <div class="flex gap-2">
               <input type="text"
                      name="q"
                      placeholder="Ask another question..."
-                     class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg
+                     class="flex-1 px-3 py-2 text-sm border border-default rounded-lg bg-card text-heading
                             focus:ring-2 focus:ring-brand focus:border-brand
-                            placeholder:text-gray-400">
+                            placeholder:text-muted">
               <button type="submit"
                       class="px-4 py-2 bg-brand text-white text-sm rounded-lg hover:opacity-90 font-medium">
                 Ask
@@ -86,7 +86,7 @@
         </div>
 
         <!-- Thinking State -->
-        <div data-streaming-answer-target="thinking" class="flex items-center gap-3 text-gray-500">
+        <div data-streaming-answer-target="thinking" class="flex items-center gap-3 text-body">
           <svg class="animate-spin h-5 w-5 text-brand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -103,7 +103,7 @@
           </div>
           <!-- Visible rendered markdown -->
           <div data-streaming-answer-target="rendered"
-               class="prose prose-gray max-w-none prose-a:text-brand prose-a:no-underline hover:prose-a:underline prose-img:rounded-lg prose-img:border prose-img:border-gray-200">
+               class="prose max-w-none prose-headings:text-heading prose-p:text-body prose-a:text-brand prose-a:no-underline hover:prose-a:underline prose-img:rounded-lg prose-img:border prose-img:border-default prose-code:text-heading prose-strong:text-heading">
           </div>
           <!-- Typing cursor -->
           <span data-streaming-answer-target="cursor"
@@ -118,23 +118,23 @@
     </div>
 
     <!-- Ask Another Question (below sources) -->
-    <div class="mt-8 pt-8 border-t border-gray-200">
-      <p class="text-gray-600 mb-4">Have another question?</p>
+    <div class="mt-8 pt-8 border-t border-default">
+      <p class="text-body mb-4">Have another question?</p>
       <%= form_with url: help_centre_ask_path, method: :get, class: "max-w-xl" do %>
         <div class="flex gap-3">
           <input type="text"
                  name="q"
                  placeholder="Ask a question..."
-                 class="flex-1 px-4 py-3 border border-gray-300 rounded-lg
+                 class="flex-1 px-4 py-3 border border-default rounded-lg bg-card text-heading
                         focus:ring-2 focus:ring-brand focus:border-brand
-                        placeholder:text-gray-400">
+                        placeholder:text-muted">
           <button type="submit"
                   class="px-5 py-3 bg-brand text-white rounded-lg hover:opacity-90 transition-opacity font-medium">
             Ask
           </button>
         </div>
       <% end %>
-      <p class="mt-4 text-sm text-gray-500">
+      <p class="mt-4 text-sm text-body">
         Or <%= link_to "browse all categories", help_centre_path, class: "text-brand hover:underline" %>
       </p>
     </div>

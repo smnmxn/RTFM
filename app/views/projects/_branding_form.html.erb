@@ -186,6 +186,29 @@
         </script>
       </div>
 
+      <!-- Dark Mode -->
+      <div class="p-4 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-900 mb-1">Dark Mode</label>
+          <p class="text-sm text-gray-500 mb-3">Enable dark mode for your public help centre.</p>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="hidden" name="project[dark_mode]" value="0">
+            <input type="checkbox"
+                   name="project[dark_mode]"
+                   value="1"
+                   <%= "checked" if project.dark_mode_enabled? %>
+                   class="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+            <div>
+              <span class="block text-sm font-medium text-gray-900">Enable dark mode</span>
+              <span class="block text-sm text-gray-500 mt-0.5">
+                Your help centre will display with a dark background and light text.
+              </span>
+            </div>
+          </label>
+        </div>
+      </div>
+
       <!-- Submit -->
       <div class="p-4 bg-gray-50 rounded-b-lg flex items-center justify-between">
         <% if saved %>

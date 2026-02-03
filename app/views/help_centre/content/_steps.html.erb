@@ -1,22 +1,22 @@
 <% if article.steps.any? %>
   <div id="steps" class="mb-8 scroll-mt-24">
-    <h2 class="text-lg font-semibold text-gray-900 mb-4">Steps</h2>
+    <h2 class="text-lg font-semibold text-heading mb-4">Steps</h2>
     <div class="space-y-6">
       <% article.steps.each_with_index do |step, index| %>
         <% step_image = article.step_image(index) %>
         <div id="step-<%= index + 1 %>" class="flex gap-4 scroll-mt-24">
-          <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 text-indigo-800 rounded-full flex items-center justify-center font-semibold text-sm">
+          <div class="flex-shrink-0 w-8 h-8 bg-brand-light text-brand rounded-full flex items-center justify-center font-semibold text-sm">
             <%= index + 1 %>
           </div>
           <div class="flex-1">
-            <h3 class="font-medium text-gray-900"><%= step["title"] %></h3>
-            <div class="mt-1 text-gray-700 prose prose-sm max-w-none">
+            <h3 class="font-medium text-heading"><%= step["title"] %></h3>
+            <div class="mt-1 text-body prose prose-sm max-w-none prose-headings:text-heading prose-p:text-body">
               <%= markdown(step["content"]) %>
             </div>
             <% if step_image&.image&.attached? %>
               <div class="mt-3">
                 <%= image_tag step_image.image,
-                    class: "rounded-lg max-w-full border border-gray-200",
+                    class: "rounded-lg max-w-full border border-default",
                     alt: "Step #{index + 1} illustration" %>
               </div>
             <% end %>

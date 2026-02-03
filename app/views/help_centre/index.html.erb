@@ -9,7 +9,7 @@
   <% sections_with_articles = @sections.select { |s| s.articles.published.any? } %>
   <% if sections_with_articles.any? %>
     <section>
-      <h2 class="text-xl font-semibold text-gray-900 mb-6">Browse by category</h2>
+      <h2 class="text-xl font-semibold text-heading mb-6">Browse by category</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <% sections_with_articles.each do |section| %>
           <% published_articles = section.articles.published.reorder(:position) %>
@@ -25,7 +25,7 @@
   <!-- Popular Articles -->
   <% if @popular_articles.any? %>
     <section>
-      <h2 class="text-xl font-semibold text-gray-900 mb-6">Popular articles</h2>
+      <h2 class="text-xl font-semibold text-heading mb-6">Popular articles</h2>
       <div class="grid gap-4 md:grid-cols-2">
         <% @popular_articles.each do |article| %>
           <%= render "help_centre/article_card", article: article %>
@@ -36,10 +36,10 @@
 
   <!-- Empty State -->
   <% if sections_with_articles.empty? %>
-    <div class="text-center py-16 bg-white rounded-xl shadow-sm">
-<%= heroicon "book-open", options: { class: "mx-auto w-12 h-12 text-gray-300 mb-4" } %>
-      <p class="text-gray-500 text-lg">No articles published yet.</p>
-      <p class="text-gray-400 text-sm mt-1">Check back soon for helpful guides and tutorials.</p>
+    <div class="text-center py-16 bg-card rounded-xl shadow-sm border border-subtle">
+<%= heroicon "book-open", options: { class: "mx-auto w-12 h-12 text-muted mb-4" } %>
+      <p class="text-body text-lg">No articles published yet.</p>
+      <p class="text-muted text-sm mt-1">Check back soon for helpful guides and tutorials.</p>
     </div>
   <% end %>
 </div>
