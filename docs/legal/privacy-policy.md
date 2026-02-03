@@ -51,27 +51,25 @@ When you install our GitHub App on a repository, we receive:
 
 ### When We Analyze Your Code
 
-This is important, so we'll be specific:
+This is important, so we'll be clear about our security measures:
 
 **Initial Codebase Analysis (when you first connect a repository):**
-1. We perform a shallow `git clone` of your repository (latest commit only, no history)
-2. The code is cloned into a temporary Docker container
-3. Our AI (Anthropic's Claude) reads and analyzes the code structure
-4. The analysis generates a summary and documentation suggestions
-5. **The cloned code is deleted when the container terminates**
-6. We store only the generated summary and metadata—not your source code
+1. We create a temporary, isolated copy of your repository (current state only—no version history)
+2. This copy exists in a secure, sandboxed environment
+3. Our AI analyzes the code structure and generates documentation suggestions
+4. **The environment is destroyed immediately after analysis**
+5. We store only the generated summary and metadata—not your source code
 
 **Ongoing PR Analysis (when you merge a pull request):**
-1. GitHub sends us a webhook notification
-2. We clone the repository again (shallow clone) for context
-3. We also fetch the specific diff for that PR
-4. Our AI analyzes the changes in context of the full codebase
-5. Generated documentation is stored; **your code is deleted**
+1. GitHub notifies us of the change
+2. We create another temporary, isolated copy for context
+3. Our AI analyzes the changes and generates documentation
+4. **The isolated environment is destroyed; your code is deleted**
 
-**Key points:**
-- We clone your code temporarily to analyze it—this is necessary for accurate documentation
-- Code exists only in ephemeral Docker containers during analysis
-- Containers are destroyed after each analysis completes
+**Security measures:**
+- Your code only exists in isolated, ephemeral environments during analysis
+- Each analysis runs in a fresh environment that's destroyed after use
+- Environments are sandboxed with no persistent storage
 - We never store your source code in our database
 - Only AI-generated documentation and metadata are retained
 
@@ -113,36 +111,33 @@ We never sell your data. We never use your code to train AI models.
 
 ## Code Access: The Important Bit
 
-Let's be explicit about what happens with your code:
+Let's be clear about what happens with your code:
 
 ### What We Access
-- **Your full repository** (shallow clone—latest commit only, no git history)
-- Code diffs from merged pull requests
+- **Your repository contents** (current state only—no version history)
+- Code changes from merged pull requests
 - Commit messages and PR descriptions
-- Repository structure and file contents
 
-### What We Send to AI
-- Your source code files (during analysis)
-- Code diffs and surrounding context
+### What Gets Analyzed
+- Your source code files (temporarily, during analysis)
+- Code changes and surrounding context
 - Project metadata you've provided
-- Previously generated documentation (for consistency)
 
 ### What We Store
 - Generated articles and documentation
-- Metadata about analyzed PRs (PR number, URL, commit SHA)
+- Metadata about analyzed changes (PR number, URL)
 - AI-generated summaries of your codebase
 - **NOT your actual source code**
 
-### What Anthropic (Our AI Provider) Receives
-- Your source code (temporarily, during API calls)
+### What Our AI Provider Receives
+- Your source code (temporarily, for analysis)
 - Per our agreement: they do not store your code after processing
 - Per our agreement: they do not train models on your data
-- Processing happens in memory; your code is not retained
 
 ### The Lifecycle of Your Code
-1. **Clone** → Code is pulled into an isolated Docker container
+1. **Copy** → Your code is copied into an isolated, secure environment
 2. **Analyze** → AI reads the code and generates documentation
-3. **Delete** → Container is destroyed, code is gone
+3. **Delete** → The environment is destroyed, your code is gone
 4. **Store** → Only the generated documentation remains
 
 This happens for each analysis. We never accumulate or archive your source code.
@@ -153,9 +148,9 @@ This happens for each analysis. We never accumulate or archive your source code.
 
 We share data with these services to operate supportpages.io:
 
-### Anthropic (Claude API)
+### Anthropic
 **Purpose:** AI analysis and documentation generation
-**Data shared:** Code diffs, project context
+**Data shared:** Source code (temporarily), project context
 **Location:** USA
 **Privacy policy:** [anthropic.com/privacy](https://www.anthropic.com/privacy)
 
