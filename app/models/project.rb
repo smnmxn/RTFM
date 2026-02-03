@@ -39,7 +39,8 @@ class Project < ApplicationRecord
     :help_centre_title,
     :help_centre_tagline,
     :support_email,
-    :support_phone
+    :support_phone,
+    :dark_mode
   ], coder: JSON
 
   # AI settings
@@ -301,6 +302,10 @@ class Project < ApplicationRecord
 
   def has_support_contact?
     support_email.present? || support_phone.present?
+  end
+
+  def dark_mode_enabled?
+    dark_mode == true || dark_mode == "true" || dark_mode == "1"
   end
 
   # AI settings helper methods

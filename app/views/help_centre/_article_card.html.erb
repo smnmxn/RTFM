@@ -1,21 +1,21 @@
 <%= link_to help_centre_article_path(section_slug: article.section.slug, article_slug: article.slug),
-    class: "block bg-white rounded-xl border border-gray-200 hover:border-brand
+    class: "block bg-card rounded-xl border border-default hover:border-brand
            hover:shadow-md transition-all duration-200 p-5 group" do %>
   <div class="flex items-start gap-4">
     <!-- Icon -->
-    <div class="flex-shrink-0 w-10 h-10 bg-gray-100 text-gray-500 rounded-lg
+    <div class="flex-shrink-0 w-10 h-10 bg-muted text-body rounded-lg
                 flex items-center justify-center group-hover:bg-brand-light
                 group-hover:text-brand transition-colors">
       <%= heroicon "document-text", options: { class: "w-5 h-5" } %>
     </div>
 
     <div class="flex-1 min-w-0">
-      <h3 class="text-base font-semibold text-gray-900 group-hover:text-brand
+      <h3 class="text-base font-semibold text-heading group-hover:text-brand
                  transition-colors mb-1"><%= article.title %></h3>
       <% if article.introduction.present? %>
-        <p class="text-gray-500 text-sm line-clamp-2"><%= article.introduction %></p>
+        <p class="text-body text-sm line-clamp-2"><%= article.introduction %></p>
       <% end %>
-      <div class="flex items-center gap-4 mt-3 text-xs text-gray-400">
+      <div class="flex items-center gap-4 mt-3 text-xs text-muted">
         <% if article.steps.any? %>
           <span class="flex items-center gap-1">
             <%= heroicon "clipboard-document-check", options: { class: "w-4 h-4" } %>
@@ -29,6 +29,6 @@
     </div>
 
     <!-- Arrow -->
-    <%= heroicon "chevron-right", options: { class: "w-5 h-5 text-gray-300 group-hover:text-brand group-hover:translate-x-1 transition-all flex-shrink-0 mt-1" } %>
+    <%= heroicon "chevron-right", options: { class: "w-5 h-5 text-muted group-hover:text-brand group-hover:translate-x-1 transition-all flex-shrink-0 mt-1" } %>
   </div>
 <% end %>

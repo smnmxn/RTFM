@@ -8,8 +8,8 @@
 
       <!-- Section Navigation -->
       <% if @section && @section.articles.published.count > 1 %>
-        <nav class="bg-gray-50 rounded-lg p-4">
-          <h4 class="text-sm font-semibold text-gray-900 mb-3"><%= @section.name %></h4>
+        <nav class="bg-muted rounded-lg p-4">
+          <h4 class="text-sm font-semibold text-heading mb-3"><%= @section.name %></h4>
           <ul class="space-y-2 text-sm">
             <% @section.articles.published.limit(8).each do |art| %>
               <li>
@@ -17,7 +17,7 @@
                     help_centre_article_path(section_slug: art.section.slug, article_slug: art.slug),
                     class: art.id == @article.id ?
                       "text-brand font-medium" :
-                      "text-gray-600 hover:text-brand transition-colors" %>
+                      "text-body hover:text-brand transition-colors" %>
               </li>
             <% end %>
             <% if @section.articles.published.count > 8 %>
@@ -35,23 +35,23 @@
 
   <!-- Main Content -->
   <div class="lg:col-span-3">
-    <div class="bg-white shadow rounded-xl">
+    <div class="bg-card shadow rounded-xl border border-subtle">
       <!-- Article Header -->
-      <div class="px-6 py-5 border-b border-gray-200">
+      <div class="px-6 py-5 border-b border-default">
         <nav class="text-sm mb-3">
           <%= link_to "Help Centre",
               help_centre_path,
               class: "text-brand hover:opacity-80 transition-colors" %>
           <% if @section %>
-            <span class="mx-2 text-gray-400">/</span>
+            <span class="mx-2 text-muted">/</span>
             <%= link_to @section.name,
                 help_centre_section_path(section_slug: @section.slug),
                 class: "text-brand hover:opacity-80 transition-colors" %>
           <% end %>
         </nav>
-        <h1 class="text-2xl font-bold text-gray-900"><%= @article.title %></h1>
+        <h1 class="text-2xl font-bold text-heading"><%= @article.title %></h1>
         <% if @article.published_at.present? %>
-          <p class="mt-2 text-sm text-gray-500">
+          <p class="mt-2 text-sm text-body">
             Updated <%= time_ago_in_words(@article.published_at) %> ago
           </p>
         <% end %>
@@ -87,7 +87,7 @@
     <!-- Related Articles -->
     <% if @related_articles.any? %>
       <div class="mt-8">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Related articles</h3>
+        <h3 class="text-lg font-semibold text-heading mb-4">Related articles</h3>
         <div class="grid gap-4 sm:grid-cols-2">
           <% @related_articles.each do |article| %>
             <%= render "help_centre/article_card", article: article %>

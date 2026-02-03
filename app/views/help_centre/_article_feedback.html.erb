@@ -1,20 +1,20 @@
 <%# locals: (article:) %>
-<div class="border-t border-gray-200 pt-8 mt-8">
+<div class="border-t border-default pt-8 mt-8">
   <div class="text-center" data-controller="feedback" data-feedback-article-id-value="<%= article.id %>">
-    <p class="text-gray-600 mb-4">Was this article helpful?</p>
+    <p class="text-body mb-4">Was this article helpful?</p>
     <div class="flex justify-center gap-3" data-feedback-target="buttons">
       <button type="button"
               data-action="click->feedback#helpful"
-              class="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-300
-                     rounded-lg text-gray-700 hover:bg-green-50 hover:border-green-300
+              class="inline-flex items-center gap-2 px-5 py-2.5 bg-card border border-default
+                     rounded-lg text-heading hover:bg-green-50 hover:border-green-300
                      hover:text-green-700 transition-colors font-medium">
 <%= heroicon "hand-thumb-up", options: { class: "w-5 h-5" } %>
         Yes, helpful
       </button>
       <button type="button"
               data-action="click->feedback#notHelpful"
-              class="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-300
-                     rounded-lg text-gray-700 hover:bg-red-50 hover:border-red-300
+              class="inline-flex items-center gap-2 px-5 py-2.5 bg-card border border-default
+                     rounded-lg text-heading hover:bg-red-50 hover:border-red-300
                      hover:text-red-700 transition-colors font-medium">
 <%= heroicon "hand-thumb-down", options: { class: "w-5 h-5" } %>
         Not helpful
