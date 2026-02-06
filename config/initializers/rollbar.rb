@@ -4,7 +4,7 @@ Rollbar.configure do |config|
   config.environment = Rails.env
 
   # Filter sensitive parameters (inherits from Rails)
-  config.scrub_fields |= [:password, :secret, :token, :_key, :access_token, :github_token]
+  config.scrub_fields |= [ :password, :secret, :token, :_key, :access_token, :github_token ]
 
   # Add person tracking for logged-in users
   config.person_method = "current_user"

@@ -81,8 +81,8 @@ class StepImageTest < ActiveSupport::TestCase
   end
 
   test "page_errors returns array from render_metadata" do
-    si = StepImage.new(render_metadata: { "pageErrors" => ["Error 1", "Error 2"] })
-    assert_equal ["Error 1", "Error 2"], si.page_errors
+    si = StepImage.new(render_metadata: { "pageErrors" => [ "Error 1", "Error 2" ] })
+    assert_equal [ "Error 1", "Error 2" ], si.page_errors
   end
 
   test "page_errors returns empty array when nil" do
@@ -91,8 +91,8 @@ class StepImageTest < ActiveSupport::TestCase
   end
 
   test "failed_resources returns array from render_metadata" do
-    si = StepImage.new(render_metadata: { "failedResources" => ["res1.js"] })
-    assert_equal ["res1.js"], si.failed_resources
+    si = StepImage.new(render_metadata: { "failedResources" => [ "res1.js" ] })
+    assert_equal [ "res1.js" ], si.failed_resources
   end
 
   test "failed_resources returns empty array when nil" do

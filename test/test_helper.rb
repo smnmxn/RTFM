@@ -1,19 +1,19 @@
 # Run with: COVERAGE=1 rails test
-if ENV['COVERAGE']
-  require 'simplecov'
-  SimpleCov.start 'rails' do
+if ENV["COVERAGE"]
+  require "simplecov"
+  SimpleCov.start "rails" do
     enable_coverage :branch
 
-    add_filter '/test/'
-    add_filter '/config/'
-    add_filter '/vendor/'
+    add_filter "/test/"
+    add_filter "/config/"
+    add_filter "/vendor/"
 
-    add_group 'Models', 'app/models'
-    add_group 'Controllers', 'app/controllers'
-    add_group 'Services', 'app/services'
-    add_group 'Jobs', 'app/jobs'
-    add_group 'Helpers', 'app/helpers'
-    add_group 'Mailers', 'app/mailers'
+    add_group "Models", "app/models"
+    add_group "Controllers", "app/controllers"
+    add_group "Services", "app/services"
+    add_group "Jobs", "app/jobs"
+    add_group "Helpers", "app/helpers"
+    add_group "Mailers", "app/mailers"
   end
 end
 
@@ -27,7 +27,7 @@ module ActiveSupport
   class TestCase
     # Run tests in parallel with specified workers
     # Disable parallelization when measuring coverage (COVERAGE=1 rails test)
-    parallelize(workers: ENV['COVERAGE'] ? 1 : :number_of_processors)
+    parallelize(workers: ENV["COVERAGE"] ? 1 : :number_of_processors)
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all

@@ -28,7 +28,7 @@ class ProjectTest < ActiveSupport::TestCase
   end
 
   test "accepts valid github_repo formats" do
-    valid_repos = ["user/repo", "org-name/repo.js", "user123/my_repo"]
+    valid_repos = [ "user/repo", "org-name/repo.js", "user123/my_repo" ]
     valid_repos.each do |repo|
       project = Project.new(user: @user, name: "Test", github_repo: repo)
       assert project.valid?, "Expected #{repo} to be valid"

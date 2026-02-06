@@ -424,7 +424,7 @@ class HelpCentreChatService
     # Base delay ~30ms per chunk with slight variance
     base_delay = 0.03
     variance = rand(-0.01..0.02)
-    length_factor = [chunk.length / 100.0, 0.02].min
-    [base_delay + variance + length_factor, 0.01].max
+    length_factor = [ chunk.length / 100.0, 0.02 ].min
+    [ base_delay + variance + length_factor, 0.01 ].max
   end
 end

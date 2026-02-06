@@ -14,7 +14,7 @@ module ToastNotifier
   # @param notification_metadata [Hash, nil] structured context for richer email content
   def broadcast_toast(project, message:, type: "success", action_url: nil, action_label: "View", event_type: nil, notification_metadata: nil)
     Turbo::StreamsChannel.broadcast_append_to(
-      [project, :notifications],
+      [ project, :notifications ],
       target: "toast-container",
       partial: "shared/toast",
       locals: {

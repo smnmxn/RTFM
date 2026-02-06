@@ -78,7 +78,7 @@ class GithubRepositoriesServiceTest < ActiveSupport::TestCase
   test "skips installations that raise unauthorized" do
     create_installation(
       account_login: "alice",
-      repos: [{ full_name: "alice/repo1" }]
+      repos: [ { full_name: "alice/repo1" } ]
     )
     create_installation(
       account_login: "bad-org",
@@ -95,7 +95,7 @@ class GithubRepositoriesServiceTest < ActiveSupport::TestCase
   test "skips installations that raise not found" do
     create_installation(
       account_login: "alice",
-      repos: [{ full_name: "alice/repo1" }]
+      repos: [ { full_name: "alice/repo1" } ]
     )
     create_installation(
       account_login: "removed-org",

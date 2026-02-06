@@ -202,7 +202,7 @@ class Article < ApplicationRecord
         .order(created_at: :asc)
 
       broadcast_replace_to(
-        [project, :inbox],
+        [ project, :inbox ],
         target: "articles-section",
         partial: "projects/inbox_articles_section",
         locals: { inbox_articles: inbox_articles }
@@ -211,7 +211,7 @@ class Article < ApplicationRecord
 
     # Always update progress counter
     broadcast_replace_to(
-      [project, :inbox],
+      [ project, :inbox ],
       target: "inbox-progress",
       partial: "projects/inbox_progress",
       locals: { project: project }
@@ -220,7 +220,7 @@ class Article < ApplicationRecord
     # Notify any user viewing this article that it has been updated
     if generation_completed? && saved_change_to_generation_status?
       broadcast_append_to(
-        [project, :inbox],
+        [ project, :inbox ],
         target: "inbox-notifications",
         html: "<div data-article-updated-id=\"#{id}\" data-status=\"#{generation_status}\" class=\"hidden\"></div>"
       )
@@ -229,7 +229,7 @@ class Article < ApplicationRecord
     # Update folder tree when generation status changes (removes "..." indicator)
     if saved_change_to_generation_status?
       broadcast_replace_to(
-        [project, :inbox],
+        [ project, :inbox ],
         target: "articles-folder-tree",
         partial: "projects/articles_folder_tree",
         locals: {

@@ -11,6 +11,6 @@ class CreateArticleUpdateChecks < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :article_update_checks, [:project_id, :status]
+    add_index :article_update_checks, [ :project_id, :status ]
   end
 end

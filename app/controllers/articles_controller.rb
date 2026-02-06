@@ -163,11 +163,11 @@ class ArticlesController < ApplicationController
     updated_content[field] ||= []
 
     new_item = case field
-               when "steps"
+    when "steps"
                  { "title" => "New Step", "content" => "Step content here..." }
-               else
+    else
                  "New item"
-               end
+    end
 
     updated_content[field] << new_item
 

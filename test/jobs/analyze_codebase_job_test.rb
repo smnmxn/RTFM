@@ -44,7 +44,7 @@ class AnalyzeCodebaseJobTest < ActiveJob::TestCase
 
   test "updates project with results on success" do
     summary = "# Test Project\n\nA test summary"
-    metadata = { "tech_stack" => ["ruby", "rails"] }
+    metadata = { "tech_stack" => [ "ruby", "rails" ] }
     commit_sha = "abc123def456"
 
     job = AnalyzeCodebaseJob.new

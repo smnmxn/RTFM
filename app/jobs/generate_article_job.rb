@@ -165,7 +165,7 @@ class GenerateArticleJob < ApplicationJob
       if status.success?
         json_content = read_output_file(output_dir, "article.json")
         commit_sha = read_output_file(output_dir, "commit_sha.txt")
-        # Log usage.json for debugging
+      # Log usage.json for debugging
       usage_content = read_output_file(output_dir, "usage.json")
       Rails.logger.info "[GenerateArticleJob] usage.json: #{usage_content}"
 

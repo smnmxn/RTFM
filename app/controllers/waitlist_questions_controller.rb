@@ -5,7 +5,7 @@ class WaitlistQuestionsController < ApplicationController
   def show
     if @entry.questions_completed_at.present?
       redirect_to login_path, notice: "You've already completed the waitlist questions."
-      return
+      nil
     end
   end
 

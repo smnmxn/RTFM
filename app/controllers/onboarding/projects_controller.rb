@@ -43,7 +43,7 @@ module Onboarding
 
       # Handle legacy single-repo format for backwards compatibility
       if repositories_params.empty? && params[:github_repo].present?
-        repositories_params = [{ "github_repo" => params[:github_repo], "installation_id" => params[:installation_id], "selected" => "1" }]
+        repositories_params = [ { "github_repo" => params[:github_repo], "installation_id" => params[:installation_id], "selected" => "1" } ]
         Rails.logger.info "[Onboarding::ProjectsController#connect] Using legacy format: #{repositories_params.inspect}"
       end
 

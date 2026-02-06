@@ -72,9 +72,9 @@ module DockerVolumeHelper
   # - ANTHROPIC_API_KEY: Standard API key
   def claude_auth_docker_args
     if ENV["CLAUDE_CODE_OAUTH_TOKEN"].present?
-      ["-e", "CLAUDE_CODE_OAUTH_TOKEN=#{ENV['CLAUDE_CODE_OAUTH_TOKEN']}"]
+      [ "-e", "CLAUDE_CODE_OAUTH_TOKEN=#{ENV['CLAUDE_CODE_OAUTH_TOKEN']}" ]
     else
-      ["-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}"]
+      [ "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}" ]
     end
   end
 end

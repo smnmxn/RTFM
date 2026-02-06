@@ -131,11 +131,11 @@ class Section < ApplicationRecord
       Rails.logger.info "[Section#broadcast_refreshes] SKIPPING broadcast - sections being generated"
     else
       Rails.logger.info "[Section#broadcast_refreshes] Broadcasting refresh for section #{id}"
-      Turbo::StreamsChannel.broadcast_refresh_to([project, :onboarding])
+      Turbo::StreamsChannel.broadcast_refresh_to([ project, :onboarding ])
     end
     # Also broadcast to inbox when recommendations_status changes
     if saved_change_to_recommendations_status?
-      Turbo::StreamsChannel.broadcast_refresh_to([project, :inbox])
+      Turbo::StreamsChannel.broadcast_refresh_to([ project, :inbox ])
     end
   end
 

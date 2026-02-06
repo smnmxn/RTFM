@@ -35,13 +35,13 @@ class Recommendation < ApplicationRecord
     if destroyed?
       # Remove the specific recommendation row
       broadcast_remove_to(
-        [project, :inbox],
+        [ project, :inbox ],
         target: "recommendation_#{id}_row"
       )
     elsif previously_new_record?
       # Append new recommendation to the list
       broadcast_append_to(
-        [project, :inbox],
+        [ project, :inbox ],
         target: "recommendations-list",
         partial: "projects/recommendation_row",
         locals: { recommendation: self, selected: false }
@@ -49,7 +49,7 @@ class Recommendation < ApplicationRecord
     elsif pending?
       # Update the specific recommendation row (if still pending)
       broadcast_replace_to(
-        [project, :inbox],
+        [ project, :inbox ],
         target: "recommendation_#{id}_row",
         partial: "projects/recommendation_row",
         locals: { recommendation: self, selected: false }
@@ -58,13 +58,13 @@ class Recommendation < ApplicationRecord
 
     # Update progress counter
     broadcast_replace_to(
-      [project, :inbox],
+      [ project, :inbox ],
       target: "inbox-progress",
       partial: "projects/inbox_progress",
       locals: { project: project }
     )
 
     # Keep recommendations stream refresh for other views
-    Turbo::StreamsChannel.broadcast_refresh_to([project, :recommendations])
+    Turbo::StreamsChannel.broadcast_refresh_to([ project, :recommendations ])
   end
 end
