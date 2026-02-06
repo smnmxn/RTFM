@@ -133,7 +133,9 @@ jobs:
           node-version: '20'
 
       - name: Install Playwright browsers
-        run: npx playwright@1.57.0 install --with-deps
+        run: |
+          npm install playwright@1.57.0
+          npx playwright install --with-deps
 
       - name: Run E2E tests
         env:
