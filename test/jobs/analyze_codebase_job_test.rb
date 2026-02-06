@@ -5,31 +5,34 @@ class AnalyzeCodebaseJobTest < ActiveJob::TestCase
   setup do
     @project = projects(:one)
     @user = users(:one)
+    # Create a project_repository so the job passes the guard clause
+    @project_repo = @project.project_repositories.find_or_create_by!(
+      github_repo: @project.github_repo,
+      github_installation_id: 12345
+    )
   end
 
   test "does nothing if project not found" do
-    # Should not raise an error
     assert_nothing_raised do
       AnalyzeCodebaseJob.perform_now(99999)
     end
   end
 
-  test "does nothing if user has no github_token" do
-    @user.update!(github_token: nil)
+  test "does nothing if no installation or repositories" do
+    project = projects(:two)
 
-    AnalyzeCodebaseJob.perform_now(@project.id)
+    AnalyzeCodebaseJob.perform_now(project.id)
 
-    @project.reload
-    assert_nil @project.analysis_status
+    project.reload
+    assert_nil project.analysis_status
   end
 
   test "sets status to running during analysis" do
     @project.update!(analysis_status: "pending")
     status_during_analysis = nil
 
-    # Create a job that captures status during execution
     job = AnalyzeCodebaseJob.new
-    job.define_singleton_method(:run_analysis) do |project, user|
+    job.define_singleton_method(:run_analysis) do |project|
       status_during_analysis = project.reload.analysis_status
       { success: true, summary: "Test", metadata: {}, commit_sha: "abc123" }
     end
@@ -45,7 +48,7 @@ class AnalyzeCodebaseJobTest < ActiveJob::TestCase
     commit_sha = "abc123def456"
 
     job = AnalyzeCodebaseJob.new
-    job.define_singleton_method(:run_analysis) do |project, user|
+    job.define_singleton_method(:run_analysis) do |project|
       {
         success: true,
         summary: summary,
@@ -66,7 +69,7 @@ class AnalyzeCodebaseJobTest < ActiveJob::TestCase
 
   test "sets status to failed on unsuccessful analysis" do
     job = AnalyzeCodebaseJob.new
-    job.define_singleton_method(:run_analysis) do |project, user|
+    job.define_singleton_method(:run_analysis) do |project|
       { success: false, error: "Docker failed" }
     end
 
@@ -78,7 +81,7 @@ class AnalyzeCodebaseJobTest < ActiveJob::TestCase
 
   test "sets status to failed and re-raises on exception" do
     job = AnalyzeCodebaseJob.new
-    job.define_singleton_method(:run_analysis) do |project, user|
+    job.define_singleton_method(:run_analysis) do |project|
       raise StandardError, "Something went wrong"
     end
 

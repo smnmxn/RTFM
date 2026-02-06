@@ -38,6 +38,16 @@ end
 
 module ActionDispatch
   class IntegrationTest
+    # Set the request host to the app subdomain so routes behind
+    # AppSubdomainConstraint are reachable in integration tests.
+    def use_app_subdomain
+      base = Rails.application.config.x.base_domain.split(":").first
+      port = Rails.application.config.x.base_domain.split(":")[1]
+      app_host = "app.#{base}"
+      app_host = "#{app_host}:#{port}" if port.present?
+      host! app_host
+    end
+
     def sign_in_as(user)
       OmniAuth.config.mock_auth[:github] = OmniAuth::AuthHash.new({
         provider: "github",
@@ -52,8 +62,10 @@ module ActionDispatch
         }
       })
 
+      use_app_subdomain
       post "/auth/github"
       follow_redirect!
+      use_app_subdomain # Restore host in case OmniAuth redirect changed it
     end
 
     def sign_out

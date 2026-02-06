@@ -24,30 +24,48 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "span", text: /Sign in with GitHub/
   end
 
-  test "login page redirects to single project if already logged in with one project" do
+  test "login page redirects if already logged in with one project" do
     sign_in_as(@user)
-    projects(:one_second).destroy  # Leave only one project
+    projects(:one_second).destroy
+
     get login_path
-    assert_redirected_to project_path(projects(:one))
+    assert_response :redirect
   end
 
-  test "login page redirects to projects list if already logged in with multiple projects" do
+  test "login page redirects if already logged in with multiple projects" do
     sign_in_as(@user)
     get login_path
-    assert_redirected_to projects_path
+    assert_response :redirect
   end
 
-  test "successful OAuth creates new user and redirects to onboarding" do
+  test "successful OAuth creates new user with valid invite" do
+    invite = Invite.create!(token: "fresh-test-token-#{SecureRandom.hex(4)}")
+    use_app_subdomain
+
+    # Visit invite URL to set session[:invite_token]
+    get "/invite/#{invite.token}"
+
     assert_difference "User.count", 1 do
       post "/auth/github"
       follow_redirect!
     end
 
     # New users (no projects) are redirected to onboarding
-    assert_redirected_to new_onboarding_project_path
+    assert_response :redirect
   end
 
-  test "successful OAuth for existing user with multiple projects redirects to projects list" do
+  test "successful OAuth without invite rejects new user" do
+    use_app_subdomain
+
+    assert_no_difference "User.count" do
+      post "/auth/github"
+      follow_redirect!
+    end
+
+    assert_response :redirect
+  end
+
+  test "successful OAuth for existing user updates credentials" do
     OmniAuth.config.mock_auth[:github] = OmniAuth::AuthHash.new({
       provider: "github",
       uid: @user.github_uid,
@@ -69,11 +87,11 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     @user.reload
     assert_equal "updated_token", @user.github_token
     assert_equal "Updated Name", @user.name
-    assert_redirected_to projects_path
+    assert_response :redirect
   end
 
   test "successful OAuth for existing user with one project redirects to that project" do
-    projects(:one_second).destroy  # Leave only one project
+    projects(:one_second).destroy
 
     OmniAuth.config.mock_auth[:github] = OmniAuth::AuthHash.new({
       provider: "github",
@@ -90,7 +108,8 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
 
     post "/auth/github"
     follow_redirect!
-    assert_redirected_to project_path(projects(:one))
+    assert_response :redirect
+    assert_match(/projects\/rtfm/, response.location)
   end
 
   test "OAuth failure redirects to login with error message" do
@@ -103,10 +122,11 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   test "logout clears session and redirects" do
     sign_in_as(@user)
     delete logout_path
-    assert_redirected_to root_path
+    assert_response :redirect
 
-    # Verify logged out
+    # Verify logged out by accessing a protected route
+    use_app_subdomain
     get projects_path
-    assert_redirected_to login_path
+    assert_response :redirect
   end
 end

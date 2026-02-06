@@ -16,10 +16,9 @@ class ProjectTest < ActiveSupport::TestCase
     assert_includes project.errors[:name], "can't be blank"
   end
 
-  test "requires github_repo" do
+  test "allows blank github_repo" do
     project = Project.new(user: @user, name: "Test", github_repo: nil)
-    assert_not project.valid?
-    assert_includes project.errors[:github_repo], "can't be blank"
+    assert project.valid?
   end
 
   test "validates github_repo format" do
@@ -69,48 +68,6 @@ class ProjectTest < ActiveSupport::TestCase
   test "has many updates" do
     project = projects(:one)
     assert_respond_to project, :updates
-  end
-
-  test "generates webhook_secret on create" do
-    project = Project.create!(user: @user, name: "New Project", github_repo: "user/new-repo")
-    assert_not_nil project.webhook_secret
-    assert_equal 64, project.webhook_secret.length
-  end
-
-  test "does not overwrite existing webhook_secret" do
-    project = Project.new(user: @user, name: "Test", github_repo: "user/repo", webhook_secret: "existing_secret")
-    project.save!
-    assert_equal "existing_secret", project.webhook_secret
-  end
-
-  test "verify_webhook_signature returns true for valid signature" do
-    project = projects(:one)
-    payload = '{"test": "data"}'
-    signature = "sha256=" + OpenSSL::HMAC.hexdigest(
-      OpenSSL::Digest.new("sha256"),
-      project.webhook_secret,
-      payload
-    )
-
-    assert project.verify_webhook_signature(payload, signature)
-  end
-
-  test "verify_webhook_signature returns false for invalid signature" do
-    project = projects(:one)
-    payload = '{"test": "data"}'
-
-    assert_not project.verify_webhook_signature(payload, "sha256=invalid")
-  end
-
-  test "verify_webhook_signature returns false for nil signature" do
-    project = projects(:one)
-    assert_not project.verify_webhook_signature('{"test": "data"}', nil)
-  end
-
-  test "verify_webhook_signature returns false for blank webhook_secret" do
-    project = Project.new(user: @user, name: "Test", github_repo: "user/repo")
-    project.webhook_secret = nil
-    assert_not project.verify_webhook_signature('{"test": "data"}', "sha256=something")
   end
 
   # Subdomain validation tests
