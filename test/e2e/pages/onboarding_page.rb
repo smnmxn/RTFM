@@ -140,6 +140,35 @@ module E2E
         :unknown
       end
 
+      # Error and retry helpers
+      def has_error_state?
+        has_text?("failed") || has_text?("error") || has_text?("Error")
+      end
+
+      def has_retry_button?
+        has_element?("a:has-text('Retry')") || has_element?("input[value='Retry']") || has_element?("button:has-text('Retry')")
+      end
+
+      # Sections helpers
+      def pending_section_count
+        page.locator("#pending-sections-list [id^='section_']").count
+      rescue
+        0
+      end
+
+      def has_section_card?(name)
+        has_text?(name)
+      end
+
+      def has_all_reviewed_message?
+        has_text?("All topics reviewed")
+      end
+
+      # Generating helpers
+      def has_progress_ui?
+        has_text?("Creating your help centre") || has_text?("Generating") || has_element?(".animate-pulse")
+      end
+
       private
 
       def select_option(selector, value)

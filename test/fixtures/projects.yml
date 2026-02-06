@@ -4,6 +4,7 @@ one:
   slug: rtfm
   github_repo: alice/rtfm
   subdomain: rtfm
+  branding: '{"support_email":"support@rtfm.example.com","support_phone":"+1 (555) 123-4567","help_centre_title":"RTFM Help Centre","help_centre_tagline":"How can we help you today?"}'
 
 one_second:
   user: one
@@ -18,3 +19,94 @@ two:
   slug: another-project
   github_repo: bob/another-project
   subdomain: another-project
+
+# ========================================
+# ONBOARDING PROJECTS - For E2E testing
+# ========================================
+
+onboarding_setup:
+  user: one
+  name: Onboarding Setup
+  slug: onboarding-setup
+  github_repo: alice/onboarding-setup
+  subdomain: onboarding-setup
+  onboarding_step: setup
+  github_app_installation: alice_installation
+
+onboarding_analyze:
+  user: one
+  name: Onboarding Analyze
+  slug: onboarding-analyze
+  github_repo: alice/onboarding-analyze
+  subdomain: onboarding-analyze
+  onboarding_step: analyze
+
+onboarding_analyze_completed:
+  user: one
+  name: Onboarding Analyze Completed
+  slug: onboarding-analyze-completed
+  github_repo: alice/onboarding-analyze-completed
+  subdomain: onb-analyze-done
+  onboarding_step: analyze
+  analysis_status: completed
+  sections_generation_status: completed
+
+onboarding_analyze_failed:
+  user: one
+  name: Onboarding Analyze Failed
+  slug: onboarding-analyze-failed
+  github_repo: alice/onboarding-analyze-failed
+  subdomain: onb-analyze-fail
+  onboarding_step: analyze
+  analysis_status: failed
+
+onboarding_sections:
+  user: one
+  name: Onboarding Sections
+  slug: onboarding-sections
+  github_repo: alice/onboarding-sections
+  subdomain: onb-sections
+  onboarding_step: sections
+  analysis_status: completed
+  sections_generation_status: completed
+
+onboarding_generating:
+  user: one
+  name: Onboarding Generating
+  slug: onboarding-generating
+  github_repo: alice/onboarding-generating
+  subdomain: onb-generating
+  onboarding_step: generating
+  analysis_status: completed
+
+# ========================================
+# CUSTOM DOMAIN PROJECTS - For E2E testing
+# ========================================
+
+custom_domain_pending:
+  user: one
+  name: Custom Domain Pending
+  slug: custom-domain-pending
+  github_repo: alice/cd-pending
+  subdomain: cd-pending
+  custom_domain: help.pending-example.com
+  custom_domain_status: pending
+
+custom_domain_active:
+  user: one
+  name: Custom Domain Active
+  slug: custom-domain-active
+  github_repo: alice/cd-active
+  subdomain: cd-active
+  custom_domain: help.active-example.com
+  custom_domain_status: active
+  custom_domain_verified_at: 2025-12-01 10:00:00
+
+custom_domain_failed:
+  user: one
+  name: Custom Domain Failed
+  slug: custom-domain-failed
+  github_repo: alice/cd-failed
+  subdomain: cd-failed
+  custom_domain: help.failed-example.com
+  custom_domain_status: failed

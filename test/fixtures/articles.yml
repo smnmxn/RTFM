@@ -153,3 +153,36 @@ inbox_article_second:
       - "Never share your API key publicly."
       - "Rotate keys regularly for security."
     summary: "Your API access is now configured!"
+
+# ========================================
+# HELP CENTRE ARTICLES - For E2E testing
+# ========================================
+
+# Published article with structured content in troubleshooting section
+published_structured_article:
+  project: one
+  recommendation: generated_recommendation
+  section: troubleshooting
+  title: Fixing login errors
+  slug: fixing-login-errors
+  content: Guide to fixing common login errors.
+  status: published
+  generation_status: generation_completed
+  review_status: approved
+  published_at: 2025-12-02 10:00:00
+  structured_content:
+    introduction: "This guide covers common login errors and how to resolve them."
+    prerequisites:
+      - "A valid user account"
+      - "Access to your email for password resets"
+    steps:
+      - title: "Check your credentials"
+        content: "Make sure you're using the correct email and password."
+      - title: "Clear browser cache"
+        content: "Sometimes stale cookies cause login issues. Clear your cache and try again."
+      - title: "Reset your password"
+        content: "If you still can't log in, use the forgot password link."
+    tips:
+      - "Use a password manager to avoid typos."
+      - "Enable two-factor authentication for better security."
+    summary: "You should now be able to log in successfully!"

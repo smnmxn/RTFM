@@ -1,0 +1,6 @@
+alice_installation:
+  github_installation_id: 12345678
+  account_login: alice
+  account_type: User
+  account_id: 100001
+  user: one
