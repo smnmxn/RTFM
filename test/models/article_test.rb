@@ -189,7 +189,7 @@ class ArticleTest < ActiveSupport::TestCase
   end
 
   test "prerequisites returns array from structured_content" do
-    assert_equal ["A modern browser", "Access to settings"], @draft.prerequisites
+    assert_equal [ "A modern browser", "Access to settings" ], @draft.prerequisites
   end
 
   test "prerequisites returns empty array when nil" do

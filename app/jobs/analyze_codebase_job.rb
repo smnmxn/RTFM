@@ -132,7 +132,7 @@ class AnalyzeCodebaseJob < ApplicationJob
 
       # Check what files were created
       if Dir.exist?(output_dir)
-        files = Dir.entries(output_dir) - [".", ".."]
+        files = Dir.entries(output_dir) - [ ".", ".." ]
         Rails.logger.info "[AnalyzeCodebaseJob] Output files: #{files.join(', ')}"
       end
 
@@ -358,7 +358,7 @@ class AnalyzeCodebaseJob < ApplicationJob
     # Broadcast to the onboarding channel to refresh the analyze status
     Rails.logger.info "[AnalyzeCodebaseJob] Broadcasting targeted update to onboarding_analyze"
     Turbo::StreamsChannel.broadcast_update_to(
-      [project, :onboarding],
+      [ project, :onboarding ],
       target: ActionView::RecordIdentifier.dom_id(project, :onboarding_analyze),
       partial: "onboarding/projects/analyze_status",
       locals: { project: project }

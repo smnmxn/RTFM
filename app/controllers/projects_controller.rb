@@ -585,7 +585,7 @@ class ProjectsController < ApplicationController
 
   def test_toast
     Turbo::StreamsChannel.broadcast_append_to(
-      [@project, :notifications],
+      [ @project, :notifications ],
       target: "toast-container",
       partial: "shared/toast",
       locals: {
@@ -831,12 +831,12 @@ class ProjectsController < ApplicationController
     "recommendations_generated" => { message: "We've got 12 article ideas for you",          status: "success", metadata: { "recommendation_count" => 12, "section_count" => 4 } },
     "article_generated"         => { message: "Your article is ready: Getting Started Guide", status: "success", metadata: { "article_title" => "Getting Started Guide", "article_id" => 1 } },
     "pr_analyzed"               => { message: "We've reviewed code changes from PR #42",                       status: "success", metadata: { "pr_number" => 42, "pr_title" => "Add dark mode support", "article_titles" => [ "Update Authentication Docs", "Add Dark Mode Configuration Guide" ] } },
-    "commit_analyzed"           => { message: "We've reviewed code changes from commit a1b2c3d",               status: "success", metadata: { "commit_sha" => "a1b2c3d4e5f6", "commit_title" => "Fix authentication flow", "article_titles" => [ "Update Login Troubleshooting Guide" ] } },
+    "commit_analyzed"           => { message: "We've reviewed code changes from commit a1b2c3d",               status: "success", metadata: { "commit_sha" => "a1b2c3d4e5f6", "commit_title" => "Fix authentication flow", "article_titles" => [ "Update Login Troubleshooting Guide" ] } }
   }.freeze
 
   def build_sample_notifications(event_type)
     events = if event_type.present? && SAMPLE_NOTIFICATIONS.key?(event_type)
-      [[event_type, SAMPLE_NOTIFICATIONS[event_type]]]
+      [ [ event_type, SAMPLE_NOTIFICATIONS[event_type] ] ]
     else
       SAMPLE_NOTIFICATIONS.to_a
     end

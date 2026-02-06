@@ -25,7 +25,7 @@ class CreateClaudeUsages < ActiveRecord::Migration[8.1]
 
       t.index :job_type
       t.index :created_at
-      t.index [:project_id, :created_at]
+      t.index [ :project_id, :created_at ]
     end
   end
 end

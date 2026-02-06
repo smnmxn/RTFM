@@ -12,6 +12,6 @@ class CreateArticleUpdateSuggestions < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :article_update_suggestions, [:article_update_check_id, :suggestion_type], name: "index_suggestions_on_check_and_type"
+    add_index :article_update_suggestions, [ :article_update_check_id, :suggestion_type ], name: "index_suggestions_on_check_and_type"
   end
 end

@@ -53,7 +53,7 @@ Rails.application.routes.draw do
   # Authenticated app routes (app. subdomain)
   constraints AppSubdomainConstraint do
     # Logout from app subdomain
-    get  "/logout", to: "sessions#destroy"
+    get "/logout", to: "sessions#destroy"
     delete "/logout", to: "sessions#destroy"
 
     # OmniAuth callback on app subdomain

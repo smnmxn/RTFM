@@ -10,7 +10,7 @@ module TestSessionHelper
 
   included do
     if Rails.env.test?
-      skip_before_action :require_authentication, only: [:test_login], raise: false
+      skip_before_action :require_authentication, only: [ :test_login ], raise: false
     end
   end
 

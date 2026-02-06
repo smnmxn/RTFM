@@ -12,10 +12,10 @@ namespace :claude do
 
     # Build auth args using the same logic as the jobs
     if ENV["CLAUDE_CODE_OAUTH_TOKEN"].present?
-      auth_args = ["-e", "CLAUDE_CODE_OAUTH_TOKEN=#{ENV['CLAUDE_CODE_OAUTH_TOKEN']}"]
+      auth_args = [ "-e", "CLAUDE_CODE_OAUTH_TOKEN=#{ENV['CLAUDE_CODE_OAUTH_TOKEN']}" ]
       puts "Auth method: CLAUDE_CODE_OAUTH_TOKEN (Max subscription)"
     elsif ENV["ANTHROPIC_API_KEY"].present?
-      auth_args = ["-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}"]
+      auth_args = [ "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}" ]
       puts "Auth method: ANTHROPIC_API_KEY"
     else
       puts "ERROR: Neither CLAUDE_CODE_OAUTH_TOKEN nor ANTHROPIC_API_KEY is set"

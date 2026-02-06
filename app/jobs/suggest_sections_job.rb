@@ -235,7 +235,7 @@ class SuggestSectionsJob < ApplicationJob
     # Update analyze page (in case user is still there)
     Rails.logger.info "[SuggestSectionsJob] -> updating onboarding_analyze"
     Turbo::StreamsChannel.broadcast_update_to(
-      [project, :onboarding],
+      [ project, :onboarding ],
       target: ActionView::RecordIdentifier.dom_id(project, :onboarding_analyze),
       partial: "onboarding/projects/analyze_status",
       locals: { project: project }
@@ -244,7 +244,7 @@ class SuggestSectionsJob < ApplicationJob
     # Update sections list (in case user is on sections page)
     Rails.logger.info "[SuggestSectionsJob] -> updating pending-sections-list"
     Turbo::StreamsChannel.broadcast_update_to(
-      [project, :onboarding],
+      [ project, :onboarding ],
       target: "pending-sections-list",
       partial: "onboarding/projects/sections_list",
       locals: { project: project, sections: project.sections.pending }
@@ -253,7 +253,7 @@ class SuggestSectionsJob < ApplicationJob
     # Update sections navigation (enable continue button)
     Rails.logger.info "[SuggestSectionsJob] -> updating onboarding-sections-navigation"
     Turbo::StreamsChannel.broadcast_update_to(
-      [project, :onboarding],
+      [ project, :onboarding ],
       target: "onboarding-sections-navigation",
       partial: "onboarding/projects/sections_navigation",
       locals: { project: project, can_continue: project.sections.pending.empty? && !project.sections_being_generated? }
