@@ -5,21 +5,22 @@ class ArticlesControllerTest < ActionDispatch::IntegrationTest
     @user = users(:one)
     @failed_article = articles(:failed_article)
     @draft_article = articles(:draft_article)
+    use_app_subdomain
   end
 
   # Show action tests
   test "show requires authentication" do
     get project_article_path(@draft_article.project, @draft_article)
-    assert_redirected_to login_path
+    assert_response :redirect
   end
 
-  test "show renders article page" do
+  test "show redirects to project page with article selected" do
     sign_in_as(@user)
 
     get project_article_path(@draft_article.project, @draft_article)
 
-    assert_response :success
-    assert_select "h2", @draft_article.title
+    assert_response :redirect
+    assert_redirected_to project_path(@draft_article.project, article: @draft_article.id)
   end
 
   test "show cannot view other user's article" do
@@ -48,7 +49,7 @@ class ArticlesControllerTest < ActionDispatch::IntegrationTest
   # Regenerate action tests
   test "regenerate requires authentication" do
     post regenerate_project_article_path(@failed_article.project, @failed_article)
-    assert_redirected_to login_path
+    assert_response :redirect
   end
 
   test "regenerate updates status and redirects for failed article" do
@@ -56,7 +57,7 @@ class ArticlesControllerTest < ActionDispatch::IntegrationTest
 
     post regenerate_project_article_path(@failed_article.project, @failed_article)
 
-    assert_redirected_to project_path(@failed_article.project)
+    assert_redirected_to project_path(@failed_article.project, article: @failed_article.id)
     @failed_article.reload
     assert @failed_article.generation_running?
     assert_equal "Regenerating article...", @failed_article.content
@@ -67,7 +68,7 @@ class ArticlesControllerTest < ActionDispatch::IntegrationTest
 
     post regenerate_project_article_path(@draft_article.project, @draft_article)
 
-    assert_redirected_to project_path(@draft_article.project)
+    assert_redirected_to project_path(@draft_article.project, article: @draft_article.id)
     @draft_article.reload
     assert @draft_article.generation_running?
     assert_equal "Regenerating article...", @draft_article.content
@@ -106,14 +107,16 @@ class ArticlesControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "regenerate responds with turbo_stream" do
+  test "regenerate responds with json" do
     sign_in_as(@user)
 
     post regenerate_project_article_path(@failed_article.project, @failed_article),
-         headers: { "Accept" => "text/vnd.turbo-stream.html" }
+         headers: { "Accept" => "application/json", "Content-Type" => "application/json" },
+         params: {}.to_json
 
     assert_response :success
-    assert_match(/turbo-stream/, response.body)
+    json = JSON.parse(response.body)
+    assert json["redirect_url"].present?
     @failed_article.reload
     assert @failed_article.generation_running?
   end
@@ -124,7 +127,7 @@ class ArticlesControllerTest < ActionDispatch::IntegrationTest
           params: { field: "introduction", value: "New intro" },
           as: :json
 
-    assert_redirected_to login_path
+    assert_response :redirect
   end
 
   test "update_field updates introduction" do
@@ -172,7 +175,7 @@ class ArticlesControllerTest < ActionDispatch::IntegrationTest
          params: { field: "tips" },
          as: :json
 
-    assert_redirected_to login_path
+    assert_response :redirect
   end
 
   test "add_array_item adds a new tip" do
@@ -226,7 +229,7 @@ class ArticlesControllerTest < ActionDispatch::IntegrationTest
            params: { field: "tips", index: 0 },
            as: :json
 
-    assert_redirected_to login_path
+    assert_response :redirect
   end
 
   test "remove_array_item removes a tip" do

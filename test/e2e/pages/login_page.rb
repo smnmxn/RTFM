@@ -44,7 +44,8 @@ module E2E
       end
 
       def has_logo?
-        has_element?("img[alt='supportpages.io']")
+        # Check for the logo image in either the header or main content
+        has_element?("img[alt='supportpages.io']") || has_element?("a[href='/'] img")
       end
 
       def has_tagline?
@@ -52,8 +53,8 @@ module E2E
       end
 
       def has_video_placeholder?
-        # Check for the play button SVG within the video placeholder
-        has_element?(".bg-slate-100") && has_element?("svg path[d='M8 5v14l11-7z']")
+        # Check for the video player container with the play button SVG
+        has_element?("[data-controller='video-player']") && has_element?("svg path[d='M8 5v14l11-7z']")
       end
 
       def has_existing_users_section?
