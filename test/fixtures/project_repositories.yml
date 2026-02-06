@@ -1,0 +1,13 @@
+onboarding_setup_repo:
+  project: onboarding_setup
+  github_repo: alice/onboarding-setup
+  github_installation_id: 12345678
+  is_primary: true
+  branch: main
+
+onboarding_sections_repo:
+  project: onboarding_sections
+  github_repo: alice/onboarding-sections
+  github_installation_id: 12345678
+  is_primary: true
+  branch: main

@@ -141,6 +141,8 @@ class GithubRepositoriesServiceTest < ActiveSupport::TestCase
   end
 
   test "returns installations in result" do
+    # Clean up any fixture installations for this user first
+    GithubAppInstallation.where(user: @user).destroy_all
     create_installation(account_login: "alice", repos: [])
 
     result = call_service

@@ -91,7 +91,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "successful OAuth for existing user with one project redirects to that project" do
-    projects(:one_second).destroy
+    @user.projects.where.not(id: projects(:one).id).destroy_all
 
     OmniAuth.config.mock_auth[:github] = OmniAuth::AuthHash.new({
       provider: "github",

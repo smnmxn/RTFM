@@ -33,3 +33,53 @@ advanced_usage:
   section_type: template
   status: accepted
   visible: true
+
+# ========================================
+# ONBOARDING SECTIONS - For E2E testing
+# ========================================
+
+onboarding_section_pending_1:
+  project: onboarding_sections
+  name: Quick Start Guide
+  slug: quick-start-guide
+  description: Help new users get started quickly
+  icon: paper-airplane
+  position: 0
+  section_type: ai_generated
+  status: pending
+  visible: true
+
+onboarding_section_pending_2:
+  project: onboarding_sections
+  name: API Reference
+  slug: api-reference
+  description: Complete API documentation for developers
+  icon: code-bracket
+  position: 1
+  section_type: ai_generated
+  status: pending
+  visible: true
+
+onboarding_gen_section_1:
+  project: onboarding_generating
+  name: Getting Started
+  slug: getting-started
+  description: Set up and configure the basics
+  icon: paper-airplane
+  position: 0
+  section_type: ai_generated
+  status: accepted
+  visible: true
+  recommendations_status: running
+
+onboarding_gen_section_2:
+  project: onboarding_generating
+  name: Troubleshooting
+  slug: troubleshooting
+  description: Solve common problems
+  icon: wrench-screwdriver
+  position: 1
+  section_type: ai_generated
+  status: accepted
+  visible: true
+  recommendations_status: running
