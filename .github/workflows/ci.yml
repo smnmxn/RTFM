@@ -93,7 +93,7 @@ jobs:
       - name: Run tests
         env:
           RAILS_ENV: test
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/rtfm_test
         run: bin/rails db:test:prepare test
 
   e2e-test:
@@ -138,7 +138,7 @@ jobs:
       - name: Run E2E tests
         env:
           RAILS_ENV: test
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/rtfm_test
           REDIS_URL: redis://localhost:6379/0
           HEADLESS: true
         run: bin/rails db:test:prepare test:e2e
