@@ -174,11 +174,27 @@ class OnboardingFlowTest < E2ETestCase
     project = projects(:onboarding_sections)
     @onboarding_page.visit_step(project.slug, "sections")
 
-    # Accept first section
+    # Verify we start with 2 Accept buttons
+    assert_equal 2, @page.locator("#pending-sections-list button:has-text('Accept')").count,
+      "Expected 2 Accept buttons initially"
+
+    # Accept first section (Quick Start Guide)
     @page.locator("#pending-sections-list button:has-text('Accept')").first.click
     wait_for_turbo
+    @page.wait_for_load_state(state: "networkidle")
 
-    # Accept second section (now the first remaining) - this should auto-progress to generating step
+    # Wait for turbo stream + broadcast morph to settle (Section#broadcast_refreshes
+    # triggers a Turbo morph via ActionCable after the turbo stream response)
+    10.times do
+      break if @page.locator("#pending-sections-list button:has-text('Accept')").count == 1
+      sleep 0.5
+    end
+
+    # Disconnect ActionCable to prevent broadcast_refreshes morph from racing
+    # with the controller's 303 redirect after accepting the last section
+    @page.evaluate("() => { if (window.Turbo?.StreamActions) { document.querySelectorAll('turbo-cable-stream-source').forEach(el => el.remove()) } }")
+
+    # Accept second section (API Reference) - this triggers a 303 redirect to generating step
     @page.locator("#pending-sections-list button:has-text('Accept')").first.click
     wait_for_turbo
     @page.wait_for_load_state(state: "networkidle")
