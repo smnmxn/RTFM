@@ -11,3 +11,15 @@ for host in $KAMAL_HOSTS; do
 done
 
 echo "Done. claude-analyzer will rebuild on next analysis job."
+
+# Deploy backup scripts and install cron jobs
+echo "Deploying backup scripts and installing cron jobs..."
+
+for host in $KAMAL_HOSTS; do
+  scp scripts/backup-supportpages.sh scripts/hetzner-snapshot.sh root@$host:/usr/local/bin/
+  ssh root@$host "chmod +x /usr/local/bin/backup-supportpages.sh /usr/local/bin/hetzner-snapshot.sh"
+  # Install cron jobs (idempotent — rewrites crontab without backup lines, then appends them)
+  ssh root@$host 'crontab -l 2>/dev/null | grep -v backup-supportpages | grep -v hetzner-snapshot | { cat; echo "0 3 * * * /usr/local/bin/backup-supportpages.sh"; echo "0 5 * * 0 /usr/local/bin/hetzner-snapshot.sh"; } | crontab -'
+done
+
+echo "Done. Backup scripts deployed and cron jobs installed."

@@ -148,6 +148,7 @@ class InboxFlowTest < E2ETestCase
   test "clicking recommendation loads it in editor" do
     recommendation = recommendations(:inbox_recommendation_webhooks)
     @inbox_page.select_recommendation(recommendation.title)
+    @page.wait_for_selector("turbo-frame#inbox-editor:has-text('#{recommendation.title}')", timeout: 10_000)
 
     assert @inbox_page.editor_shows_recommendation?(recommendation.title), "Expected editor to show recommendation"
     assert @inbox_page.editor_shows_description?(recommendation.description), "Expected editor to show description"
