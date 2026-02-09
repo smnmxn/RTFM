@@ -137,6 +137,9 @@ jobs:
           npm init -y
           npm install playwright@1.57.0
           ./node_modules/.bin/playwright install --with-deps
+          echo "Verifying browser installation..."
+          ls $HOME/.cache/ms-playwright/
+          test -d $HOME/.cache/ms-playwright/chromium_headless_shell-1208 || (echo "ERROR: chromium_headless_shell-1208 not found" && ls -la $HOME/.cache/ms-playwright/ && exit 1)
 
       - name: Run E2E tests
         env:
@@ -144,7 +147,7 @@ jobs:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/rtfm_test
           REDIS_URL: redis://localhost:6379/0
           HEADLESS: true
-          PLAYWRIGHT_CLI_PATH: ./node_modules/.bin/playwright
+          PLAYWRIGHT_CLI_PATH: ${{ github.workspace }}/node_modules/.bin/playwright
         run: bin/rails db:test:prepare test:e2e
 
       - name: Upload screenshots on failure

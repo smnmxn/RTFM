@@ -14,8 +14,13 @@ class E2ETestCase < ActionDispatch::IntegrationTest
   @@server_thread = nil
   @@server_port = nil
   @@initialized = false
+  @@init_error = nil
 
   setup do
+    if @@init_error
+      skip "Playwright initialization failed: #{@@init_error}"
+    end
+
     ensure_e2e_environment_started
 
     @context = @@browser.new_context
@@ -86,6 +91,9 @@ class E2ETestCase < ActionDispatch::IntegrationTest
       @@browser&.close rescue nil
       @@playwright&.stop rescue nil
     end
+  rescue => e
+    @@init_error = e.message
+    raise
   end
 
   def find_available_port
