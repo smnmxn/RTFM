@@ -109,9 +109,12 @@ class E2ETestCase < ActionDispatch::IntegrationTest
   end
 
   def find_playwright_path
-    # Prefer direct playwright binary (e.g. global npm install in CI)
-    if system("which playwright > /dev/null 2>&1")
-      "playwright"
+    # Prefer explicit path from env (set in CI)
+    if ENV["PLAYWRIGHT_CLI_PATH"] && File.exist?(File.expand_path(ENV["PLAYWRIGHT_CLI_PATH"]))
+      File.expand_path(ENV["PLAYWRIGHT_CLI_PATH"])
+    # Check local node_modules
+    elsif File.exist?(Rails.root.join("node_modules/.bin/playwright").to_s)
+      Rails.root.join("node_modules/.bin/playwright").to_s
     elsif system("which npx > /dev/null 2>&1")
       "npx playwright"
     else
