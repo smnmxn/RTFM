@@ -109,8 +109,10 @@ class E2ETestCase < ActionDispatch::IntegrationTest
   end
 
   def find_playwright_path
-    # Check for npx
-    if system("which npx > /dev/null 2>&1")
+    # Prefer direct playwright binary (e.g. global npm install in CI)
+    if system("which playwright > /dev/null 2>&1")
+      "playwright"
+    elsif system("which npx > /dev/null 2>&1")
       "npx playwright"
     else
       "playwright"

@@ -134,8 +134,8 @@ jobs:
 
       - name: Install Playwright browsers
         run: |
-          npm install playwright@1.57.0
-          npx playwright install --with-deps
+          npm install -g playwright@1.57.0
+          playwright install --with-deps
 
       - name: Run E2E tests
         env:
