@@ -137,14 +137,9 @@ jobs:
           npm init -y > /dev/null 2>&1
           npm install playwright@1.57.0
           echo "Playwright version: $(./node_modules/.bin/playwright --version)"
-          echo "Env vars: $(env | grep -i playwright || echo 'none')"
           ./node_modules/.bin/playwright install chromium --with-deps
-          echo "=== Browser cache contents ==="
+          echo "Playwright CLI path: $(realpath ./node_modules/.bin/playwright)"
           ls -la $HOME/.cache/ms-playwright/
-          echo "=== Looking for chrome-headless-shell ==="
-          find $HOME/.cache/ms-playwright -name "chrome-headless-shell" -type f 2>/dev/null || echo "NOT FOUND"
-          echo "=== Looking for any chrome binary ==="
-          find $HOME/.cache/ms-playwright -name "chrome*" -type f 2>/dev/null | head -20
 
       - name: Run E2E tests
         env:
@@ -153,7 +148,10 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
           HEADLESS: true
           PLAYWRIGHT_CLI_PATH: ${{ github.workspace }}/node_modules/.bin/playwright
-        run: bin/rails db:test:prepare test:e2e
+        run: |
+          echo "PLAYWRIGHT_CLI_PATH=$PLAYWRIGHT_CLI_PATH"
+          ls -la $PLAYWRIGHT_CLI_PATH || echo "FILE NOT FOUND"
+          bin/rails db:test:prepare test:e2e
 
       - name: Upload screenshots on failure
         uses: actions/upload-artifact@v4

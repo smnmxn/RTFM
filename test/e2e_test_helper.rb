@@ -118,12 +118,30 @@ class E2ETestCase < ActionDispatch::IntegrationTest
 
   def find_playwright_path
     # Prefer explicit path from env (set in CI)
-    if ENV["PLAYWRIGHT_CLI_PATH"] && File.exist?(File.expand_path(ENV["PLAYWRIGHT_CLI_PATH"]))
-      File.expand_path(ENV["PLAYWRIGHT_CLI_PATH"])
+    if ENV["PLAYWRIGHT_CLI_PATH"]
+      path = File.expand_path(ENV["PLAYWRIGHT_CLI_PATH"])
+      $stderr.puts "[E2E] PLAYWRIGHT_CLI_PATH=#{ENV['PLAYWRIGHT_CLI_PATH']}"
+      $stderr.puts "[E2E] Expanded path: #{path}"
+      $stderr.puts "[E2E] File.exist?: #{File.exist?(path)}"
+      $stderr.puts "[E2E] File.symlink?: #{File.symlink?(path)}" if File.exist?(path) || File.symlink?(path)
+      if File.exist?(path)
+        return path
+      elsif File.symlink?(path)
+        # Broken symlink - try readlink
+        target = File.readlink(path) rescue nil
+        $stderr.puts "[E2E] Symlink target: #{target}"
+      end
+      # Don't fall back to npx if PLAYWRIGHT_CLI_PATH was explicitly set
+      raise "PLAYWRIGHT_CLI_PATH was set but file not found at #{path}"
+    end
+
     # Check local node_modules
-    elsif File.exist?(Rails.root.join("node_modules/.bin/playwright").to_s)
-      Rails.root.join("node_modules/.bin/playwright").to_s
-    elsif system("which npx > /dev/null 2>&1")
+    local = Rails.root.join("node_modules/.bin/playwright").to_s
+    if File.exist?(local)
+      return local
+    end
+
+    if system("which npx > /dev/null 2>&1")
       "npx playwright"
     else
       "playwright"
