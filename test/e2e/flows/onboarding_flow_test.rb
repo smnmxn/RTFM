@@ -190,13 +190,12 @@ class OnboardingFlowTest < E2ETestCase
       sleep 0.5
     end
 
-    # Disconnect ActionCable to prevent broadcast_refreshes morph from racing
-    # with the controller's 303 redirect after accepting the last section
-    @page.evaluate("() => { if (window.Turbo?.StreamActions) { document.querySelectorAll('turbo-cable-stream-source').forEach(el => el.remove()) } }")
-
-    # Accept second section (API Reference) - this triggers a 303 redirect to generating step
+    # Accept second section (API Reference) - triggers 303 redirect to generating.
+    # Sleep allows the redirect + any ActionCable broadcast morph to settle
+    # (Section#broadcast_refreshes fires a Turbo morph that races with the redirect).
     @page.locator("#pending-sections-list button:has-text('Accept')").first.click
     wait_for_turbo
+    sleep 1
     @page.wait_for_load_state(state: "networkidle")
 
     # After reviewing all sections, should either show "All topics reviewed"
