@@ -94,7 +94,7 @@ jobs:
         env:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/rtfm_test
-        run: bin/rails db:test:prepare test test/models test/controllers test/services test/jobs test/constraints test/helpers test/integration test/mailers
+        run: bin/rails db:test:prepare && bin/rails test test/models test/controllers test/services test/jobs test/constraints test/helpers test/integration test/mailers
 
   e2e-test:
     runs-on: ubuntu-latest
