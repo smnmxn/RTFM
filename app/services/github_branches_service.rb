@@ -23,8 +23,8 @@ class GithubBranchesService
       branches: branches,
       default_branch: default_branch
     )
-  rescue Octokit::Error => e
-    Rails.logger.error "[GithubBranchesService] Error fetching branches for #{@github_repo}: #{e.message}"
+  rescue => e
+    Rails.logger.error "[GithubBranchesService] Error fetching branches for #{@github_repo}: #{e.class}: #{e.message}"
     Result.new(success?: false, error: "Failed to fetch branches: #{e.message}")
   end
 end
