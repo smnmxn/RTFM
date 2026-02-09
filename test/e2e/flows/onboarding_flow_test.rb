@@ -36,6 +36,7 @@ class OnboardingFlowTest < E2ETestCase
   test "setup step renders form fields" do
     project = projects(:onboarding_setup)
     @onboarding_page.visit_step(project.slug, "setup")
+    @page.wait_for_selector("input[name='project[name]']", timeout: 10_000)
 
     assert @onboarding_page.has_text?("Set up your help centre"),
       "Expected 'Set up your help centre' heading to be visible"
@@ -50,6 +51,7 @@ class OnboardingFlowTest < E2ETestCase
   test "setup step shows support contact fields" do
     project = projects(:onboarding_setup)
     @onboarding_page.visit_step(project.slug, "setup")
+    @page.wait_for_selector("input[name='project[support_email]']", timeout: 10_000)
 
     assert @onboarding_page.has_element?("input[name='project[support_email]']"),
       "Expected support email input to be present"
@@ -60,6 +62,7 @@ class OnboardingFlowTest < E2ETestCase
   test "setup step validates required fields" do
     project = projects(:onboarding_setup)
     @onboarding_page.visit_step(project.slug, "setup")
+    @page.wait_for_selector("input[name='project[name]']", timeout: 10_000)
 
     # Clear the name field and subdomain field
     @page.fill("input[name='project[name]']", "")

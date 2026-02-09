@@ -124,6 +124,7 @@ module E2E
       def select_recommendation(title)
         click("#recommendations-list a:has-text('#{title}')")
         wait_for_turbo
+        page.wait_for_selector("turbo-frame#inbox-editor:not([busy])", timeout: 10_000) rescue nil
       end
 
       def recommendation_selected?(title)
