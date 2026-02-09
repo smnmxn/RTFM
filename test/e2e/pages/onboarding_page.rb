@@ -11,6 +11,7 @@ module E2E
 
       def visit_step(project_slug, step)
         page.goto("#{test_case.send(:base_url)}/onboarding/projects/#{project_slug}/#{step}")
+        page.wait_for_load_state(state: "networkidle")
         wait_for_turbo
         self
       end
