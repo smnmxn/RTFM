@@ -2,7 +2,7 @@
     data: { controller: "inbox-row", recommendation_id: recommendation.id },
     class: "group" do %>
   <%= link_to select_recommendation_project_path(recommendation.project, recommendation_id: recommendation.id, selected: "recommendation_#{recommendation.id}"),
-      data: { turbo_frame: "inbox-editor", turbo_action: "replace", action: "click->inbox-row#select" },
+      data: { turbo_frame: "inbox-editor", turbo_action: "replace", action: "click->inbox-row#select click->inbox#selectItem" },
       class: class_names(
         "block px-4 py-3 hover:bg-gray-50 transition-colors border-l-4",
         "border-indigo-500 bg-indigo-50" => selected,

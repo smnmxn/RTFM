@@ -1,47 +1,52 @@
-<!-- Articles Header -->
-<div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
-  <div class="flex items-center justify-between">
-    <div>
-      <h2 class="text-xl font-semibold text-gray-900">Articles</h2>
-      <p class="mt-1 text-sm text-gray-500">
-        Manage published articles in your Help Centre.
-      </p>
-    </div>
-    <div>
-      <%= render "articles/new_article_modal", project: project %>
-    </div>
-  </div>
-</div>
-
-<!-- Two Column Layout -->
 <% uncategorized_articles = project.articles.for_folder_tree.where(section: nil).ordered %>
+<% display_article = preselected_article || sections.flat_map { |s| s.articles.for_folder_tree.ordered }.first || uncategorized_articles.first %>
 
-<div class="flex-1 flex overflow-hidden">
-  <!-- Left: Folder Tree -->
-  <div class="w-96 flex-shrink-0 border-r border-gray-200 flex flex-col bg-white">
-    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-      <h3 class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Sections & Articles</h3>
-      <%= render "sections/new_section_modal", project: project %>
+<div data-controller="articles-panel"
+     data-articles-panel-selected-article-id-value="<%= display_article&.id %>"
+     class="flex-1 flex flex-col min-h-0">
+
+  <!-- Articles Header -->
+  <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-900">Articles</h2>
+        <p class="mt-1 text-sm text-gray-500">
+          Manage published articles in your Help Centre.
+        </p>
+      </div>
+      <div>
+        <%= render "articles/new_article_modal", project: project %>
+      </div>
     </div>
-    <%= render "projects/articles_folder_tree",
-        sections: sections,
-        uncategorized_articles: uncategorized_articles,
-        project: project,
-        selected_article_id: preselected_article&.id %>
   </div>
 
-  <!-- Right: Article Editor -->
-  <div class="flex-1 flex flex-col overflow-hidden bg-gray-50">
-    <%= turbo_frame_tag "articles-editor-frame", class: "h-full" do %>
-      <% display_article = preselected_article || sections.flat_map { |s| s.articles.for_folder_tree.ordered }.first || uncategorized_articles.first %>
-      <% if display_article %>
-        <%= render "projects/articles_editor",
-            article: display_article,
-            project: project,
-            sections: sections %>
-      <% else %>
-        <%= render "projects/articles_empty_state" %>
+  <!-- Two Column Layout -->
+  <div class="flex-1 flex overflow-hidden">
+    <!-- Left: Folder Tree -->
+    <div class="w-96 flex-shrink-0 border-r border-gray-200 flex flex-col bg-white">
+      <div class="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+        <h3 class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Sections & Articles</h3>
+        <%= render "sections/new_section_modal", project: project %>
+      </div>
+      <%= render "projects/articles_folder_tree",
+          sections: sections,
+          uncategorized_articles: uncategorized_articles,
+          project: project,
+          selected_article_id: preselected_article&.id %>
+    </div>
+
+    <!-- Right: Article Editor -->
+    <div class="flex-1 flex flex-col overflow-hidden bg-gray-50">
+      <%= turbo_frame_tag "articles-editor-frame", class: "h-full" do %>
+        <% if display_article %>
+          <%= render "projects/articles_editor",
+              article: display_article,
+              project: project,
+              sections: sections %>
+        <% else %>
+          <%= render "projects/articles_empty_state" %>
+        <% end %>
       <% end %>
-    <% end %>
+    </div>
   </div>
 </div>

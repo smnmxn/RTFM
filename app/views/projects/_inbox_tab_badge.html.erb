@@ -1,0 +1,8 @@
+<span id="inbox-tab-badge">
+  <% pending_count = project.recommendations.pending.count + project.articles.where(review_status: :unreviewed, generation_status: :generation_completed).count %>
+  <% if pending_count > 0 %>
+    <span class="ml-2 bg-indigo-100 text-indigo-600 py-0.5 px-2 rounded-full text-xs">
+      <%= pending_count %>
+    </span>
+  <% end %>
+</span>

@@ -275,4 +275,63 @@ class ArticlesControllerTest < ActionDispatch::IntegrationTest
     @draft_article.reload
     assert_equal original_count - 1, @draft_article.prerequisites.count
   end
+
+  # ========================================
+  # Articles tab turbo stream UI update tests
+  # ========================================
+
+  test "publish turbo stream updates articles and inbox badges" do
+    sign_in_as(@user)
+
+    post publish_project_article_path(@draft_article.project, @draft_article),
+         headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    assert_includes response.body, 'target="articles-tab-badge"'
+    assert_includes response.body, 'target="inbox-tab-badge"'
+    assert_includes response.body, 'target="articles-folder-tree"'
+    assert_includes response.body, 'target="articles-editor-frame"'
+  end
+
+  test "unpublish turbo stream updates articles badge and folder tree" do
+    sign_in_as(@user)
+    published = articles(:published_article)
+
+    post unpublish_project_article_path(published.project, published),
+         headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    assert_includes response.body, 'target="articles-tab-badge"'
+    assert_includes response.body, 'target="articles-folder-tree"'
+    assert_includes response.body, 'target="articles-editor-frame"'
+  end
+
+  test "duplicate turbo stream updates articles badge and folder tree" do
+    sign_in_as(@user)
+    article = articles(:published_structured_article)
+
+    assert_difference -> { Article.count }, 1 do
+      post duplicate_project_article_path(article.project, article),
+           headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    end
+
+    assert_response :success
+    assert_includes response.body, 'target="articles-tab-badge"'
+    assert_includes response.body, 'target="articles-folder-tree"'
+    assert_includes response.body, 'target="articles-editor-frame"'
+  end
+
+  test "move_to_section turbo stream updates articles badge and folder tree" do
+    sign_in_as(@user)
+    new_section = sections(:troubleshooting)
+
+    patch move_to_section_project_article_path(@draft_article.project, @draft_article),
+          params: { section_id: new_section.id },
+          headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    assert_includes response.body, 'target="articles-tab-badge"'
+    assert_includes response.body, 'target="articles-folder-tree"'
+    assert_includes response.body, 'target="articles-editor-frame"'
+  end
 end

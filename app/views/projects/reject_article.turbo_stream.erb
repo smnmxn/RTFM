@@ -59,6 +59,16 @@
   <%= render "projects/inbox_progress", project: @project %>
 <% end %>
 
+<%# Update tab badge %>
+<%= turbo_stream.replace "inbox-tab-badge" do %>
+  <%= render "projects/inbox_tab_badge", project: @project %>
+<% end %>
+
+<%# Update articles tab badge %>
+<%= turbo_stream.replace "articles-tab-badge" do %>
+  <%= render "projects/articles_tab_badge", project: @project %>
+<% end %>
+
 <%# Update folder tree (article is now rejected and hidden) %>
 <%= turbo_stream.replace "articles-folder-tree" do %>
   <%= render "projects/articles_folder_tree",

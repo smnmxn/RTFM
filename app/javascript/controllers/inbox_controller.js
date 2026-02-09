@@ -23,6 +23,9 @@ export default class extends Controller {
 
     // Set up mutation observer to detect article update notifications
     this.setupNotificationObserver()
+
+    // Set up mutation observer to preserve selection and manage empty state
+    this.setupListObserver()
   }
 
   disconnect() {
@@ -30,6 +33,9 @@ export default class extends Controller {
     document.removeEventListener("tabs:changed", this.boundTabChanged)
     if (this.mutationObserver) {
       this.mutationObserver.disconnect()
+    }
+    if (this.listObserver) {
+      this.listObserver.disconnect()
     }
   }
 
@@ -106,6 +112,78 @@ export default class extends Controller {
     })
 
     this.mutationObserver.observe(this.notificationContainerTarget, { childList: true })
+  }
+
+  // Set up observer on the inbox list to preserve selection after DOM replacements
+  setupListObserver() {
+    const inboxList = this.element.querySelector("#inbox-list")
+    if (!inboxList) return
+
+    this.listObserver = new MutationObserver(() => {
+      if (this._listUpdateFrame) cancelAnimationFrame(this._listUpdateFrame)
+      this._listUpdateFrame = requestAnimationFrame(() => {
+        this.preserveSelection()
+        this.updateEmptyState()
+      })
+    })
+
+    this.listObserver.observe(inboxList, { childList: true, subtree: true })
+  }
+
+  // After a DOM replacement, re-apply the correct selection highlight
+  preserveSelection() {
+    // Check if any row already has a server-set selection (from turbo_stream response)
+    const alreadySelected = this.element.querySelector('[data-controller="inbox-row"] a.border-indigo-500')
+    if (alreadySelected) {
+      // Sync our tracked selection to match the server-set one
+      const row = alreadySelected.closest("[data-article-id], [data-recommendation-id]")
+      if (row) {
+        if (row.dataset.articleId) {
+          this.selectedTypeValue = "article"
+          this.selectedIdValue = row.dataset.articleId
+        } else if (row.dataset.recommendationId) {
+          this.selectedTypeValue = "recommendation"
+          this.selectedIdValue = row.dataset.recommendationId
+        }
+      }
+      return
+    }
+
+    // No server-set selection — re-apply from tracked values (background broadcast case)
+    if (!this.selectedIdValue) return
+
+    const selector = this.selectedTypeValue === "article"
+      ? `[data-article-id="${this.selectedIdValue}"]`
+      : `[data-recommendation-id="${this.selectedIdValue}"]`
+
+    const selectedRow = this.element.querySelector(selector)
+    if (!selectedRow) return
+
+    const link = selectedRow.querySelector("a")
+    if (link) {
+      link.classList.remove("border-transparent", "bg-white")
+      link.classList.add("border-indigo-500", "bg-indigo-50")
+    }
+  }
+
+  // Show or hide the empty state based on whether sections have content
+  updateEmptyState() {
+    const emptyState = this.element.querySelector("#inbox-empty-state")
+    if (!emptyState) return
+
+    const hasArticles = !!this.element.querySelector("#articles-list")
+    const hasRecommendations = !!this.element.querySelector("#recommendations-list")
+    const wasEmpty = !emptyState.classList.contains("hidden")
+
+    if (hasArticles || hasRecommendations) {
+      emptyState.classList.add("hidden")
+      // Transitioning from empty to non-empty: auto-select first item
+      if (wasEmpty) {
+        this.selectFirstItemIfNeeded()
+      }
+    } else {
+      emptyState.classList.remove("hidden")
+    }
   }
 
   // Handle broadcast notification that article was updated

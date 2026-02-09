@@ -217,6 +217,14 @@ class Article < ApplicationRecord
       locals: { project: project }
     )
 
+    # Update tab badge
+    broadcast_replace_to(
+      [ project, :inbox ],
+      target: "inbox-tab-badge",
+      partial: "projects/inbox_tab_badge",
+      locals: { project: project }
+    )
+
     # Notify any user viewing this article that it has been updated
     if generation_completed? && saved_change_to_generation_status?
       broadcast_append_to(
@@ -238,6 +246,14 @@ class Article < ApplicationRecord
           project: project,
           selected_article_id: nil
         }
+      )
+
+      # Update articles tab badge
+      broadcast_replace_to(
+        [ project, :inbox ],
+        target: "articles-tab-badge",
+        partial: "projects/articles_tab_badge",
+        locals: { project: project }
       )
     end
   end

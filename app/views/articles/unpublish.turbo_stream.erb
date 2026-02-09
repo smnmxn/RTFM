@@ -9,6 +9,11 @@
       sections: @article.project.sections.visible.ordered %>
 <% end %>
 
+<%# Update articles tab badge %>
+<%= turbo_stream.replace "articles-tab-badge" do %>
+  <%= render "projects/articles_tab_badge", project: @article.project %>
+<% end %>
+
 <%# Update folder tree to refresh published status indicator %>
 <%= turbo_stream.replace "articles-folder-tree" do %>
   <%= render "projects/articles_folder_tree",
