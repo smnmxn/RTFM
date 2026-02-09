@@ -134,12 +134,17 @@ jobs:
 
       - name: Install Playwright browsers
         run: |
-          npm init -y
+          npm init -y > /dev/null 2>&1
           npm install playwright@1.57.0
-          ./node_modules/.bin/playwright install --with-deps
-          echo "Verifying browser installation..."
-          ls $HOME/.cache/ms-playwright/
-          test -d $HOME/.cache/ms-playwright/chromium_headless_shell-1208 || (echo "ERROR: chromium_headless_shell-1208 not found" && ls -la $HOME/.cache/ms-playwright/ && exit 1)
+          echo "Playwright version: $(./node_modules/.bin/playwright --version)"
+          echo "Env vars: $(env | grep -i playwright || echo 'none')"
+          ./node_modules/.bin/playwright install chromium --with-deps
+          echo "=== Browser cache contents ==="
+          ls -la $HOME/.cache/ms-playwright/
+          echo "=== Looking for chrome-headless-shell ==="
+          find $HOME/.cache/ms-playwright -name "chrome-headless-shell" -type f 2>/dev/null || echo "NOT FOUND"
+          echo "=== Looking for any chrome binary ==="
+          find $HOME/.cache/ms-playwright -name "chrome*" -type f 2>/dev/null | head -20
 
       - name: Run E2E tests
         env:
