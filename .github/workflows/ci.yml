@@ -94,7 +94,7 @@ jobs:
         env:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/rtfm_test
-        run: bin/rails db:test:prepare test
+        run: bin/rails db:test:prepare test test/models test/controllers test/services test/jobs test/constraints test/helpers test/integration test/mailers
 
   e2e-test:
     runs-on: ubuntu-latest
@@ -136,10 +136,7 @@ jobs:
         run: |
           npm init -y > /dev/null 2>&1
           npm install playwright@1.57.0
-          echo "Playwright version: $(./node_modules/.bin/playwright --version)"
           ./node_modules/.bin/playwright install chromium --with-deps
-          echo "Playwright CLI path: $(realpath ./node_modules/.bin/playwright)"
-          ls -la $HOME/.cache/ms-playwright/
 
       - name: Run E2E tests
         env:
@@ -148,10 +145,7 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
           HEADLESS: true
           PLAYWRIGHT_CLI_PATH: ${{ github.workspace }}/node_modules/.bin/playwright
-        run: |
-          echo "PLAYWRIGHT_CLI_PATH=$PLAYWRIGHT_CLI_PATH"
-          ls -la $PLAYWRIGHT_CLI_PATH || echo "FILE NOT FOUND"
-          bin/rails db:test:prepare test:e2e
+        run: bin/rails db:test:prepare test:e2e
 
       - name: Upload screenshots on failure
         uses: actions/upload-artifact@v4
