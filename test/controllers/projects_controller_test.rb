@@ -187,4 +187,112 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_response :redirect
     assert_match(/Analysis started for PR #456/i, flash[:notice])
   end
+
+  # ========================================
+  # Inbox turbo stream UI update tests
+  # ========================================
+
+  test "approve_article turbo stream updates inbox and articles badges" do
+    sign_in_as(@user)
+    project = projects(:one)
+    article = articles(:inbox_article_completed)
+
+    post approve_article_project_path(project),
+         params: { article_id: article.id, section_id: sections(:getting_started).id },
+         headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    assert_includes response.body, 'target="inbox-tab-badge"'
+    assert_includes response.body, 'target="articles-tab-badge"'
+    assert_includes response.body, 'target="inbox-progress"'
+    assert_includes response.body, 'target="articles-section"'
+    assert_includes response.body, 'target="articles-folder-tree"'
+  end
+
+  test "reject_article turbo stream updates inbox and articles badges" do
+    sign_in_as(@user)
+    project = projects(:one)
+    article = articles(:inbox_article_completed)
+
+    post reject_article_project_path(project),
+         params: { article_id: article.id },
+         headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    assert_includes response.body, 'target="inbox-tab-badge"'
+    assert_includes response.body, 'target="articles-tab-badge"'
+    assert_includes response.body, 'target="inbox-progress"'
+    assert_includes response.body, 'target="articles-folder-tree"'
+  end
+
+  test "undo_reject_article turbo stream updates inbox and articles badges" do
+    sign_in_as(@user)
+    project = projects(:one)
+    article = articles(:inbox_article_completed)
+    article.update!(review_status: :rejected, reviewed_at: Time.current)
+
+    post undo_reject_article_project_path(project),
+         params: { article_id: article.id },
+         headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    assert_includes response.body, 'target="inbox-tab-badge"'
+    assert_includes response.body, 'target="articles-tab-badge"'
+    assert_includes response.body, 'target="inbox-progress"'
+    assert_includes response.body, 'target="articles-folder-tree"'
+  end
+
+  test "accept_recommendation turbo stream updates inbox badge" do
+    sign_in_as(@user)
+    project = projects(:one)
+    recommendation = recommendations(:inbox_recommendation_webhooks)
+
+    post accept_recommendation_project_path(project),
+         params: { recommendation_id: recommendation.id },
+         headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    assert_includes response.body, 'target="inbox-tab-badge"'
+    assert_includes response.body, 'target="inbox-progress"'
+    assert_includes response.body, 'target="recommendations-section"'
+  end
+
+  test "reject_recommendation turbo stream updates inbox badge" do
+    sign_in_as(@user)
+    project = projects(:one)
+    recommendation = recommendations(:inbox_recommendation_webhooks)
+
+    post reject_recommendation_project_path(project),
+         params: { recommendation_id: recommendation.id },
+         headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    assert_includes response.body, 'target="inbox-tab-badge"'
+    assert_includes response.body, 'target="inbox-progress"'
+    assert_includes response.body, 'target="recommendations-section"'
+  end
+
+  test "inbox_articles turbo stream updates inbox badge" do
+    sign_in_as(@user)
+    project = projects(:one)
+
+    get inbox_articles_project_path(project),
+        headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    assert_includes response.body, 'target="inbox-tab-badge"'
+    assert_includes response.body, 'target="inbox-progress"'
+    assert_includes response.body, 'target="articles-section"'
+  end
+
+  test "show renders inbox and articles tab badge partials" do
+    sign_in_as(@user)
+    project = projects(:one)
+
+    get project_path(project)
+
+    assert_response :success
+    assert_includes response.body, 'id="inbox-tab-badge"'
+    assert_includes response.body, 'id="articles-tab-badge"'
+  end
 end

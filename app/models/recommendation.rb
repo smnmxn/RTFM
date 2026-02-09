@@ -32,35 +32,30 @@ class Recommendation < ApplicationRecord
     # These don't need to appear in the inbox
     return if generated? && previously_new_record?
 
-    if destroyed?
-      # Remove the specific recommendation row
-      broadcast_remove_to(
-        [ project, :inbox ],
-        target: "recommendation_#{id}_row"
-      )
-    elsif previously_new_record?
-      # Append new recommendation to the list
-      broadcast_append_to(
-        [ project, :inbox ],
-        target: "recommendations-list",
-        partial: "projects/recommendation_row",
-        locals: { recommendation: self, selected: false }
-      )
-    elsif pending?
-      # Update the specific recommendation row (if still pending)
-      broadcast_replace_to(
-        [ project, :inbox ],
-        target: "recommendation_#{id}_row",
-        partial: "projects/recommendation_row",
-        locals: { recommendation: self, selected: false }
-      )
-    end
+    # Always replace the entire section to keep the header count accurate
+    # and ensure the section renders even when transitioning from empty state
+    pending_recs = project.recommendations.pending.includes(:section).order(created_at: :asc)
+
+    broadcast_replace_to(
+      [ project, :inbox ],
+      target: "recommendations-section",
+      partial: "projects/recommendations_section",
+      locals: { pending_recommendations: pending_recs, selected_recommendation_id: nil }
+    )
 
     # Update progress counter
     broadcast_replace_to(
       [ project, :inbox ],
       target: "inbox-progress",
       partial: "projects/inbox_progress",
+      locals: { project: project }
+    )
+
+    # Update tab badge
+    broadcast_replace_to(
+      [ project, :inbox ],
+      target: "inbox-tab-badge",
+      partial: "projects/inbox_tab_badge",
       locals: { project: project }
     )
 

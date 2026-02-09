@@ -61,3 +61,8 @@
 <%= turbo_stream.replace "inbox-progress" do %>
   <%= render "projects/inbox_progress", project: @project %>
 <% end %>
+
+<%# Update tab badge %>
+<%= turbo_stream.replace "inbox-tab-badge" do %>
+  <%= render "projects/inbox_tab_badge", project: @project %>
+<% end %>

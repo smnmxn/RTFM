@@ -1,3 +1,8 @@
+<%# Update articles tab badge %>
+<%= turbo_stream.replace "articles-tab-badge" do %>
+  <%= render "projects/articles_tab_badge", project: @new_article.project %>
+<% end %>
+
 <%# Replace entire folder tree to refresh counts and article positions %>
 <%= turbo_stream.replace "articles-folder-tree" do %>
   <%= render "projects/articles_folder_tree",

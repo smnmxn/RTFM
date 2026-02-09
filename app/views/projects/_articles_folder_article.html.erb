@@ -14,7 +14,7 @@
 
   <!-- Article Link -->
   <%= link_to select_articles_article_project_path(project, article_id: article.id),
-      data: { turbo_frame: "articles-editor-frame", action: "click->folder-article#select" },
+      data: { turbo_frame: "articles-editor-frame", action: "click->folder-article#select click->articles-panel#selectArticle" },
       class: "flex-1 py-2 pr-3 min-w-0 overflow-hidden" do %>
     <span class="flex items-center gap-1.5">
       <span class="block text-sm truncate <%= selected ? 'text-indigo-700 font-medium' : (article.published? ? 'text-gray-700' : 'text-gray-400') %> <%= 'italic' unless article.published? %>">

@@ -1,0 +1,8 @@
+<span id="articles-tab-badge">
+  <% articles_count = project.articles.for_folder_tree.count %>
+  <% if articles_count > 0 %>
+    <span class="ml-2 bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">
+      <%= articles_count %>
+    </span>
+  <% end %>
+</span>

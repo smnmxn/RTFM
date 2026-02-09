@@ -14,3 +14,22 @@
 <%= turbo_stream.replace "inbox-progress" do %>
   <%= render "projects/inbox_progress", project: @project %>
 <% end %>
+
+<%# Update tab badge %>
+<%= turbo_stream.replace "inbox-tab-badge" do %>
+  <%= render "projects/inbox_tab_badge", project: @project %>
+<% end %>
+
+<%# Update articles tab badge (article re-enters folder tree) %>
+<%= turbo_stream.replace "articles-tab-badge" do %>
+  <%= render "projects/articles_tab_badge", project: @project %>
+<% end %>
+
+<%# Update folder tree (article is now unreviewed and visible again) %>
+<%= turbo_stream.replace "articles-folder-tree" do %>
+  <%= render "projects/articles_folder_tree",
+      sections: @project.sections.visible.ordered,
+      uncategorized_articles: @project.articles.for_folder_tree.where(section: nil).ordered,
+      project: @project,
+      selected_article_id: nil %>
+<% end %>
