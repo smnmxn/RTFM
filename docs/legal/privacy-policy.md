@@ -1,10 +1,16 @@
 # Privacy Policy
 
-**Last updated:** January 30, 2025
+**Last updated:** February 11, 2026
 
 ---
 
 ## Who We Are
+
+supportpages.io is operated by **Surface Layer Limited**, a company registered in England and Wales.
+
+- **Company name:** Surface Layer Limited
+- **Company number:** 17026012
+- **Registered office:** 128 City Road, London, United Kingdom, EC1V 2NX
 
 supportpages.io is a developer tool that automatically generates user-facing documentation from your code changes. When you merge a pull request, we analyze the diff and create help articles, changelogs, and other documentation.
 

@@ -90,6 +90,10 @@ aliases:
   shell: app exec --interactive --reuse "bash"
   logs: app logs -f
   dbc: app exec --interactive --reuse "bin/rails dbconsole --include-password"
+  backup: server exec "/usr/local/bin/backup-supportpages.sh"
+  backup-list: server exec "set -a && source /etc/backup-supportpages.env && set +a && borg list"
+  backup-info: server exec "set -a && source /etc/backup-supportpages.env && set +a && borg info"
+  snapshot: server exec "/usr/local/bin/hetzner-snapshot.sh"
 
 # Use a persistent storage volume for sqlite database files and local Active Storage files.
 # Recommended to change this to a mounted volume path that is backed up off server.

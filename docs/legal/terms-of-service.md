@@ -1,12 +1,12 @@
 # Terms of Service
 
-**Last updated:** January 30, 2025
+**Last updated:** February 11, 2026
 
 ---
 
 ## Welcome
 
-These terms govern your use of supportpages.io. By using the service, you agree to these terms.
+These terms govern your use of supportpages.io, operated by **Surface Layer Limited**, a company registered in England and Wales (Company No. 17026012), with its registered office at 128 City Road, London, United Kingdom, EC1V 2NX. By using the service, you agree to these terms.
 
 We've written this in plain language because we want you to actually read it. The legally binding parts are still here, just without the unnecessary complexity.
 
@@ -260,7 +260,7 @@ We'll notify you of claims and cooperate with your defense.
 ## Disputes
 
 ### Governing Law
-These terms are governed by the laws of Finland, without regard to conflict of laws principles.
+These terms are governed by the laws of England and Wales, without regard to conflict of laws principles.
 
 ### Dispute Resolution
 Before suing, let's try to work it out:
@@ -269,7 +269,7 @@ Before suing, let's try to work it out:
 3. If unresolved, you may pursue legal remedies
 
 ### Jurisdiction
-Legal proceedings will be in the courts of Finland, unless consumer protection laws in your jurisdiction require otherwise.
+Legal proceedings will be in the courts of England and Wales, unless consumer protection laws in your jurisdiction require otherwise.
 
 ---
 
