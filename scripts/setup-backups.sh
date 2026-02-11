@@ -36,12 +36,14 @@ echo ""
 
 # ── 1. Install borgbackup ────────────────────────────────────────────────────
 
-if command -v borg &>/dev/null; then
+if command -v borg &>/dev/null && command -v jq &>/dev/null; then
   echo "[OK] borgbackup already installed ($(borg --version))"
+  echo "[OK] jq already installed"
 else
-  echo "Installing borgbackup..."
-  apt update -qq && apt install -y borgbackup
+  echo "Installing borgbackup and jq..."
+  apt update -qq && apt install -y borgbackup jq
   echo "[OK] borgbackup installed ($(borg --version))"
+  echo "[OK] jq installed"
 fi
 echo ""
 

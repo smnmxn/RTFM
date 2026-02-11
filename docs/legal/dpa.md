@@ -1,10 +1,10 @@
 # Data Processing Agreement
 
-**Last updated:** January 30, 2025
+**Last updated:** February 11, 2026
 
 ---
 
-This Data Processing Agreement ("DPA") forms part of the agreement between supportpages.io ("Processor", "we", "us") and the entity agreeing to these terms ("Controller", "Customer", "you") for the use of supportpages.io services.
+This Data Processing Agreement ("DPA") forms part of the agreement between **Surface Layer Limited** (Company No. 17026012), trading as supportpages.io ("Processor", "we", "us"), with its registered office at 128 City Road, London, United Kingdom, EC1V 2NX, and the entity agreeing to these terms ("Controller", "Customer", "you") for the use of supportpages.io services.
 
 This DPA reflects the requirements of the EU General Data Protection Regulation (GDPR), specifically Article 28.
 
