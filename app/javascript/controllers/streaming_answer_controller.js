@@ -137,7 +137,7 @@ export default class extends Controller {
       const escapedAlt = this.escapeHtml(img.alt)
       html = html.replace(
         `__IMG_${i}__`,
-        `<img src="${img.url}" alt="${escapedAlt}" class="my-4 rounded-lg max-w-full border border-gray-200" loading="lazy" />`
+        `<img src="${img.url}" alt="${escapedAlt}" class="my-4 rounded-lg max-w-full border border-default" loading="lazy" />`
       )
     })
 
@@ -155,17 +155,17 @@ export default class extends Controller {
 
     // Inline code: `text`
     html = html.replace(/`([^`]+)`/g,
-      '<code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>')
+      '<code class="bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-heading">$1</code>')
 
     // Headings (must be processed before paragraphs/line breaks)
     // h4: ####
-    html = html.replace(/^#### (.+)$/gm, '<h4 class="text-base font-semibold text-gray-900 mt-4 mb-2">$1</h4>')
+    html = html.replace(/^#### (.+)$/gm, '<h4 class="text-base font-semibold text-heading mt-4 mb-2">$1</h4>')
     // h3: ###
-    html = html.replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold text-gray-900 mt-5 mb-2">$1</h3>')
+    html = html.replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold text-heading mt-5 mb-2">$1</h3>')
     // h2: ##
-    html = html.replace(/^## (.+)$/gm, '<h2 class="text-xl font-semibold text-gray-900 mt-6 mb-3">$1</h2>')
+    html = html.replace(/^## (.+)$/gm, '<h2 class="text-xl font-semibold text-heading mt-6 mb-3">$1</h2>')
     // h1: #
-    html = html.replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold text-gray-900 mt-6 mb-3">$1</h1>')
+    html = html.replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold text-heading mt-6 mb-3">$1</h1>')
 
     // Paragraphs (double newlines)
     html = html.replace(/\n\n/g, '</p><p class="mt-3">')

@@ -9,14 +9,16 @@
   <% sections_with_articles = @sections.select { |s| s.articles.published.any? } %>
   <% if sections_with_articles.any? %>
     <section>
-      <h2 class="text-xl font-semibold text-heading mb-6">Browse by category</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <h2 class="text-xl font-semibold text-heading mb-6 font-display">Browse by category</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6" data-controller="stagger">
         <% sections_with_articles.each do |section| %>
           <% published_articles = section.articles.published.reorder(:position) %>
-          <%= render "help_centre/section_card",
-                     section: section,
-                     articles: published_articles,
-                     article_count: published_articles.count %>
+          <div data-stagger-target="item">
+            <%= render "help_centre/section_card",
+                       section: section,
+                       articles: published_articles,
+                       article_count: published_articles.count %>
+          </div>
         <% end %>
       </div>
     </section>
@@ -25,10 +27,12 @@
   <!-- Popular Articles -->
   <% if @popular_articles.any? %>
     <section>
-      <h2 class="text-xl font-semibold text-heading mb-6">Popular articles</h2>
-      <div class="grid gap-4 md:grid-cols-2">
+      <h2 class="text-xl font-semibold text-heading mb-6 font-display">Popular articles</h2>
+      <div class="grid gap-4 md:grid-cols-2" data-controller="stagger">
         <% @popular_articles.each do |article| %>
-          <%= render "help_centre/article_card", article: article %>
+          <div data-stagger-target="item">
+            <%= render "help_centre/article_card", article: article %>
+          </div>
         <% end %>
       </div>
     </section>

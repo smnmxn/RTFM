@@ -5,14 +5,14 @@
   <aside class="hidden lg:block lg:col-span-1">
     <div class="sticky top-24 space-y-6">
       <!-- Browse Categories -->
-      <nav class="bg-gray-50 rounded-lg p-4">
-        <h4 class="text-sm font-semibold text-gray-900 mb-3">Browse categories</h4>
+      <nav class="bg-muted rounded-lg p-4">
+        <h4 class="text-sm font-semibold text-heading mb-3">Browse categories</h4>
         <ul class="space-y-2 text-sm">
           <% @project.sections.visible.ordered.limit(6).each do |section| %>
             <li>
               <%= link_to section.name,
                   help_centre_section_path(section_slug: section.slug),
-                  class: "text-gray-600 hover:text-brand transition-colors" %>
+                  class: "text-body hover:text-brand transition-colors" %>
             </li>
           <% end %>
           <%= link_to "View all...", help_centre_path, class: "text-brand hover:opacity-80 text-xs font-medium" %>
@@ -23,29 +23,29 @@
 
   <!-- Main Content -->
   <div class="lg:col-span-3">
-    <div class="bg-white shadow rounded-xl">
+    <div class="bg-card shadow rounded-xl border border-subtle">
       <!-- Header -->
-      <div class="px-6 py-5 border-b border-gray-200">
+      <div class="px-6 py-5 border-b border-default">
         <nav class="text-sm mb-3">
           <%= link_to "Help Centre",
               help_centre_path,
               class: "text-brand hover:opacity-80 transition-colors" %>
-          <span class="mx-2 text-gray-400">/</span>
-          <span class="text-gray-600">Ask</span>
+          <%= heroicon "chevron-right", variant: :mini, options: { class: "inline w-4 h-4 mx-1 text-muted align-text-bottom" } %>
+          <span class="text-body">Ask</span>
         </nav>
-        <h1 class="text-2xl font-bold text-gray-900">Question Limit Reached</h1>
+        <h1 class="text-2xl font-bold text-heading font-display">Question Limit Reached</h1>
       </div>
 
       <!-- Content -->
       <div class="px-6 py-8">
-        <div class="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-8">
+        <div class="bg-warning-soft border border-warning rounded-lg p-6 mb-8">
           <div class="flex gap-4">
-            <%= heroicon "clock", options: { class: "w-8 h-8 text-amber-500 flex-shrink-0" } %>
+            <%= heroicon "clock", options: { class: "w-8 h-8 text-warning flex-shrink-0" } %>
             <div>
-              <h2 class="text-lg font-semibold text-amber-800 mb-2">
+              <h2 class="text-lg font-semibold text-warning-strong mb-2 font-display">
                 Please try again later
               </h2>
-              <p class="text-amber-700 mb-4">
+              <p class="text-body mb-4">
                 To ensure quality answers for everyone, we limit the number of AI questions per hour.
                 <% if @limit_info[:hourly][:exceeded] %>
                   You've reached the hourly limit of <%= @limit_info[:hourly][:limit] %> questions.
@@ -53,7 +53,7 @@
                   You've reached the daily limit of <%= @limit_info[:daily][:limit] %> questions.
                 <% end %>
               </p>
-              <p class="text-amber-600 text-sm">
+              <p class="text-warning text-sm">
                 <% minutes = (@retry_after / 60.0).ceil %>
                 <% if minutes < 60 %>
                   You can ask another question in <strong><%= pluralize(minutes, 'minute') %></strong>.
@@ -67,7 +67,7 @@
         </div>
 
         <div class="text-center py-4">
-          <p class="text-gray-600 mb-6">
+          <p class="text-body mb-6">
             In the meantime, browse our help articles for answers to common questions.
           </p>
           <%= link_to help_centre_path,
@@ -83,13 +83,13 @@
     <% popular = @project.articles.published.order(published_at: :desc).limit(3) %>
     <% if popular.any? %>
       <div class="mt-8">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Popular articles</h3>
+        <h3 class="text-lg font-semibold text-heading mb-4 font-display">Popular articles</h3>
         <div class="space-y-3">
           <% popular.each do |article| %>
             <%= link_to help_centre_article_path(section_slug: article.section.slug, article_slug: article.slug),
-                class: "block bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow" do %>
-              <h4 class="font-medium text-gray-900"><%= article.title %></h4>
-              <p class="text-sm text-gray-500 mt-1"><%= article.section.name %></p>
+                class: "block bg-card p-4 rounded-lg shadow-sm border border-subtle hover:shadow-md transition-shadow" do %>
+              <h4 class="font-medium text-heading"><%= article.title %></h4>
+              <p class="text-sm text-body mt-1"><%= article.section.name %></p>
             <% end %>
           <% end %>
         </div>

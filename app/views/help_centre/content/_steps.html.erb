@@ -1,14 +1,19 @@
 <% if article.steps.any? %>
   <div id="steps" class="mb-8 scroll-mt-24">
-    <h2 class="text-lg font-semibold text-heading mb-4">Steps</h2>
+    <h2 class="text-lg font-semibold text-heading mb-4 font-display">Steps</h2>
     <div class="space-y-6">
       <% article.steps.each_with_index do |step, index| %>
         <% step_image = article.step_image(index) %>
         <div id="step-<%= index + 1 %>" class="flex gap-4 scroll-mt-24">
-          <div class="flex-shrink-0 w-8 h-8 bg-brand-light text-brand rounded-full flex items-center justify-center font-semibold text-sm">
-            <%= index + 1 %>
+          <div class="flex-shrink-0 flex flex-col items-center">
+            <div class="relative z-10 w-8 h-8 bg-brand-light text-brand rounded-full flex items-center justify-center font-semibold text-sm">
+              <%= index + 1 %>
+            </div>
+            <% unless index == article.steps.length - 1 %>
+              <div class="w-0.5 flex-1 mt-2" style="background: linear-gradient(to bottom, var(--brand-primary), var(--border-color));"></div>
+            <% end %>
           </div>
-          <div class="flex-1">
+          <div class="flex-1 pb-2">
             <h3 class="font-medium text-heading"><%= step["title"] %></h3>
             <div class="mt-1 text-body prose prose-sm max-w-none prose-headings:text-heading prose-p:text-body">
               <%= markdown(step["content"]) %>
