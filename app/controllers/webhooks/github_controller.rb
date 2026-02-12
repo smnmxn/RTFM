@@ -115,6 +115,7 @@ module Webhooks
         pull_request_url: pull_request["html_url"],
         pull_request_title: pull_request["title"],
         pull_request_body: pull_request["body"],
+        merge_commit_sha: pull_request["merge_commit_sha"],
         source_repo: repo_full_name
       )
 
