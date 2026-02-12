@@ -315,6 +315,7 @@ class ProjectsController < ApplicationController
 
     @page = page
     @has_more = commits_result.commits.size == 30 || prs_result.pull_requests.size == 30
+    @latest_recommendation_shown = ActiveModel::Type::Boolean.new.cast(params[:latest_recommendation_shown]) || false
 
     render partial: "projects/code_history_unified", locals: { project: @project }
   end

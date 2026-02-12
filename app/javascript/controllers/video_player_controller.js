@@ -5,7 +5,10 @@ export default class extends Controller {
 
   play() {
     this.posterTarget.classList.add("hidden")
-    this.videoTarget.classList.remove("hidden")
+    this.videoTarget.muted = false
+    this.videoTarget.loop = false
+    this.videoTarget.controls = true
+    this.videoTarget.currentTime = 0
     this.videoTarget.play()
   }
 }

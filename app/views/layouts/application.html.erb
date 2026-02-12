@@ -31,15 +31,19 @@
     </div>
     <%= render "shared/toasts" %>
 
-    <footer class="bg-white border-t border-slate-200 mt-auto">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-slate-400">
-        <span>&copy; <%= Date.current.year %> Surface Layer Limited (Company No. 17026012) | 128 City Road, London, EC1V 2NX</span>
-        <nav class="flex gap-4">
-          <a href="/legal/privacy" class="hover:text-slate-600 transition-colors">Privacy</a>
-          <a href="/legal/terms" class="hover:text-slate-600 transition-colors">Terms</a>
-          <a href="/legal" class="hover:text-slate-600 transition-colors">Trust Center</a>
-        </nav>
-      </div>
-    </footer>
+    <% if content_for?(:footer) %>
+      <%= yield :footer %>
+    <% else %>
+      <footer class="bg-white border-t border-slate-200 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-slate-400">
+          <span>&copy; <%= Date.current.year %> Surface Layer Limited (Company No. 17026012) | 128 City Road, London, EC1V 2NX</span>
+          <nav class="flex gap-4">
+            <a href="/legal/privacy" class="hover:text-slate-600 transition-colors">Privacy</a>
+            <a href="/legal/terms" class="hover:text-slate-600 transition-colors">Terms</a>
+            <a href="/legal" class="hover:text-slate-600 transition-colors">Trust Center</a>
+          </nav>
+        </div>
+      </footer>
+    <% end %>
   </body>
 </html>
