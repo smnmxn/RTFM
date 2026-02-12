@@ -2,7 +2,7 @@
   <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
     <div class="flex items-center gap-4">
       <%= link_to projects_path, class: "hover:opacity-80 transition-opacity" do %>
-        <%= image_tag "icon.png", class: "h-12", alt: "supportpages.io" %>
+        <%= render "shared/logo", theme: "light" %>
       <% end %>
       <% if local_assigns[:project] %>
         <h1 class="text-2xl font-bold text-gray-900"><%= link_to project.name, project_path(project), class: "hover:text-indigo-600 transition-colors" %></h1>
