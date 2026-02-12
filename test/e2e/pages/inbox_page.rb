@@ -20,7 +20,7 @@ module E2E
       end
 
       def on_inbox_tab?
-        has_element?("button[data-tabs-name='inbox'].border-indigo-500")
+        has_element?("button[data-tabs-name='inbox'].tab-active")
       end
 
       # =====================
@@ -68,8 +68,8 @@ module E2E
       end
 
       def article_selected?(title)
-        # Selected article has indigo border and background
-        page.locator("#articles-list a:has-text('#{title}')").evaluate("el => el.classList.contains('border-indigo-500')")
+        # Selected article has accent border and background
+        page.locator("#articles-list a:has-text('#{title}')").evaluate("el => el.classList.contains('row-selected')")
       rescue
         false
       end
@@ -128,7 +128,7 @@ module E2E
       end
 
       def recommendation_selected?(title)
-        page.locator("#recommendations-list a:has-text('#{title}')").evaluate("el => el.classList.contains('border-indigo-500')")
+        page.locator("#recommendations-list a:has-text('#{title}')").evaluate("el => el.classList.contains('row-selected')")
       rescue
         false
       end

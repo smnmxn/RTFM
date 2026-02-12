@@ -4,18 +4,18 @@
   <%= link_to select_recommendation_project_path(recommendation.project, recommendation_id: recommendation.id, selected: "recommendation_#{recommendation.id}"),
       data: { turbo_frame: "inbox-editor", turbo_action: "replace", action: "click->inbox-row#select click->inbox#selectItem" },
       class: class_names(
-        "block px-4 py-3 hover:bg-gray-50 transition-colors border-l-4",
-        "border-indigo-500 bg-indigo-50" => selected,
-        "border-transparent bg-white" => !selected
+        "block px-4 py-3 transition-colors border-l-4 border-b app-border",
+        "row-selected" => selected,
+        "row-unselected" => !selected
       ) do %>
     <div class="flex items-center gap-3">
       <div class="flex-shrink-0">
         <%= heroicon "light-bulb", options: { class: "w-5 h-5 text-amber-800" } %>
       </div>
       <div class="min-w-0 flex-1">
-        <p class="text-sm font-medium text-gray-900 truncate"><%= recommendation.title %></p>
+        <p class="text-sm font-medium app-text truncate"><%= recommendation.title %></p>
         <% if recommendation.section %>
-          <p class="flex items-center gap-1 text-xs text-gray-500 truncate">
+          <p class="flex items-center gap-1 text-xs app-text-secondary truncate">
             <%= heroicon recommendation.section.icon_name, options: { class: "w-3 h-3 flex-shrink-0" } %>
             <%= recommendation.section.name %>
           </p>

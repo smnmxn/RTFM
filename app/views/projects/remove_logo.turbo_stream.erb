@@ -1,12 +1,12 @@
 <%= turbo_stream.replace "logo_preview" do %>
   <div id="logo_preview" class="mb-3">
     <div data-logo-upload-target="placeholder"
-         class="w-48 h-16 border-2 border-dashed border-gray-300 rounded-lg
-                flex items-center justify-center cursor-pointer hover:border-indigo-400 transition-colors"
+         class="w-48 h-16 border-2 border-dashed app-border-strong rounded-lg
+                flex items-center justify-center cursor-pointer hover:border-[color:var(--app-accent)] transition-colors"
          data-action="click->logo-upload#triggerUpload dragover->logo-upload#dragOver dragleave->logo-upload#dragLeave drop->logo-upload#drop">
       <div class="text-center">
-        <%= heroicon "photo", options: { class: "w-6 h-6 text-gray-400 mx-auto" } %>
-        <span class="text-xs text-gray-500">Click or drag to upload</span>
+        <%= heroicon "photo", options: { class: "w-6 h-6 app-text-muted mx-auto" } %>
+        <span class="text-xs app-text-secondary">Click or drag to upload</span>
       </div>
     </div>
   </div>

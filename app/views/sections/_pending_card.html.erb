@@ -1,7 +1,7 @@
-<%= tag.div id: dom_id(section), class: "p-5 flex items-start justify-between hover:bg-slate-50 transition-smooth" do %>
+<%= tag.div id: dom_id(section), class: "p-5 flex items-start justify-between hover:app-surface-alt transition-smooth" do %>
   <div class="flex-1">
-    <p class="font-medium text-slate-900"><%= section.name %></p>
-    <p class="text-sm text-slate-500 mt-1"><%= section.description %></p>
+    <p class="font-medium app-text"><%= section.name %></p>
+    <p class="text-sm app-text-secondary mt-1"><%= section.description %></p>
   </div>
   <div class="ml-4 flex items-center gap-2">
     <%= button_to "Skip", reject_project_section_path(section.project, section),

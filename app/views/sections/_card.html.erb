@@ -1,22 +1,22 @@
-<%= tag.div id: dom_id(section), class: "p-4 flex items-center justify-between hover:bg-gray-50" do %>
+<%= tag.div id: dom_id(section), class: "p-4 flex items-center justify-between hover:app-surface-alt" do %>
   <div class="flex items-center gap-4 flex-1">
-<div class="flex-shrink-0 text-gray-400">
+<div class="flex-shrink-0 app-text-muted">
       <%= heroicon "bars-3", options: { class: "w-5 h-5" } %>
     </div>
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2">
-        <h4 class="font-medium text-gray-900"><%= section.name %></h4>
+        <h4 class="font-medium app-text"><%= section.name %></h4>
         <% unless section.visible? %>
-          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Hidden</span>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium app-surface-alt app-text-secondary">Hidden</span>
         <% end %>
         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium <%= section_type_badge_class(section) %>">
           <%= section.section_type.humanize %>
         </span>
       </div>
       <% if section.description.present? %>
-        <p class="text-sm text-gray-500 truncate"><%= section.description %></p>
+        <p class="text-sm app-text-secondary truncate"><%= section.description %></p>
       <% end %>
-      <div class="text-xs text-gray-400 mt-1">
+      <div class="text-xs app-text-muted mt-1">
         <%= section.articles.published.count %> published
         <span class="mx-1">&middot;</span>
         <%= section.articles.drafts.count %> drafts
@@ -35,9 +35,9 @@
     <% end %>
     <%= link_to "View",
         project_section_path(project, section),
-        class: "inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded text-indigo-700 bg-indigo-50 hover:bg-indigo-100" %>
+        class: "inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded app-accent-text app-accent-light hover:opacity-80" %>
     <%= link_to "Edit",
         edit_project_section_path(project, section),
-        class: "inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded text-gray-700 bg-gray-50 hover:bg-gray-100" %>
+        class: "inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded app-text-secondary app-surface-alt hover:app-surface-alt" %>
   </div>
 <% end %>

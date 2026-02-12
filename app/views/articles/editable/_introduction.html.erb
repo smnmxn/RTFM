@@ -9,23 +9,23 @@
       <!-- Display Mode -->
       <p data-inline-edit-target="display"
          data-action="click->inline-edit#edit"
-         class="text-lg text-gray-700 leading-relaxed cursor-pointer hover:bg-gray-50 rounded px-2 py-1 -mx-2 -my-1 transition-colors">
+         class="editable-field text-base app-text leading-relaxed cursor-pointer rounded px-2 py-1 -mx-2 -my-1">
         <%= article.introduction %>
-        <span class="invisible group-hover:visible text-gray-400 text-sm ml-2">Click to edit</span>
+        <span class="invisible group-hover:visible app-text-muted text-sm ml-2">Click to edit</span>
       </p>
 
       <!-- Edit Mode -->
       <div data-inline-edit-target="form" class="hidden">
         <textarea data-inline-edit-target="input"
                   data-action="blur->inline-edit#save keydown->inline-edit#handleKeydown"
-                  class="w-full text-lg text-gray-700 leading-relaxed border border-indigo-500 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  class="w-full text-base leading-relaxed app-inline-input rounded px-2 py-1"
                   rows="3"><%= article.introduction %></textarea>
-        <p class="text-xs text-gray-500 mt-1">Press Enter to save, Escape to cancel</p>
+        <p class="text-xs app-text-secondary mt-1">Press Enter to save, Escape to cancel</p>
       </div>
 
       <!-- Saving Indicator -->
       <div data-inline-edit-target="saving" class="hidden absolute top-0 right-0">
-        <span class="text-xs text-indigo-600">Saving...</span>
+        <span class="text-xs app-accent-text">Saving...</span>
       </div>
     </div>
   <% end %>

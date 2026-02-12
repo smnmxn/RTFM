@@ -21,7 +21,7 @@ module E2E
       end
 
       def on_articles_tab?
-        has_element?("button[data-tabs-name='articles'].border-indigo-500")
+        has_element?("button[data-tabs-name='articles'].tab-active")
       end
 
       def click_inbox_tab
@@ -82,7 +82,7 @@ module E2E
       def section_article_count(name)
         # The count is shown in parentheses next to the section name
         section = page.locator("[id^='folder-section-']:has-text('#{name}')")
-        count_text = section.locator("span.text-xs.text-gray-400").first.text_content
+        count_text = section.locator("span.text-xs.app-text-muted").first.text_content
         count_text.gsub(/[()]/, "").to_i
       rescue
         0
@@ -107,15 +107,15 @@ module E2E
       end
 
       def article_selected?(title)
-        page.locator("#articles-folder-tree [id^='folder_article_']:has-text('#{title}')").evaluate("el => el.classList.contains('border-indigo-500')")
+        page.locator("#articles-folder-tree [id^='folder_article_']:has-text('#{title}')").evaluate("el => el.classList.contains('row-selected')")
       rescue
         false
       end
 
       def article_published_in_tree?(title)
-        # Published articles have regular text, draft articles have text-gray-400 and italic
+        # Published articles have regular text, draft articles have app-text-muted and italic
         article = page.locator("#articles-folder-tree [id^='folder_article_']:has-text('#{title}') span.text-sm")
-        !article.evaluate("el => el.classList.contains('text-gray-400')")
+        !article.evaluate("el => el.classList.contains('italic')")
       rescue
         false
       end
@@ -446,7 +446,7 @@ module E2E
 
       def steps_count
         # Count step number badges (the numbered circles)
-        page.locator("turbo-frame#articles-editor-frame [id$='_steps'] span.bg-indigo-600.rounded-full").count
+        page.locator("turbo-frame#articles-editor-frame [id$='_steps'] span.app-accent-bg.rounded-full").count
       rescue
         0
       end

@@ -3,10 +3,10 @@
 <div class="text-red-600 mb-2">
       <%= heroicon "exclamation-triangle", options: { class: "mx-auto h-12 w-12" } %>
     </div>
-    <h3 class="text-lg font-medium text-gray-900">Failed to load pull requests</h3>
-    <p class="mt-1 text-gray-500"><%= error %></p>
+    <h3 class="text-lg font-medium app-text">Failed to load pull requests</h3>
+    <p class="mt-1 app-text-secondary"><%= error %></p>
     <div class="mt-4">
-      <%= link_to "Try again", pull_requests_project_path(@project), class: "text-indigo-600 hover:text-indigo-800", data: { turbo_frame: "pull_request_list" } %>
+      <%= link_to "Try again", pull_requests_project_path(@project), class: "app-accent-text hover:app-accent-hover", data: { turbo_frame: "pull_request_list" } %>
     </div>
   </div>
 <% end %>

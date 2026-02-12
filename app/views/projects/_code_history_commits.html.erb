@@ -1,8 +1,8 @@
 <%= turbo_frame_tag "code-history-timeline" do %>
   <div class="space-y-4">
     <% if @commits.empty? %>
-<div class="text-center py-12 text-gray-500">
-        <%= heroicon "document-text", options: { class: "mx-auto h-12 w-12 text-gray-300" } %>
+<div class="text-center py-12 app-text-secondary">
+        <%= heroicon "document-text", options: { class: "mx-auto h-12 w-12 app-text-muted" } %>
         <p class="mt-2 text-sm font-medium">No commits found.</p>
       </div>
     <% else %>
@@ -14,7 +14,7 @@
         <% is_analysis_baseline = commit[:sha] == project.analysis_commit_sha %>
         <% last_check = project.article_update_checks.completed.recent.first %>
         <% is_last_check = last_check && commit[:sha] == last_check.target_commit_sha %>
-        <div class="<%= is_analysis_baseline ? 'bg-indigo-50 border-indigo-200' : (is_last_check ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200') %> border rounded-lg p-4 hover:shadow-sm transition-shadow"
+        <div class="<%= is_analysis_baseline ? 'app-accent-light border-[color:var(--app-accent)]' : (is_last_check ? 'bg-green-50 border-green-200' : 'app-surface app-border') %> border rounded-lg p-4 hover:shadow-sm transition-shadow"
              id="<%= "code-history-commit-#{commit[:short_sha]}" %>">
           <div class="flex items-start gap-4">
             <!-- Author Avatar -->
@@ -26,12 +26,12 @@
               <!-- Commit Title & Link -->
               <div class="flex items-center gap-2 flex-wrap">
                 <%= link_to commit[:html_url], target: "_blank",
-                    class: "font-medium text-gray-900 hover:text-indigo-600 truncate" do %>
+                    class: "font-medium app-text hover:app-accent-text truncate" do %>
                   <%= commit[:title] %>
                 <% end %>
-                <span class="text-xs font-mono text-gray-400 flex-shrink-0"><%= commit[:short_sha] %></span>
+                <span class="text-xs font-mono app-text-muted flex-shrink-0"><%= commit[:short_sha] %></span>
                 <% if is_analysis_baseline %>
-                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-700">
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium app-accent-light app-accent-on-light">
                     <%= heroicon "flag", options: { class: "w-3 h-3" } %>
                     Docs baseline
                   </span>
@@ -45,33 +45,33 @@
               </div>
 
               <!-- Commit Metadata -->
-              <p class="text-sm text-gray-500 mt-1">
+              <p class="text-sm app-text-secondary mt-1">
                 committed <%= time_ago_in_words(commit[:committed_at]) %> ago
                 by <%= commit[:author][:login] %>
               </p>
 
               <!-- Analysis Status / Content Preview -->
               <% if update %>
-                <div class="mt-3 p-3 bg-gray-50 rounded-md">
+                <div class="mt-3 p-3 app-surface-alt rounded-md">
                   <% if update.analysis_status == "running" %>
-<div class="flex items-center gap-2 text-indigo-600 text-sm">
+<div class="flex items-center gap-2 app-accent-text text-sm">
                       <%= spinner_icon(size: "w-4 h-4") %>
                       <span>Analyzing commit...</span>
                     </div>
                   <% elsif update.analysis_status == "completed" %>
                     <% if update.content.present? %>
-                      <p class="text-sm text-gray-700 line-clamp-2"><%= truncate(update.content, length: 150) %></p>
+                      <p class="text-sm app-text line-clamp-2"><%= truncate(update.content, length: 150) %></p>
                     <% end %>
                     <div class="mt-2 flex items-center gap-2 flex-wrap">
                       <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                         Analyzed
                       </span>
                       <% if update.recommendations.any? %>
-                        <span class="text-xs text-gray-500">
+                        <span class="text-xs app-text-secondary">
                           <%= update.recommendations.count %> article suggestion<%= update.recommendations.count == 1 ? '' : 's' %>
                         </span>
                       <% elsif update.analysis_reason.present? %>
-                        <span class="text-xs text-gray-500 italic">
+                        <span class="text-xs app-text-secondary italic">
                           <%= truncate(update.analysis_reason, length: 100) %>
                         </span>
                       <% end %>
@@ -106,7 +106,7 @@
         <div class="text-center py-4">
           <%= link_to "Load more commits",
               code_history_project_path(project, view: "commits", page: @page + 1),
-              class: "text-indigo-600 hover:text-indigo-800 text-sm font-medium",
+              class: "app-accent-text hover:app-accent-hover text-sm font-medium",
               data: { turbo_frame: "code-history-timeline" } %>
         </div>
       <% end %>

@@ -1,7 +1,7 @@
-<div class="bg-white shadow rounded-lg mb-6">
-  <div class="px-6 py-4 border-b border-gray-200">
-    <h3 class="text-lg font-semibold text-gray-900">Recommended Support Articles</h3>
-    <p class="mt-1 text-sm text-gray-500">
+<div class="app-surface shadow rounded-lg mb-6">
+  <div class="px-6 py-4 border-b app-border">
+    <h3 class="text-lg font-semibold app-text">Recommended Support Articles</h3>
+    <p class="mt-1 text-sm app-text-secondary">
       AI-suggested how-to guides grouped by section
     </p>
   </div>
@@ -9,16 +9,16 @@
   <div id="recommendations-list">
     <% if recommendations.any? %>
       <% recommendations.includes(:section).group_by(&:section).each do |section, section_recommendations| %>
-        <div class="border-b border-gray-200 last:border-b-0">
-          <div class="px-6 py-3 bg-gray-100 border-l-4 border-indigo-500">
-            <h4 class="font-medium text-gray-900">
+        <div class="border-b app-border last:border-b-0">
+          <div class="px-6 py-3 app-surface-alt border-l-4 border-[color:var(--app-accent)]">
+            <h4 class="font-medium app-text">
               <%= section&.name || "Uncategorized" %>
             </h4>
             <% if section&.description.present? %>
-              <p class="text-sm text-gray-500"><%= section.description %></p>
+              <p class="text-sm app-text-secondary"><%= section.description %></p>
             <% end %>
           </div>
-          <div class="divide-y divide-gray-200 ml-6">
+          <div class="divide-y divide-app-border ml-6">
             <% section_recommendations.each do |recommendation| %>
               <%= render "recommendations/card", recommendation: recommendation %>
             <% end %>
@@ -26,7 +26,7 @@
         </div>
       <% end %>
     <% else %>
-      <div class="p-6 text-center text-gray-500">
+      <div class="p-6 text-center app-text-secondary">
         No pending article recommendations
       </div>
     <% end %>

@@ -1,11 +1,11 @@
 <%= turbo_frame_tag "inbox-editor", class: "h-full block" do %>
-  <div class="h-full flex flex-col bg-white">
+  <div class="h-full flex flex-col app-surface">
     <!-- Header with Actions -->
-    <div class="px-6 py-4 border-b border-gray-200 flex items-start justify-between flex-shrink-0">
+    <div class="px-6 py-4 border-b app-border flex items-start justify-between flex-shrink-0">
       <div>
-        <h3 class="text-lg font-medium text-gray-900"><%= recommendation.title %></h3>
+        <h3 class="text-lg font-medium app-text"><%= recommendation.title %></h3>
         <% if recommendation.section %>
-          <span class="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+          <span class="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium app-accent-light app-accent-on-light">
             <%= recommendation.section.name %>
           </span>
         <% end %>
@@ -31,26 +31,26 @@
       <div class="px-6 py-6 max-w-3xl">
         <!-- Description -->
         <div class="mb-6">
-          <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Description</h4>
-          <p class="text-gray-700"><%= recommendation.description %></p>
+          <h4 class="text-sm font-semibold app-text uppercase tracking-wide mb-2">Description</h4>
+          <p class="app-text-secondary"><%= recommendation.description %></p>
         </div>
 
         <!-- Justification -->
         <div class="mb-6">
-          <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Why this article?</h4>
-          <p class="text-gray-600"><%= recommendation.justification %></p>
+          <h4 class="text-sm font-semibold app-text uppercase tracking-wide mb-2">Why this article?</h4>
+          <p class="app-text-secondary"><%= recommendation.justification %></p>
         </div>
 
         <!-- Source (if from PR) -->
         <% if recommendation.source_update.present? %>
           <div class="mb-6">
-            <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Source</h4>
-            <p class="text-gray-600">
+            <h4 class="text-sm font-semibold app-text uppercase tracking-wide mb-2">Source</h4>
+            <p class="app-text-secondary">
               Generated from
               <%= link_to "PR ##{recommendation.source_update.pull_request_number}",
                   recommendation.source_update.pull_request_url,
                   target: "_blank",
-                  class: "text-indigo-600 hover:text-indigo-800 font-medium" %>
+                  class: "app-accent-text hover:app-accent-text font-medium" %>
             </p>
           </div>
         <% end %>

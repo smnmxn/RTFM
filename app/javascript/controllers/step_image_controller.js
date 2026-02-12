@@ -27,17 +27,17 @@ export default class extends Controller {
 
   dragOver(event) {
     event.preventDefault()
-    this.element.classList.add("ring-2", "ring-indigo-500", "ring-offset-2")
+    this.element.classList.add("ring-2", "ring-zinc-500", "ring-offset-2")
   }
 
   dragLeave(event) {
     event.preventDefault()
-    this.element.classList.remove("ring-2", "ring-indigo-500", "ring-offset-2")
+    this.element.classList.remove("ring-2", "ring-zinc-500", "ring-offset-2")
   }
 
   async drop(event) {
     event.preventDefault()
-    this.element.classList.remove("ring-2", "ring-indigo-500", "ring-offset-2")
+    this.element.classList.remove("ring-2", "ring-zinc-500", "ring-offset-2")
 
     const file = event.dataTransfer.files[0]
     if (file && file.type.startsWith("image/")) {

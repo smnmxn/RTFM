@@ -1,8 +1,8 @@
-<div class="bg-white shadow rounded-lg mb-6">
-  <div class="px-6 py-4 border-b border-gray-200">
+<div class="app-surface shadow rounded-lg mb-6">
+  <div class="px-6 py-4 border-b app-border">
     <div>
-      <h3 class="text-lg font-semibold text-gray-900">Recommended Sections</h3>
-      <p class="mt-1 text-sm text-gray-500">
+      <h3 class="text-lg font-semibold app-text">Recommended Sections</h3>
+      <p class="mt-1 text-sm app-text-secondary">
         AI-suggested help centre sections based on your codebase
       </p>
     </div>
@@ -10,13 +10,13 @@
 
   <div id="pending-sections-list">
     <% if sections.any? %>
-      <div class="divide-y divide-gray-200">
+      <div class="divide-y app-border">
         <% sections.each do |section| %>
           <%= render "sections/pending_card", section: section %>
         <% end %>
       </div>
     <% else %>
-      <div class="p-6 text-center text-gray-500">
+      <div class="p-6 text-center app-text-secondary">
         No pending section recommendations
       </div>
     <% end %>

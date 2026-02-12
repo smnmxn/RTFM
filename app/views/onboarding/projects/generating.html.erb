@@ -1,6 +1,6 @@
 <%= turbo_stream_from @project, :onboarding %>
 
-<div class="bg-white shadow-sm rounded-xl border border-slate-200 overflow-hidden">
+<div class="app-surface app-shadow-sm rounded-xl app-border overflow-hidden">
   <div id="<%= dom_id(@project, :onboarding_generating) %>">
     <%= render "onboarding/projects/generating_status", project: @project, progress: @progress %>
   </div>

@@ -1,8 +1,8 @@
-<div class="bg-gray-50">
+<div class="app-bg">
   <%= render "shared/app_header", project: @article.project %>
 
   <main class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-    <div class="bg-white shadow rounded-lg">
+    <div class="app-surface shadow rounded-lg">
       <!-- Article Header -->
       <%= turbo_frame_tag "article_header" do %>
         <%= render "articles/header", article: @article %>
@@ -37,8 +37,8 @@
           <% end %>
         <% elsif @article.generation_running? %>
           <div class="text-center py-12">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-            <p class="mt-4 text-gray-500">Article content is being generated. This may take a minute...</p>
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[color:var(--app-accent)] mx-auto"></div>
+            <p class="mt-4 app-text-secondary">Article content is being generated. This may take a minute...</p>
           </div>
         <% end %>
       </div>

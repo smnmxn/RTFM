@@ -15,21 +15,21 @@
               <%= heroicon "check", variant: :solid, options: { class: "h-5 w-5 text-white" } %>
             </div>
           <% elsif step[:num] == current_step %>
-            <div class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-violet-600 bg-white ring-glow">
-              <span class="text-violet-600 font-semibold"><%= step[:num] %></span>
+            <div class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[color:var(--app-accent)] app-surface ring-glow">
+              <span class="app-accent-text font-semibold"><%= step[:num] %></span>
             </div>
           <% else %>
-            <div class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-slate-300 bg-white">
-              <span class="text-slate-400"><%= step[:num] %></span>
+            <div class="flex h-10 w-10 items-center justify-center rounded-full border-2 app-border-strong app-surface">
+              <span class="app-text-muted"><%= step[:num] %></span>
             </div>
           <% end %>
-          <span class="absolute left-1/2 -translate-x-1/2 top-full mt-2 text-xs font-medium whitespace-nowrap <%= step[:num] <= current_step ? 'text-violet-600' : 'text-slate-400' %>">
+          <span class="absolute left-1/2 -translate-x-1/2 top-full mt-2 text-xs font-medium whitespace-nowrap <%= step[:num] <= current_step ? 'app-accent-text' : 'app-text-muted' %>">
             <%= step[:name] %>
           </span>
         </div>
 
         <% unless index == steps.length - 1 %>
-          <div class="flex-1 h-0.5 mx-3 <%= step[:num] < current_step ? 'bg-gradient-connector' : 'bg-slate-200' %>"></div>
+          <div class="flex-1 h-0.5 mx-3 <%= step[:num] < current_step ? 'bg-gradient-connector' : 'app-surface-alt' %>"></div>
         <% end %>
       </li>
     <% end %>

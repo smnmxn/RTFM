@@ -133,7 +133,7 @@ export default class extends Controller {
   // After a DOM replacement, re-apply the correct selection highlight
   preserveSelection() {
     // Check if any row already has a server-set selection (from turbo_stream response)
-    const alreadySelected = this.element.querySelector('[data-controller="inbox-row"] a.border-indigo-500')
+    const alreadySelected = this.element.querySelector('[data-controller="inbox-row"] a.row-selected')
     if (alreadySelected) {
       // Sync our tracked selection to match the server-set one
       const row = alreadySelected.closest("[data-article-id], [data-recommendation-id]")
@@ -161,8 +161,8 @@ export default class extends Controller {
 
     const link = selectedRow.querySelector("a")
     if (link) {
-      link.classList.remove("border-transparent", "bg-white")
-      link.classList.add("border-indigo-500", "bg-indigo-50")
+      link.classList.remove("row-unselected")
+      link.classList.add("row-selected")
     }
   }
 

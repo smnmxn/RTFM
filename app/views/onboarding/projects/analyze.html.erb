@@ -1,6 +1,6 @@
 <%= turbo_stream_from @project, :onboarding %>
 <%= turbo_stream_from @project, :analysis %>
 
-<div class="bg-white shadow-sm rounded-xl border border-slate-200">
+<div class="app-surface app-shadow-sm rounded-xl app-border">
   <%= render "onboarding/projects/analyze_status", project: @project %>
 </div>

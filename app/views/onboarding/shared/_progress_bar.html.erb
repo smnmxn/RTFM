@@ -2,11 +2,11 @@
 <%# Parameters: done:, total:, label: (optional, default: "items") %>
 <% percent = total > 0 ? (done * 100 / total) : 0 %>
 <div class="max-w-xs mx-auto">
-  <div class="flex justify-between text-sm text-slate-600 mb-2">
+  <div class="flex justify-between text-sm app-text-secondary mb-2">
     <span>Progress</span>
     <span><%= done %> of <%= total %> <%= label || "items" %></span>
   </div>
-  <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+  <div class="h-2 app-surface-alt rounded-full overflow-hidden">
     <div class="h-full bg-gradient-brand rounded-full transition-all duration-500"
          style="width: <%= percent %>%"></div>
   </div>

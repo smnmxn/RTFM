@@ -22,31 +22,31 @@
   <% end %>
 
   <div>
-    <%= form.label :name, class: "block text-sm font-medium text-gray-700" %>
+    <%= form.label :name, class: "block text-sm font-medium app-text-secondary" %>
     <%= form.text_field :name,
-        class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+        class: "mt-1 block w-full rounded-md app-border-strong shadow-sm focus:border-[color:var(--app-accent)] focus:ring-[color:var(--app-focus-ring)] sm:text-sm",
         placeholder: "e.g., API Integration" %>
   </div>
 
   <div>
-    <%= form.label :description, class: "block text-sm font-medium text-gray-700" %>
+    <%= form.label :description, class: "block text-sm font-medium app-text-secondary" %>
     <%= form.text_area :description,
         rows: 3,
-        class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+        class: "mt-1 block w-full rounded-md app-border-strong shadow-sm focus:border-[color:var(--app-accent)] focus:ring-[color:var(--app-focus-ring)] sm:text-sm",
         placeholder: "Brief description of what articles belong in this section" %>
   </div>
 
   <div class="flex items-center">
     <%= form.check_box :visible,
-        class: "h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" %>
-    <%= form.label :visible, "Visible in Help Centre", class: "ml-2 block text-sm text-gray-900" %>
+        class: "h-4 w-4 rounded app-border-strong text-[color:var(--app-accent)] focus:ring-[color:var(--app-focus-ring)]" %>
+    <%= form.label :visible, "Visible in Help Centre", class: "ml-2 block text-sm app-text" %>
   </div>
 
   <div class="flex justify-end gap-3">
     <%= link_to "Cancel",
         project_sections_path(project),
-        class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
+        class: "inline-flex items-center px-4 py-2 border app-border-strong shadow-sm text-sm font-medium rounded-md app-text-secondary app-surface hover:app-surface-alt" %>
     <%= form.submit section.persisted? ? "Update Section" : "Create Section",
-        class: "inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700" %>
+        class: "inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white app-accent-bg hover:app-accent-bg" %>
   </div>
 <% end %>

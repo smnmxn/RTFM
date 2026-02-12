@@ -8,8 +8,8 @@
     <!-- Start Over -->
     <div class="p-4 flex items-center justify-between">
       <div>
-        <h4 class="text-sm font-medium text-gray-900">Start Over</h4>
-        <p class="text-sm text-gray-500">Clear all articles and sections, then re-run the setup wizard.</p>
+        <h4 class="text-sm font-medium app-text">Start Over</h4>
+        <p class="text-sm app-text-secondary">Clear all articles and sections, then re-run the setup wizard.</p>
       </div>
       <%= button_to "Start Over...",
           start_over_project_path(project),
@@ -21,8 +21,8 @@
     <!-- Delete Project -->
     <div class="p-4 flex items-center justify-between">
       <div>
-        <h4 class="text-sm font-medium text-gray-900">Delete Project</h4>
-        <p class="text-sm text-gray-500">Permanently delete this project and all its data.</p>
+        <h4 class="text-sm font-medium app-text">Delete Project</h4>
+        <p class="text-sm app-text-secondary">Permanently delete this project and all its data.</p>
       </div>
       <%= button_to "Delete Project...",
           project_path(project),

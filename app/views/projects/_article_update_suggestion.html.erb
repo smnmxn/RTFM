@@ -1,5 +1,5 @@
 <div id="suggestion_<%= suggestion.id %>"
-     class="p-3 rounded-lg border <%= suggestion.suggestion_pending? ? 'bg-white border-gray-200' : 'bg-gray-50 border-gray-100' %>">
+     class="p-3 rounded-lg border <%= suggestion.suggestion_pending? ? 'app-surface app-border' : 'app-surface-alt app-border' %>">
   <div class="flex items-start justify-between gap-4">
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2 flex-wrap">
@@ -29,7 +29,7 @@
               Accepted
             </span>
           <% else %>
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium app-surface-alt app-text-secondary">
               <%= heroicon "x-mark", options: { class: "w-3 h-3" } %>
               Dismissed
             </span>
@@ -40,26 +40,26 @@
       <!-- Article Title / Suggested Title -->
       <div class="mt-2">
         <% if suggestion.article.present? %>
-          <p class="text-sm font-medium text-gray-900"><%= suggestion.article.title %></p>
+          <p class="text-sm font-medium app-text"><%= suggestion.article.title %></p>
         <% elsif suggestion.suggested_changes.is_a?(Hash) && suggestion.suggested_changes["suggested_title"] %>
-          <p class="text-sm font-medium text-gray-900"><%= suggestion.suggested_changes["suggested_title"] %></p>
+          <p class="text-sm font-medium app-text"><%= suggestion.suggested_changes["suggested_title"] %></p>
         <% end %>
       </div>
 
       <!-- Reason -->
       <% if suggestion.reason.present? %>
-        <p class="mt-1 text-sm text-gray-600"><%= suggestion.reason %></p>
+        <p class="mt-1 text-sm app-text-secondary"><%= suggestion.reason %></p>
       <% end %>
 
       <!-- Affected Files -->
       <% if suggestion.affected_files.present? && suggestion.affected_files.any? %>
         <div class="mt-2 flex items-center gap-2 flex-wrap">
-          <span class="text-xs text-gray-500">Files:</span>
+          <span class="text-xs app-text-secondary">Files:</span>
           <% suggestion.affected_files.first(3).each do |file| %>
-            <code class="px-1 py-0.5 bg-gray-100 rounded text-xs font-mono text-gray-600 truncate max-w-xs"><%= file.split('/').last %></code>
+            <code class="px-1 py-0.5 app-surface-alt rounded text-xs font-mono app-text-secondary truncate max-w-xs"><%= file.split('/').last %></code>
           <% end %>
           <% if suggestion.affected_files.size > 3 %>
-            <span class="text-xs text-gray-400">+<%= suggestion.affected_files.size - 3 %> more</span>
+            <span class="text-xs app-text-muted">+<%= suggestion.affected_files.size - 3 %> more</span>
           <% end %>
         </div>
       <% end %>
@@ -68,7 +68,7 @@
       <% if suggestion.suggested_changes.is_a?(Hash) %>
         <% if suggestion.suggestion_type_update_needed? %>
           <% changes = suggestion.suggested_changes %>
-          <div class="mt-2 text-xs text-gray-500">
+          <div class="mt-2 text-xs app-text-secondary">
             <% notes = [] %>
             <% notes << "Update steps: #{changes['update_steps'].join(', ')}" if changes['update_steps'].present? %>
             <% notes << "Update introduction" if changes['update_introduction'] %>
@@ -79,7 +79,7 @@
         <% elsif suggestion.suggestion_type_new_article? %>
           <% changes = suggestion.suggested_changes %>
           <% if changes["suggested_section"].present? %>
-            <div class="mt-2 text-xs text-gray-500">
+            <div class="mt-2 text-xs app-text-secondary">
               Suggested section: <span class="font-medium"><%= changes["suggested_section"] %></span>
             </div>
           <% end %>
@@ -107,7 +107,7 @@
         <% end %>
         <%= button_to dismiss_project_article_update_suggestion_path(suggestion.article_update_check.project, suggestion),
                       method: :post,
-                      class: "inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-500",
+                      class: "inline-flex items-center gap-1 px-2 py-1 text-xs font-medium app-text-secondary app-surface-alt rounded hover:app-surface-alt focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[color:var(--app-focus-ring)]",
                       data: { turbo_method: :post } do %>
           <%= heroicon "x-mark", options: { class: "w-3 h-3" } %>
           Dismiss

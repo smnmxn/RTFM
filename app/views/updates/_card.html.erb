@@ -2,14 +2,14 @@
   <div class="flex items-start justify-between">
     <div class="flex-1">
       <div class="flex items-center gap-2">
-        <h4 class="text-lg font-medium text-gray-900"><%= update.title %></h4>
+        <h4 class="text-lg font-medium app-text"><%= update.title %></h4>
         <% if update.status == "published" %>
           <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded">Published</span>
         <% else %>
           <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded">Draft</span>
         <% end %>
         <% if update.analysis_status == "running" %>
-<span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-800 rounded">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium app-accent-light app-accent-on-light rounded">
             <%= spinner_icon(size: "w-3 h-3") %>
             Analyzing
           </span>
@@ -17,15 +17,15 @@
           <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-red-100 text-red-800 rounded">Analysis Failed</span>
         <% end %>
       </div>
-      <p class="mt-1 text-sm text-gray-500">
+      <p class="mt-1 text-sm app-text-secondary">
         <% if update.pull_request_url.present? %>
-          From <%= link_to "PR ##{update.pull_request_number}", update.pull_request_url, target: "_blank", class: "text-indigo-600 hover:text-indigo-800" %>
+          From <%= link_to "PR ##{update.pull_request_number}", update.pull_request_url, target: "_blank", class: "app-accent-text hover:app-accent-hover" %>
         <% end %>
         &middot; Created <%= time_ago_in_words(update.created_at) %> ago
       </p>
     </div>
   </div>
-  <div class="mt-4 prose prose-sm max-w-none text-gray-700">
+  <div class="mt-4 prose prose-sm max-w-none app-text">
     <%= markdown(update.content) %>
   </div>
 <% end %>

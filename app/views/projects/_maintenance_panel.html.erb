@@ -1,40 +1,40 @@
 <div class="space-y-6">
   <!-- Current Status -->
-  <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
-      <h3 class="text-sm font-medium text-gray-900">Documentation Status</h3>
+  <div class="app-surface rounded-lg border app-border overflow-hidden">
+    <div class="px-4 py-3 border-b app-border app-surface-alt">
+      <h3 class="text-sm font-medium app-text">Documentation Status</h3>
     </div>
     <div class="p-4">
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <dt class="text-sm font-medium text-gray-500">Analysis Commit</dt>
-          <dd class="mt-1 text-sm text-gray-900 font-mono">
+          <dt class="text-sm font-medium app-text-secondary">Analysis Commit</dt>
+          <dd class="mt-1 text-sm app-text font-mono">
             <% if project.analysis_commit_sha.present? %>
               <%= project.analysis_commit_sha.first(7) %>
             <% else %>
-              <span class="text-gray-400">Not analyzed</span>
+              <span class="app-text-muted">Not analyzed</span>
             <% end %>
           </dd>
         </div>
         <div>
-          <dt class="text-sm font-medium text-gray-500">Analyzed At</dt>
-          <dd class="mt-1 text-sm text-gray-900">
+          <dt class="text-sm font-medium app-text-secondary">Analyzed At</dt>
+          <dd class="mt-1 text-sm app-text">
             <% if project.analyzed_at.present? %>
               <%= time_ago_in_words(project.analyzed_at) %> ago
             <% else %>
-              <span class="text-gray-400">Never</span>
+              <span class="app-text-muted">Never</span>
             <% end %>
           </dd>
         </div>
         <div>
-          <dt class="text-sm font-medium text-gray-500">Published Articles</dt>
-          <dd class="mt-1 text-sm text-gray-900">
+          <dt class="text-sm font-medium app-text-secondary">Published Articles</dt>
+          <dd class="mt-1 text-sm app-text">
             <%= project.articles.published.count %>
           </dd>
         </div>
         <div>
-          <dt class="text-sm font-medium text-gray-500">Articles with Commit Tracking</dt>
-          <dd class="mt-1 text-sm text-gray-900">
+          <dt class="text-sm font-medium app-text-secondary">Articles with Commit Tracking</dt>
+          <dd class="mt-1 text-sm app-text">
             <%= project.articles.where.not(source_commit_sha: nil).count %> / <%= project.articles.count %>
           </dd>
         </div>
@@ -43,28 +43,28 @@
   </div>
 
   <!-- Check for Updates -->
-  <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
-      <h3 class="text-sm font-medium text-gray-900">Check for Updates</h3>
+  <div class="app-surface rounded-lg border app-border overflow-hidden">
+    <div class="px-4 py-3 border-b app-border app-surface-alt">
+      <h3 class="text-sm font-medium app-text">Check for Updates</h3>
     </div>
     <div class="p-4">
-      <p class="text-sm text-gray-600 mb-4">
+      <p class="text-sm app-text-secondary mb-4">
         Analyze recent code changes to identify which articles may need updates or if new articles should be created.
       </p>
 
       <%= form_with url: create_article_update_check_project_path(project), method: :post, class: "flex items-end gap-4" do |f| %>
         <div class="flex-1">
-          <label for="target_commit" class="block text-sm font-medium text-gray-700 mb-1">
+          <label for="target_commit" class="block text-sm font-medium app-text mb-1">
             Target Commit (optional)
           </label>
           <input type="text"
                  name="target_commit"
                  id="target_commit"
                  placeholder="Leave empty for latest commit"
-                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500 font-mono">
+                 class="w-full px-3 py-2 border app-border-strong rounded-md shadow-sm text-sm focus:ring-[color:var(--app-focus-ring)] focus:border-[color:var(--app-accent)] font-mono">
         </div>
         <button type="submit"
-                class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                class="inline-flex items-center gap-2 px-4 py-2 app-accent-bg text-white text-sm font-medium rounded-md hover:app-accent-bg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[color:var(--app-focus-ring)]">
           <%= heroicon "magnifying-glass", options: { class: "w-4 h-4" } %>
           Check for Updates
         </button>
@@ -73,18 +73,18 @@
   </div>
 
   <!-- Recent Update Checks -->
-  <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
-      <h3 class="text-sm font-medium text-gray-900">Recent Update Checks</h3>
+  <div class="app-surface rounded-lg border app-border overflow-hidden">
+    <div class="px-4 py-3 border-b app-border app-surface-alt">
+      <h3 class="text-sm font-medium app-text">Recent Update Checks</h3>
     </div>
-    <div class="divide-y divide-gray-200">
+    <div class="divide-y divide-app-border">
       <% recent_checks = project.article_update_checks.recent.limit(10) %>
       <% if recent_checks.any? %>
         <% recent_checks.each do |check| %>
           <%= render "projects/article_update_check", check: check %>
         <% end %>
       <% else %>
-        <div class="p-4 text-sm text-gray-500 text-center">
+        <div class="p-4 text-sm app-text-secondary text-center">
           No update checks performed yet.
         </div>
       <% end %>

@@ -3,7 +3,7 @@
   data-controller="toast"
   data-toast-persistent-value="<%= persistent %>"
   data-toast-auto-dismiss-value="8000"
-  class="toast-item transform translate-x-full opacity-0 transition-all duration-300 ease-out pointer-events-auto w-80 rounded-lg shadow-lg ring-1 ring-black/5 overflow-hidden <%= type == 'error' ? 'bg-red-50' : 'bg-white' %>"
+  class="toast-item transform translate-x-full opacity-0 transition-all duration-300 ease-out pointer-events-auto w-80 rounded-lg shadow-lg ring-1 ring-black/5 overflow-hidden <%= type == 'error' ? 'bg-red-50' : 'app-surface' %>"
   data-action="animationend->toast#entered"
 >
   <div class="p-4">
@@ -24,14 +24,14 @@
         <% end %>
       </div>
       <div class="flex-1 min-w-0">
-        <p class="text-sm font-medium text-gray-900 truncate"><%= message %></p>
+        <p class="text-sm font-medium app-text truncate"><%= message %></p>
         <% if action_url.present? %>
-          <a href="<%= action_url %>" class="mt-1 inline-block text-sm font-medium text-indigo-600 hover:text-indigo-500" data-turbo-frame="_top">
+          <a href="<%= action_url %>" class="mt-1 inline-block text-sm font-medium app-accent-text hover:app-accent-text" data-turbo-frame="_top">
             <%= action_label %> &rarr;
           </a>
         <% end %>
       </div>
-      <button type="button" data-action="toast#dismiss" class="shrink-0 rounded-md text-gray-400 hover:text-gray-500 focus:outline-none">
+      <button type="button" data-action="toast#dismiss" class="shrink-0 rounded-md app-text-muted hover:app-text focus:outline-none">
         <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
           <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
         </svg>

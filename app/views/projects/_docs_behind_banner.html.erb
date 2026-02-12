@@ -12,15 +12,15 @@
   %>
 
   <% if show_running %>
-    <div class="bg-indigo-50 border-b border-indigo-200">
-      <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8">
+    <div class="app-accent-light border-b border-[color:var(--app-accent)]">
+      <div class="px-6 py-3">
         <div class="flex items-center justify-between flex-wrap gap-2">
           <div class="flex items-center gap-2">
-            <svg class="animate-spin h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg class="animate-spin h-5 w-5 app-accent-text" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <p class="text-sm text-indigo-800">
+            <p class="text-sm app-accent-on-light">
               <% if running_check %>
                 <span class="font-medium">Checking for documentation updates...</span>
                 Analyzing changes since <%= running_check.short_base_sha || 'baseline' %>
@@ -35,7 +35,7 @@
     </div>
   <% elsif show_outdated %>
     <div class="bg-amber-50 border-b border-amber-200">
-      <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8">
+      <div class="px-6 py-3">
         <div class="flex items-center justify-between flex-wrap gap-2">
           <div class="flex items-center gap-2">
             <%= heroicon "exclamation-triangle", options: { class: "w-5 h-5 text-amber-500" } %>

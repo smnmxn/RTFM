@@ -20,21 +20,21 @@ export default class extends Controller {
   dragOver(event) {
     event.preventDefault()
     if (this.hasPlaceholderTarget) {
-      this.placeholderTarget.classList.add("ring-2", "ring-indigo-500")
+      this.placeholderTarget.classList.add("ring-2", "ring-zinc-500")
     }
   }
 
   dragLeave(event) {
     event.preventDefault()
     if (this.hasPlaceholderTarget) {
-      this.placeholderTarget.classList.remove("ring-2", "ring-indigo-500")
+      this.placeholderTarget.classList.remove("ring-2", "ring-zinc-500")
     }
   }
 
   async drop(event) {
     event.preventDefault()
     if (this.hasPlaceholderTarget) {
-      this.placeholderTarget.classList.remove("ring-2", "ring-indigo-500")
+      this.placeholderTarget.classList.remove("ring-2", "ring-zinc-500")
     }
 
     const file = event.dataTransfer.files[0]

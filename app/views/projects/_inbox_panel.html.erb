@@ -34,11 +34,11 @@
   </div>
 
   <!-- Inbox Header -->
-  <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+  <div class="px-6 py-4 border-b app-border flex-shrink-0">
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-xl font-semibold text-gray-900">Inbox</h2>
-        <p class="mt-1 text-sm text-gray-500">
+        <h2 class="text-xl font-semibold app-text">Inbox</h2>
+        <p class="mt-1 text-sm app-text-secondary">
           Review suggestions and articles for your Help Centre.
         </p>
       </div>
@@ -49,24 +49,24 @@
   <!-- Split View -->
   <div class="flex-1 flex overflow-hidden">
     <!-- Left Panel: Inbox List -->
-    <div class="w-80 flex-shrink-0 border-r border-gray-200 flex flex-col bg-gray-50">
+    <div class="w-80 flex-shrink-0 border-r app-border flex flex-col app-bg">
       <div id="inbox-list" class="flex-1 overflow-y-auto">
         <% if inbox_empty %>
           <!-- Empty state message -->
-          <div id="inbox-empty-state" class="p-6 text-center text-gray-500">
-            <%= heroicon "check", options: { class: "mx-auto h-12 w-12 text-gray-300" } %>
-            <p class="mt-2 text-sm font-medium text-gray-900">All done!</p>
-            <p class="mt-1 text-xs text-gray-400">No pending items to review.</p>
+          <div id="inbox-empty-state" class="p-6 text-center app-text-secondary">
+            <%= heroicon "check", options: { class: "mx-auto h-12 w-12 app-text-muted" } %>
+            <p class="mt-2 text-sm font-medium app-text">All done!</p>
+            <p class="mt-1 text-xs app-text-muted">No pending items to review.</p>
           </div>
           <!-- Always render section wrappers for broadcast targets -->
           <div id="articles-section" class="hidden"></div>
           <div id="recommendations-section" class="hidden"></div>
         <% else %>
           <!-- Empty state (hidden, for broadcast updates) -->
-          <div id="inbox-empty-state" class="hidden p-6 text-center text-gray-500">
-            <%= heroicon "check", options: { class: "mx-auto h-12 w-12 text-gray-300" } %>
-            <p class="mt-2 text-sm font-medium text-gray-900">All done!</p>
-            <p class="mt-1 text-xs text-gray-400">No pending items to review.</p>
+          <div id="inbox-empty-state" class="hidden p-6 text-center app-text-secondary">
+            <%= heroicon "check", options: { class: "mx-auto h-12 w-12 app-text-muted" } %>
+            <p class="mt-2 text-sm font-medium app-text">All done!</p>
+            <p class="mt-1 text-xs app-text-muted">No pending items to review.</p>
           </div>
           <!-- Articles Section (higher priority) -->
           <%= render "projects/inbox_articles_section",
@@ -82,7 +82,7 @@
     </div>
 
     <!-- Right Panel: Editor -->
-    <div data-inbox-target="editor" class="flex-1 flex flex-col overflow-hidden bg-gray-50">
+    <div data-inbox-target="editor" class="flex-1 flex flex-col overflow-hidden app-bg">
       <% if inbox_empty %>
         <%= render "projects/all_reviewed", project: project %>
       <% elsif selected_article %>
@@ -91,11 +91,11 @@
         <%= render "projects/recommendation_editor", recommendation: selected_recommendation %>
       <% else %>
         <%= turbo_frame_tag "inbox-editor", class: "h-full block" do %>
-          <div class="h-full flex items-center justify-center bg-white">
+          <div class="h-full flex items-center justify-center app-surface">
             <div class="text-center px-6">
-              <%= heroicon "document-text", options: { class: "mx-auto h-16 w-16 text-gray-300" } %>
-              <h3 class="mt-4 text-lg font-medium text-gray-900">Select an item</h3>
-              <p class="mt-2 text-sm text-gray-500">
+              <%= heroicon "document-text", options: { class: "mx-auto h-16 w-16 app-text-muted" } %>
+              <h3 class="mt-4 text-lg font-medium app-text">Select an item</h3>
+              <p class="mt-2 text-sm app-text-secondary">
                 Choose an item from the list to review.
               </p>
             </div>

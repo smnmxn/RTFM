@@ -1,22 +1,22 @@
 <%# locals: (project:, saved: false) %>
 <%= turbo_frame_tag "branding_form" do %>
-  <div class="border border-gray-200 rounded-lg">
-    <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 rounded-t-lg">
-      <h3 class="text-lg font-medium text-gray-900">Help Centre Branding</h3>
-      <p class="text-sm text-gray-500 mt-1">Customize the look and feel of your public help centre.</p>
+  <div class="border app-border rounded-lg">
+    <div class="px-4 py-3 app-bg border-b app-border rounded-t-lg">
+      <h3 class="text-lg font-medium app-text">Help Centre Branding</h3>
+      <p class="text-sm app-text-secondary mt-1">Customize the look and feel of your public help centre.</p>
     </div>
 
     <%= form_with model: project,
                   url: update_branding_project_path(project),
                   method: :patch,
-                  class: "divide-y divide-gray-200" do |form| %>
+                  class: "divide-y divide-app-border" do |form| %>
 
       <!-- Logo Upload -->
       <div class="p-4" data-controller="logo-upload"
            data-logo-upload-upload-url-value="<%= upload_logo_project_path(project) %>"
            data-logo-upload-remove-url-value="<%= remove_logo_project_path(project) %>">
-        <label class="block text-sm font-medium text-gray-900 mb-2">Logo</label>
-        <p class="text-sm text-gray-500 mb-3">Recommended size: 200x50px. PNG, JPEG, or SVG.</p>
+        <label class="block text-sm font-medium app-text mb-2">Logo</label>
+        <p class="text-sm app-text-secondary mb-3">Recommended size: 200x50px. PNG, JPEG, or SVG.</p>
 
         <div id="logo_preview" class="mb-3">
           <% if project.logo.attached? %>
@@ -30,12 +30,12 @@
             </div>
           <% else %>
             <div data-logo-upload-target="placeholder"
-                 class="w-48 h-16 border-2 border-dashed border-gray-300 rounded-lg
-                        flex items-center justify-center cursor-pointer hover:border-indigo-400 transition-colors"
+                 class="w-48 h-16 border-2 border-dashed app-border-strong rounded-lg
+                        flex items-center justify-center cursor-pointer hover:border-[color:var(--app-accent)] transition-colors"
                  data-action="click->logo-upload#triggerUpload dragover->logo-upload#dragOver dragleave->logo-upload#dragLeave drop->logo-upload#drop">
               <div class="text-center">
-                <%= heroicon "photo", options: { class: "w-6 h-6 text-gray-400 mx-auto" } %>
-                <span class="text-xs text-gray-500">Click or drag to upload</span>
+                <%= heroicon "photo", options: { class: "w-6 h-6 app-text-muted mx-auto" } %>
+                <span class="text-xs app-text-secondary">Click or drag to upload</span>
               </div>
             </div>
           <% end %>
@@ -51,27 +51,27 @@
       <!-- Title & Subtitle -->
       <div class="p-4 space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-900 mb-1">Title</label>
+          <label class="block text-sm font-medium app-text mb-1">Title</label>
           <%= form.text_field :help_centre_title,
               value: project.help_centre_title,
               placeholder: "Help Centre",
-              class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm" %>
+              class: "w-full px-3 py-2 app-input rounded-lg text-sm" %>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-900 mb-1">Subtitle</label>
+          <label class="block text-sm font-medium app-text mb-1">Subtitle</label>
           <%= form.text_field :help_centre_tagline,
               value: project.help_centre_tagline,
               placeholder: "How can we help you?",
-              class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm" %>
+              class: "w-full px-3 py-2 app-input rounded-lg text-sm" %>
         </div>
       </div>
 
       <!-- Custom Subdomain -->
       <div class="p-4 space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-900 mb-1">Custom Subdomain</label>
-          <p class="text-sm text-gray-500 mb-2">
+          <label class="block text-sm font-medium app-text mb-1">Custom Subdomain</label>
+          <p class="text-sm app-text-secondary mb-2">
             Access your help centre at a custom subdomain.
           </p>
           <div class="flex items-center gap-2">
@@ -81,11 +81,11 @@
                 pattern: "[a-z0-9][a-z0-9-]*[a-z0-9]",
                 minlength: 3,
                 maxlength: 63,
-                class: "flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-mono" %>
-            <span class="text-gray-500 text-sm">.<%= Rails.application.config.x.base_domain || "example.com" %></span>
+                class: "flex-1 px-3 py-2 app-input rounded-lg text-sm font-mono" %>
+            <span class="app-text-secondary text-sm">.<%= Rails.application.config.x.base_domain || "example.com" %></span>
           </div>
-          <p class="text-xs text-gray-400 mt-1">
-            Leave blank to use your project slug: <code class="bg-gray-100 px-1 py-0.5 rounded"><%= project.slug %></code>
+          <p class="text-xs app-text-muted mt-1">
+            Leave blank to use your project slug: <code class="app-surface-alt px-1 py-0.5 rounded"><%= project.slug %></code>
           </p>
         </div>
       </div>
@@ -93,85 +93,85 @@
       <!-- Support Contact -->
       <div class="p-4 space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-900 mb-1">Support Email <span class="text-gray-400 font-normal">(optional)</span></label>
+          <label class="block text-sm font-medium app-text mb-1">Support Email <span class="app-text-muted font-normal">(optional)</span></label>
           <%= form.email_field :support_email,
               value: project.support_email,
               placeholder: "support@yourcompany.com",
-              class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm" %>
+              class: "w-full px-3 py-2 app-input rounded-lg text-sm" %>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-900 mb-1">Support Phone <span class="text-gray-400 font-normal">(optional)</span></label>
+          <label class="block text-sm font-medium app-text mb-1">Support Phone <span class="app-text-muted font-normal">(optional)</span></label>
           <%= form.telephone_field :support_phone,
               value: project.support_phone,
               placeholder: "+1 (555) 123-4567",
-              class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm" %>
+              class: "w-full px-3 py-2 app-input rounded-lg text-sm" %>
         </div>
 
-        <p class="text-xs text-gray-500">These will appear in the help centre header and after articles, giving visitors a way to reach you directly.</p>
+        <p class="text-xs app-text-secondary">These will appear in the help centre header and after articles, giving visitors a way to reach you directly.</p>
       </div>
 
       <!-- Colors -->
       <div class="p-4 space-y-4">
         <div class="grid grid-cols-3 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-900 mb-1">Primary Color</label>
+            <label class="block text-sm font-medium app-text mb-1">Primary Color</label>
             <div class="flex items-center gap-2">
               <div class="relative w-10 h-10 flex-shrink-0">
                 <input type="color"
                        id="primary_color_picker"
                        value="<%= project.primary_color_or_default %>"
-                       class="absolute inset-0 w-full h-full cursor-pointer rounded border border-gray-300"
+                       class="absolute inset-0 w-full h-full cursor-pointer rounded border app-border-strong"
                        oninput="document.getElementById('project_primary_color').value = this.value; updateColorPreview();">
               </div>
               <%= form.text_field :primary_color,
                   value: project.primary_color_or_default,
-                  placeholder: "#4f46e5",
+                  placeholder: "#3f3f46",
                   oninput: "if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('primary_color_picker').value=this.value}; updateColorPreview();",
-                  class: "flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-mono" %>
+                  class: "flex-1 px-3 py-2 app-input rounded-lg text-sm font-mono" %>
             </div>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-900 mb-1">Accent Color</label>
+            <label class="block text-sm font-medium app-text mb-1">Accent Color</label>
             <div class="flex items-center gap-2">
               <div class="relative w-10 h-10 flex-shrink-0">
                 <input type="color"
                        id="accent_color_picker"
                        value="<%= project.accent_color_or_default %>"
-                       class="absolute inset-0 w-full h-full cursor-pointer rounded border border-gray-300"
+                       class="absolute inset-0 w-full h-full cursor-pointer rounded border app-border-strong"
                        oninput="document.getElementById('project_accent_color').value = this.value; updateColorPreview();">
               </div>
               <%= form.text_field :accent_color,
                   value: project.accent_color_or_default,
-                  placeholder: "#7c3aed",
+                  placeholder: "#71717a",
                   oninput: "if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('accent_color_picker').value=this.value}; updateColorPreview();",
-                  class: "flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-mono" %>
+                  class: "flex-1 px-3 py-2 app-input rounded-lg text-sm font-mono" %>
             </div>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-900 mb-1">Title Text Color</label>
+            <label class="block text-sm font-medium app-text mb-1">Title Text Color</label>
             <div class="flex items-center gap-2">
               <div class="relative w-10 h-10 flex-shrink-0">
                 <input type="color"
                        id="title_text_color_picker"
                        value="<%= project.title_text_color_or_default %>"
-                       class="absolute inset-0 w-full h-full cursor-pointer rounded border border-gray-300"
+                       class="absolute inset-0 w-full h-full cursor-pointer rounded border app-border-strong"
                        oninput="document.getElementById('project_title_text_color').value = this.value;">
               </div>
               <%= form.text_field :title_text_color,
                   value: project.title_text_color_or_default,
                   placeholder: "#111827",
                   oninput: "if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('title_text_color_picker').value=this.value};",
-                  class: "flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-mono" %>
+                  class: "flex-1 px-3 py-2 app-input rounded-lg text-sm font-mono" %>
             </div>
           </div>
         </div>
 
         <!-- Color Preview -->
-        <div class="bg-gray-50 rounded-lg p-3">
-          <p class="text-xs text-gray-500 mb-2">Preview</p>
+        <div class="app-bg rounded-lg p-3">
+          <p class="text-xs app-text-secondary mb-2">Preview</p>
           <div id="color_preview" class="h-8 rounded"
                style="background: linear-gradient(to right, <%= project.primary_color_or_default %>, <%= project.accent_color_or_default %>)">
           </div>
@@ -179,8 +179,8 @@
 
         <script>
           function updateColorPreview() {
-            var primary = document.getElementById('project_primary_color').value || '#4f46e5';
-            var accent = document.getElementById('project_accent_color').value || '#7c3aed';
+            var primary = document.getElementById('project_primary_color').value || '#3f3f46';
+            var accent = document.getElementById('project_accent_color').value || '#71717a';
             document.getElementById('color_preview').style.background = 'linear-gradient(to right, ' + primary + ', ' + accent + ')';
           }
         </script>
@@ -189,8 +189,8 @@
       <!-- Dark Mode -->
       <div class="p-4 space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-900 mb-1">Dark Mode</label>
-          <p class="text-sm text-gray-500 mb-3">Enable dark mode for your public help centre.</p>
+          <label class="block text-sm font-medium app-text mb-1">Dark Mode</label>
+          <p class="text-sm app-text-secondary mb-3">Enable dark mode for your public help centre.</p>
 
           <label class="flex items-start gap-3 cursor-pointer">
             <input type="hidden" name="project[dark_mode]" value="0">
@@ -198,10 +198,10 @@
                    name="project[dark_mode]"
                    value="1"
                    <%= "checked" if project.dark_mode_enabled? %>
-                   class="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                   class="mt-0.5 h-4 w-4 rounded app-border-strong text-[color:var(--app-accent)] focus:ring-[color:var(--app-focus-ring)]">
             <div>
-              <span class="block text-sm font-medium text-gray-900">Enable dark mode</span>
-              <span class="block text-sm text-gray-500 mt-0.5">
+              <span class="block text-sm font-medium app-text">Enable dark mode</span>
+              <span class="block text-sm app-text-secondary mt-0.5">
                 Your help centre will display with a dark background and light text.
               </span>
             </div>
@@ -210,7 +210,7 @@
       </div>
 
       <!-- Submit -->
-      <div class="p-4 bg-gray-50 rounded-b-lg flex items-center justify-between">
+      <div class="p-4 app-bg rounded-b-lg flex items-center justify-between">
         <% if saved %>
           <span class="text-sm text-green-600 flex items-center gap-1">
             <%= heroicon "check-circle", options: { class: "w-4 h-4" } %>
@@ -220,7 +220,7 @@
           <span></span>
         <% end %>
         <%= form.submit "Save Branding",
-            class: "px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium cursor-pointer" %>
+            class: "px-4 py-2 app-accent-bg text-white rounded-lg hover:app-accent-bg transition-colors text-sm font-medium cursor-pointer" %>
       </div>
     <% end %>
   </div>
