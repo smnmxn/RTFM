@@ -1,7 +1,7 @@
 <%# locals: (article:) %>
 <% if article.structured? && (article.prerequisites.any? || article.steps.any? || article.tips.any? || article.summary.present?) %>
-  <nav class="bg-muted rounded-lg p-4">
-    <h3 class="text-sm font-semibold text-heading mb-3">On this page</h3>
+  <nav class="bg-muted rounded-lg p-4 border-l-4" style="border-left-color: var(--brand-primary);">
+    <h3 class="text-sm font-semibold text-heading mb-3 font-display">On this page</h3>
     <ul class="space-y-2 text-sm">
       <% if article.prerequisites.any? %>
         <li>

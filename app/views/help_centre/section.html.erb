@@ -6,18 +6,20 @@
     <%= link_to "Help Centre",
         help_centre_path(),
         class: "text-brand hover:opacity-80 transition-colors" %>
-    <span class="mx-2 text-muted">/</span>
+    <%= heroicon "chevron-right", variant: :mini, options: { class: "inline w-4 h-4 mx-1 text-muted align-text-bottom" } %>
     <span class="text-body"><%= @section.name %></span>
   </nav>
 
   <!-- Section Header -->
-  <div class="flex items-start gap-4">
+  <div class="flex items-start gap-4"
+       data-controller="scroll-reveal"
+       data-scroll-reveal-distance-value="12">
     <div class="flex-shrink-0 w-14 h-14 bg-brand-light text-brand rounded-xl
                 flex items-center justify-center">
       <%= heroicon @section.icon_name, options: { class: "w-7 h-7" } %>
     </div>
     <div>
-      <h1 class="text-2xl font-bold text-heading"><%= @section.name %></h1>
+      <h1 class="text-2xl font-bold text-heading font-display"><%= @section.name %></h1>
       <% if @section.description.present? %>
         <p class="mt-1 text-body"><%= @section.description %></p>
       <% end %>
@@ -29,9 +31,11 @@
 
   <!-- Articles List -->
   <% if @articles.any? %>
-    <div class="grid gap-4 md:grid-cols-2">
+    <div class="grid gap-4 md:grid-cols-2" data-controller="stagger">
       <% @articles.each do |article| %>
-        <%= render "help_centre/article_card", article: article %>
+        <div data-stagger-target="item">
+          <%= render "help_centre/article_card", article: article %>
+        </div>
       <% end %>
     </div>
   <% else %>

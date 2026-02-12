@@ -35,7 +35,9 @@
 
   <!-- Main Content -->
   <div class="lg:col-span-3">
-    <div class="bg-card shadow rounded-xl border border-subtle">
+    <div class="bg-card shadow rounded-xl border border-subtle overflow-hidden">
+      <!-- Brand accent stripe -->
+      <div class="h-1" style="background: linear-gradient(to right, var(--brand-primary), var(--brand-accent));"></div>
       <!-- Article Header -->
       <div class="px-6 py-5 border-b border-default">
         <nav class="text-sm mb-3">
@@ -43,13 +45,13 @@
               help_centre_path,
               class: "text-brand hover:opacity-80 transition-colors" %>
           <% if @section %>
-            <span class="mx-2 text-muted">/</span>
+            <%= heroicon "chevron-right", variant: :mini, options: { class: "inline w-4 h-4 mx-1 text-muted align-text-bottom" } %>
             <%= link_to @section.name,
                 help_centre_section_path(section_slug: @section.slug),
                 class: "text-brand hover:opacity-80 transition-colors" %>
           <% end %>
         </nav>
-        <h1 class="text-2xl font-bold text-heading"><%= @article.title %></h1>
+        <h1 class="text-2xl font-bold text-heading font-display"><%= @article.title %></h1>
         <% if @article.published_at.present? %>
           <p class="mt-2 text-sm text-body">
             Updated <%= time_ago_in_words(@article.published_at) %> ago
@@ -65,11 +67,11 @@
         </div>
 
         <% if @article.structured? %>
-          <%= render "help_centre/content/introduction", article: @article %>
-          <%= render "help_centre/content/prerequisites", article: @article %>
-          <%= render "help_centre/content/steps", article: @article %>
-          <%= render "help_centre/content/tips", article: @article %>
-          <%= render "help_centre/content/summary", article: @article %>
+          <div data-controller="scroll-reveal"><%= render "help_centre/content/introduction", article: @article %></div>
+          <div data-controller="scroll-reveal" data-scroll-reveal-delay-value="100"><%= render "help_centre/content/prerequisites", article: @article %></div>
+          <div data-controller="scroll-reveal" data-scroll-reveal-delay-value="150"><%= render "help_centre/content/steps", article: @article %></div>
+          <div data-controller="scroll-reveal" data-scroll-reveal-delay-value="200"><%= render "help_centre/content/tips", article: @article %></div>
+          <div data-controller="scroll-reveal" data-scroll-reveal-delay-value="250"><%= render "help_centre/content/summary", article: @article %></div>
         <% else %>
           <div class="prose prose-lg max-w-none">
             <%= markdown(@article.content) %>
@@ -87,10 +89,12 @@
     <!-- Related Articles -->
     <% if @related_articles.any? %>
       <div class="mt-8">
-        <h3 class="text-lg font-semibold text-heading mb-4">Related articles</h3>
-        <div class="grid gap-4 sm:grid-cols-2">
+        <h3 class="text-lg font-semibold text-heading mb-4 font-display">Related articles</h3>
+        <div class="grid gap-4 sm:grid-cols-2" data-controller="stagger">
           <% @related_articles.each do |article| %>
-            <%= render "help_centre/article_card", article: article %>
+            <div data-stagger-target="item">
+              <%= render "help_centre/article_card", article: article %>
+            </div>
           <% end %>
         </div>
       </div>

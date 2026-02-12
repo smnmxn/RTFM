@@ -6,12 +6,20 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
+    <%# Nunito Sans (body) + Raleway (headlines) %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700&family=Raleway:wght@500;600;700&display=swap" rel="stylesheet">
+
     <!-- Dynamic branding colors -->
     <style>
       :root {
         --brand-primary: <%= @project.primary_color_or_default %>;
         --brand-accent: <%= @project.accent_color_or_default %>;
         --brand-title: <%= @project.title_text_color_or_default %>;
+
+        --font-body: 'Nunito Sans', system-ui, sans-serif;
+        --font-display: 'Raleway', system-ui, sans-serif;
 
         /* Light mode semantic colors */
         --bg-primary: #f9fafb;
@@ -67,6 +75,44 @@
 
       /* Icon hover - ensure white text overrides brand color */
       .group:hover .group-hover\:text-white { color: white !important; }
+
+      /* Font utilities */
+      .font-display { font-family: var(--font-display); }
+      .font-body { font-family: var(--font-body); }
+
+      /* State colors using color-mix for dark mode compatibility */
+      .bg-warning-soft { background-color: color-mix(in srgb, #f59e0b 10%, var(--bg-secondary)); }
+      .text-warning-strong { color: color-mix(in srgb, #f59e0b 80%, var(--text-primary)); }
+      .text-warning { color: color-mix(in srgb, #f59e0b 60%, var(--text-secondary)); }
+      .border-warning { border-color: color-mix(in srgb, #f59e0b 30%, var(--border-color)); }
+
+      .bg-error-soft { background-color: color-mix(in srgb, #ef4444 10%, var(--bg-secondary)); }
+      .text-error-strong { color: color-mix(in srgb, #ef4444 80%, var(--text-primary)); }
+      .text-error { color: color-mix(in srgb, #ef4444 60%, var(--text-secondary)); }
+      .border-error { border-color: color-mix(in srgb, #ef4444 30%, var(--border-color)); }
+
+      .text-success { color: color-mix(in srgb, #22c55e 80%, var(--text-primary)); }
+
+      /* Brand-tinted tips */
+      .bg-tips { background-color: color-mix(in srgb, var(--brand-primary) 8%, var(--bg-secondary)); }
+      .text-tips-heading { color: color-mix(in srgb, var(--brand-primary) 80%, var(--text-primary)); }
+      .text-tips-body { color: color-mix(in srgb, var(--brand-primary) 50%, var(--text-primary)); }
+      .text-tips-icon { color: color-mix(in srgb, var(--brand-primary) 60%, var(--text-secondary)); }
+
+      /* Hover feedback states */
+      .hover\:bg-success-soft:hover { background-color: color-mix(in srgb, #22c55e 8%, var(--bg-secondary)); }
+      .hover\:border-success:hover { border-color: color-mix(in srgb, #22c55e 40%, var(--border-color)); }
+      .hover\:text-success:hover { color: color-mix(in srgb, #22c55e 80%, var(--text-primary)); }
+      .hover\:bg-error-soft:hover { background-color: color-mix(in srgb, #ef4444 8%, var(--bg-secondary)); }
+      .hover\:border-error:hover { border-color: color-mix(in srgb, #ef4444 40%, var(--border-color)); }
+      .hover\:text-error:hover { color: color-mix(in srgb, #ef4444 80%, var(--text-primary)); }
+
+      /* Cursor blink animation */
+      @keyframes cursor-blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+      }
+      .animate-cursor-blink { animation: cursor-blink 0.8s ease-in-out infinite; }
     </style>
 
     <% if @project.logo.attached? %>
@@ -81,7 +127,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="min-h-screen bg-surface flex flex-col">
+  <body class="min-h-screen bg-surface flex flex-col" style="font-family: var(--font-body);">
     <header class="bg-card/95 backdrop-blur-sm shadow-sm sticky top-0 z-50 border-b border-default">
       <div class="max-w-6xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
         <div class="flex items-center gap-3">
@@ -111,8 +157,8 @@
                 <input type="text"
                        name="q"
                        placeholder="Ask a question..."
-                       class="w-48 lg:w-64 px-4 py-2 pl-10 text-sm border border-default rounded-lg bg-card text-heading placeholder:text-muted
-                              focus:ring-2 focus:ring-brand focus:border-brand">
+                       class="w-48 lg:w-64 focus:w-56 lg:focus:w-80 px-4 py-2 pl-10 text-sm border border-default rounded-lg bg-card text-heading placeholder:text-muted
+                              focus:ring-2 focus:ring-brand focus:border-brand transition-all duration-300">
                 <%= heroicon "sparkles", options: { class: "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" } %>
               </div>
             <% end %>
@@ -177,7 +223,8 @@
       <%= yield %>
     </main>
 
-    <footer class="bg-muted mt-auto border-t border-default">
+    <footer class="bg-muted mt-auto border-t border-default relative">
+      <div class="absolute top-0 left-0 right-0 h-px" style="background: linear-gradient(to right, transparent, var(--brand-primary), transparent); opacity: 0.3;"></div>
       <div class="max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8 text-center text-sm text-body space-y-1">
         <p>Powered by <a href="/" style="color: var(--brand-primary)" class="hover:opacity-80">supportpages.io</a></p>
         <p class="text-muted text-xs">&copy; <%= Date.current.year %> Surface Layer Limited (Company No. 17026012) | 128 City Road, London, EC1V 2NX</p>

@@ -1,7 +1,9 @@
 <%# locals: (project:) %>
 <% if project.has_support_contact? %>
-  <div class="mt-8 bg-card shadow rounded-xl p-6 border border-subtle">
-    <h3 class="text-lg font-semibold text-heading mb-2">Still need help?</h3>
+  <div class="mt-8 bg-card shadow rounded-2xl p-6 border border-subtle"
+       data-controller="scroll-reveal"
+       data-scroll-reveal-delay-value="100">
+    <h3 class="text-lg font-semibold text-heading mb-2 font-display">Still need help?</h3>
     <p class="text-sm text-body mb-4">Get in touch with our support team directly.</p>
     <div class="flex flex-wrap gap-3">
       <% if project.support_email.present? %>

@@ -65,6 +65,9 @@ import WaitlistQuestionsController from "controllers/waitlist_questions_controll
 import VideoPlayerController from "controllers/video_player_controller"
 import TiltController from "controllers/tilt_controller"
 import ThemeController from "controllers/theme_controller"
+import StaggerController from "controllers/stagger_controller"
+import HoverLiftController from "controllers/hover_lift_controller"
+import ScrollRevealController from "controllers/scroll_reveal_controller"
 // Color picker — dev tool for experimenting with landing page themes.
 // To re-enable: uncomment the import + registration below, then add
 // data-controller="color-picker" to the landing page wrapper div.
@@ -107,4 +110,7 @@ application.register("waitlist-questions", WaitlistQuestionsController)
 application.register("video-player", VideoPlayerController)
 application.register("tilt", TiltController)
 application.register("theme", ThemeController)
+application.register("stagger", StaggerController)
+application.register("hover-lift", HoverLiftController)
+application.register("scroll-reveal", ScrollRevealController)
 // application.register("color-picker", ColorPickerController)

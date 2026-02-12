@@ -1,6 +1,8 @@
 <%# locals: (section:, articles:, article_count:) %>
-<div class="bg-card rounded-xl shadow-sm hover:shadow-lg transition-all duration-200
-            p-6 border border-subtle">
+<div class="bg-card rounded-2xl shadow-sm hover:shadow-xl transition-all duration-200
+            p-6 border border-subtle"
+     data-controller="hover-lift"
+     data-action="mouseenter->hover-lift#enter mouseleave->hover-lift#leave">
   <%= link_to help_centre_section_path(section_slug: section.slug),
       class: "flex items-start gap-4 group" do %>
     <!-- Icon -->
@@ -13,7 +15,7 @@
 
     <div class="flex-1 min-w-0">
       <h3 class="text-lg font-semibold text-heading group-hover:text-brand
-                 transition-colors"><%= section.name %></h3>
+                 transition-colors font-display"><%= section.name %></h3>
       <% if section.description.present? %>
         <p class="text-body text-sm mt-1 line-clamp-2"><%= section.description %></p>
       <% end %>

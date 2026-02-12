@@ -55,10 +55,10 @@
           <%= link_to "Help Centre",
               help_centre_path,
               class: "text-brand hover:opacity-80 transition-colors" %>
-          <span class="mx-2 text-muted">/</span>
+          <%= heroicon "chevron-right", variant: :mini, options: { class: "inline w-4 h-4 mx-1 text-muted align-text-bottom" } %>
           <span class="text-body">Ask</span>
         </nav>
-        <h1 class="text-2xl font-bold text-heading"><%= @question %></h1>
+        <h1 class="text-2xl font-bold text-heading font-display"><%= @question %></h1>
         <p class="mt-2 text-sm text-body flex items-center gap-1.5">
           <%= heroicon "sparkles", options: { class: "w-4 h-4 text-brand" } %>
           AI-generated answer
@@ -107,7 +107,7 @@
           </div>
           <!-- Typing cursor -->
           <span data-streaming-answer-target="cursor"
-                class="inline-block w-2 h-5 bg-brand/60 animate-pulse ml-0.5 align-middle"></span>
+                class="inline-block w-2 h-5 bg-brand/60 animate-pulse ml-0.5 align-middle rounded-sm"></span>
         </div>
       </div>
     </div>

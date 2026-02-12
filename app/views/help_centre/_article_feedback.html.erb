@@ -5,23 +5,27 @@
     <div class="flex justify-center gap-3" data-feedback-target="buttons">
       <button type="button"
               data-action="click->feedback#helpful"
-              class="inline-flex items-center gap-2 px-5 py-2.5 bg-card border border-default
-                     rounded-lg text-heading hover:bg-green-50 hover:border-green-300
-                     hover:text-green-700 transition-colors font-medium">
+              class="inline-flex items-center gap-2 px-6 py-3 bg-card border border-default
+                     rounded-xl text-heading hover:bg-success-soft hover:border-success
+                     hover:text-success transition-colors font-medium"
+              data-controller="hover-lift"
+              data-action="mouseenter->hover-lift#enter mouseleave->hover-lift#leave click->feedback#helpful">
 <%= heroicon "hand-thumb-up", options: { class: "w-5 h-5" } %>
         Yes, helpful
       </button>
       <button type="button"
               data-action="click->feedback#notHelpful"
-              class="inline-flex items-center gap-2 px-5 py-2.5 bg-card border border-default
-                     rounded-lg text-heading hover:bg-red-50 hover:border-red-300
-                     hover:text-red-700 transition-colors font-medium">
+              class="inline-flex items-center gap-2 px-6 py-3 bg-card border border-default
+                     rounded-xl text-heading hover:bg-error-soft hover:border-error
+                     hover:text-error transition-colors font-medium"
+              data-controller="hover-lift"
+              data-action="mouseenter->hover-lift#enter mouseleave->hover-lift#leave click->feedback#notHelpful">
 <%= heroicon "hand-thumb-down", options: { class: "w-5 h-5" } %>
         Not helpful
       </button>
     </div>
     <div data-feedback-target="thankyou" class="hidden">
-      <div class="inline-flex items-center gap-2 text-green-600 font-medium">
+      <div class="inline-flex items-center gap-2 text-success font-medium">
 <%= heroicon "check", options: { class: "w-5 h-5" } %>
         Thank you for your feedback!
       </div>
