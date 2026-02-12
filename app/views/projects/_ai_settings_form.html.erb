@@ -1,28 +1,28 @@
 <%# locals: (project:, saved: false) %>
 <%= turbo_frame_tag "ai_settings_form" do %>
-  <div class="border border-gray-200 rounded-lg">
-    <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 rounded-t-lg">
-      <h3 class="text-lg font-medium text-gray-900">AI Settings</h3>
-      <p class="text-sm text-gray-500 mt-1">Configure the AI model used for article generation.</p>
+  <div class="border app-border rounded-lg">
+    <div class="px-4 py-3 app-bg border-b app-border rounded-t-lg">
+      <h3 class="text-lg font-medium app-text">AI Settings</h3>
+      <p class="text-sm app-text-secondary mt-1">Configure the AI model used for article generation.</p>
     </div>
 
     <%= form_with model: project,
                   url: update_ai_settings_project_path(project),
                   method: :patch,
-                  class: "divide-y divide-gray-200" do |form| %>
+                  class: "divide-y divide-app-border" do |form| %>
 
       <!-- Model Selection -->
       <div class="p-4 space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-900 mb-1">Model for Article Generation</label>
-          <p class="text-sm text-gray-500 mb-2">
+          <label class="block text-sm font-medium app-text mb-1">Model for Article Generation</label>
+          <p class="text-sm app-text-secondary mb-2">
             Choose which Claude model to use when generating articles.
           </p>
           <%= form.select :claude_model,
               options_for_select(Project::CLAUDE_MODELS, project.claude_model_id),
               {},
-              class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm" %>
-          <p class="text-xs text-gray-400 mt-2">
+              class: "w-full px-3 py-2 app-input rounded-lg text-sm" %>
+          <p class="text-xs app-text-muted mt-2">
             <strong>Opus 4.5:</strong> Most capable, best for complex documentation.
             <strong>Sonnet 4.5:</strong> Balanced speed and quality.
             <strong>Haiku 4.5:</strong> Fastest, ideal for simple articles.
@@ -31,7 +31,7 @@
       </div>
 
       <!-- Submit -->
-      <div class="p-4 bg-gray-50 rounded-b-lg flex items-center justify-between">
+      <div class="p-4 app-bg rounded-b-lg flex items-center justify-between">
         <% if saved %>
           <span class="text-sm text-green-600 flex items-center gap-1">
             <%= heroicon "check-circle", options: { class: "w-4 h-4" } %>
@@ -41,7 +41,7 @@
           <span></span>
         <% end %>
         <%= form.submit "Save AI Settings",
-            class: "px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium cursor-pointer" %>
+            class: "px-4 py-2 app-accent-bg text-white rounded-lg hover:app-accent-bg transition-colors text-sm font-medium cursor-pointer" %>
       </div>
     <% end %>
   </div>

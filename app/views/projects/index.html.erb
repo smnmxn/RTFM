@@ -1,4 +1,4 @@
-<div class="bg-gray-50">
+<div class="app-bg">
   <%= render "shared/app_header" %>
 
   <!-- Main content -->
@@ -10,12 +10,12 @@
     <% end %>
 
     <div class="flex justify-between items-center mb-6">
-      <h2 class="text-xl font-semibold text-gray-900">Your Projects</h2>
-      <%= link_to "New Project", new_onboarding_project_path, class: "px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors" %>
+      <h2 class="text-xl font-semibold app-text">Your Projects</h2>
+      <%= link_to "New Project", new_onboarding_project_path, class: "px-4 py-2 app-accent-bg text-white rounded-lg hover:app-accent-bg transition-colors" %>
     </div>
 
     <% if @projects.any? %>
-      <div class="bg-white shadow rounded-lg divide-y divide-gray-200">
+      <div class="app-surface app-shadow rounded-lg divide-y divide-app-border">
         <% @projects.each do |project| %>
           <%
             project_link = if project.in_onboarding?
@@ -24,21 +24,21 @@
               project_path(project)
             end
           %>
-          <%= link_to project_link, class: "block p-6 hover:bg-gray-50" do %>
+          <%= link_to project_link, class: "block p-6 hover:app-surface-alt" do %>
             <div class="flex justify-between items-start">
               <div>
-                <h3 class="text-lg font-medium text-gray-900">
+                <h3 class="text-lg font-medium app-text">
                   <%= project.name %>
                   <% if project.in_onboarding? %>
-                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium app-warning-bg app-warning-text">
                       Setup incomplete
                     </span>
                   <% end %>
                 </h3>
-                <p class="text-sm text-gray-500"><%= project.github_repo %></p>
+                <p class="text-sm app-text-secondary"><%= project.github_repo %></p>
               </div>
               <% unless project.in_onboarding? %>
-                <span class="text-sm text-gray-400">
+                <span class="text-sm app-text-muted">
                   <%= project.updates.count %> updates
                 </span>
               <% end %>
@@ -47,12 +47,12 @@
         <% end %>
       </div>
     <% else %>
-      <div class="text-center py-12 bg-white rounded-lg shadow">
-<%= heroicon "inbox", options: { class: "mx-auto h-12 w-12 text-gray-400" } %>
-        <h3 class="mt-2 text-lg font-medium text-gray-900">No projects yet</h3>
-        <p class="mt-1 text-gray-500">Get started by connecting a GitHub repository.</p>
+      <div class="text-center py-12 app-surface rounded-lg app-shadow">
+<%= heroicon "inbox", options: { class: "mx-auto h-12 w-12 app-text-muted" } %>
+        <h3 class="mt-2 text-lg font-medium app-text">No projects yet</h3>
+        <p class="mt-1 app-text-secondary">Get started by connecting a GitHub repository.</p>
         <div class="mt-6">
-          <%= link_to "Create your first project", new_onboarding_project_path, class: "px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors" %>
+          <%= link_to "Create your first project", new_onboarding_project_path, class: "px-4 py-2 app-accent-bg text-white rounded-lg hover:app-accent-bg transition-colors" %>
         </div>
       </div>
     <% end %>

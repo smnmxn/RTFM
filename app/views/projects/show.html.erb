@@ -4,27 +4,24 @@
 <%= turbo_stream_from @project, :code_history %>
 <%= turbo_stream_from @project, :notifications %>
 
-<div class="bg-gray-50">
+<div class="app-bg">
   <%= render "shared/app_header", project: @project %>
 
-  <!-- Docs Behind Banner -->
-  <%= render "projects/docs_behind_banner", project: @project %>
-
   <main class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-    <div class="bg-white shadow rounded-lg overflow-hidden flex flex-col" style="height: calc(100vh - 160px); min-height: 500px;"
+    <div class="app-surface app-shadow rounded-lg overflow-hidden flex flex-col" style="height: calc(100vh - 160px); min-height: 500px;"
          data-controller="tabs"
          data-tabs-active-value="<%= @active_tab %>"
          data-tabs-hash-value="true">
 
       <!-- Tab Navigation -->
-      <div class="border-b border-gray-200 px-6 flex-shrink-0">
+      <div class="border-b app-border px-6 flex-shrink-0">
         <nav class="-mb-px flex" aria-label="Tabs">
           <div class="flex space-x-8">
             <button type="button"
                     data-tabs-target="tab"
                     data-tabs-name="inbox"
                     data-action="click->tabs#switch"
-                    class="border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    class="border-[color:var(--app-accent)] app-accent-text whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
               Inbox
               <%= render "projects/inbox_tab_badge", project: @project %>
             </button>
@@ -32,7 +29,7 @@
                     data-tabs-target="tab"
                     data-tabs-name="articles"
                     data-action="click->tabs#switch"
-                    class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    class="border-transparent app-text-secondary hover:app-text hover:app-border-strong whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
               Articles
               <%= render "projects/articles_tab_badge", project: @project %>
             </button>
@@ -43,19 +40,22 @@
                     data-tabs-target="tab"
                     data-tabs-name="code-history"
                     data-action="click->tabs#switch"
-                    class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    class="border-transparent app-text-secondary hover:app-text hover:app-border-strong whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
               Code History
             </button>
             <button type="button"
                     data-tabs-target="tab"
                     data-tabs-name="settings"
                     data-action="click->tabs#switch"
-                    class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    class="border-transparent app-text-secondary hover:app-text hover:app-border-strong whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
               Settings
             </button>
           </div>
         </nav>
       </div>
+
+      <!-- Docs Behind Banner -->
+      <%= render "projects/docs_behind_banner", project: @project %>
 
       <!-- Inbox Panel -->
       <div data-tabs-target="panel" data-tabs-name="inbox" class="flex-1 flex flex-col overflow-hidden">

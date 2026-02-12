@@ -20,7 +20,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="min-h-screen bg-slate-50 flex flex-col">
+  <body class="min-h-screen app-bg flex flex-col">
     <div data-controller="presence"></div>
     <% if @project&.persisted? %>
       <%= turbo_stream_from @project, :notifications %>
@@ -28,15 +28,15 @@
     <%= render "shared/toasts" %>
 
     <!-- Header -->
-    <header class="bg-white border-b border-slate-200">
+    <header class="app-surface border-b app-border">
       <div class="max-w-4xl mx-auto px-8 py-4 sm:px-10 lg:px-12 flex justify-between items-center">
         <%= link_to projects_path, class: "hover:opacity-80 transition-opacity" do %>
           <%= image_tag "icon.png", class: "h-12", alt: "supportpages.io" %>
         <% end %>
         <% if current_user.projects.where(onboarding_step: nil).any? %>
-          <%= link_to "Back to Projects", projects_path, class: "text-sm text-slate-500 hover:text-slate-700" %>
+          <%= link_to "Back to Projects", projects_path, class: "text-sm app-text-secondary hover:app-text" %>
         <% elsif @project&.persisted? %>
-          <%= button_to "Cancel", project_path(@project), method: :delete, class: "text-sm text-slate-500 hover:text-slate-700", data: { turbo_confirm: "Cancel setup? This project will be removed." } %>
+          <%= button_to "Cancel", project_path(@project), method: :delete, class: "text-sm app-text-secondary hover:app-text", data: { turbo_confirm: "Cancel setup? This project will be removed." } %>
         <% end %>
       </div>
     </header>
@@ -68,12 +68,12 @@
       <%= yield %>
     </main>
 
-    <footer class="bg-white border-t border-slate-200 mt-auto">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-slate-400">
+    <footer class="app-surface border-t app-border mt-auto">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs app-text-muted">
         <span>&copy; <%= Date.current.year %> Surface Layer Limited (Company No. 17026012) | 128 City Road, London, EC1V 2NX</span>
         <nav class="flex gap-4">
-          <a href="/legal/privacy" class="hover:text-slate-600 transition-colors">Privacy</a>
-          <a href="/legal/terms" class="hover:text-slate-600 transition-colors">Terms</a>
+          <a href="/legal/privacy" class="hover:app-text-secondary transition-colors">Privacy</a>
+          <a href="/legal/terms" class="hover:app-text-secondary transition-colors">Terms</a>
         </nav>
       </div>
     </footer>

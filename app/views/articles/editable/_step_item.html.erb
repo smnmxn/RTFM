@@ -1,17 +1,17 @@
 <% dom_prefix = local_assigns[:dom_prefix] || "article" %>
-<div class="border border-gray-200 rounded-lg p-4 group relative"
+<div class="border app-border rounded-lg p-4 group relative"
      data-controller="array-edit"
      data-array-edit-url-value="<%= project_article_path(article.project, article) %>"
      data-array-edit-field-value="steps">
 
   <div class="flex items-start gap-3">
     <!-- Drag Handle -->
-    <button type="button" data-drag-handle class="flex-shrink-0 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 mt-1.5">
+    <button type="button" data-drag-handle class="flex-shrink-0 cursor-grab active:cursor-grabbing app-text-muted hover:app-text-secondary mt-1.5">
       <%= heroicon "bars-2", options: { class: "w-5 h-5" } %>
     </button>
 
     <!-- Step Number Badge -->
-    <span class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-semibold text-sm">
+    <span class="flex-shrink-0 w-8 h-8 app-accent-bg text-white rounded-full flex items-center justify-center font-semibold text-sm">
       <%= index + 1 %>
     </span>
 
@@ -24,7 +24,7 @@
 
         <h4 data-inline-edit-target="display"
             data-action="click->inline-edit#edit"
-            class="font-medium text-gray-900 cursor-pointer hover:bg-gray-50 rounded px-1 -mx-1 transition-colors">
+            class="editable-field font-medium app-text cursor-pointer rounded px-1 -mx-1">
           <%= step["title"] %>
         </h4>
 
@@ -33,7 +33,7 @@
                  data-inline-edit-target="input"
                  data-action="blur->inline-edit#save keydown->inline-edit#handleKeydown"
                  value="<%= step["title"] %>"
-                 class="w-full font-medium border border-indigo-500 rounded px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                 class="w-full font-medium app-inline-input rounded px-2 py-0.5">
         </div>
       </div>
 
@@ -44,7 +44,7 @@
 
         <div data-inline-edit-target="display"
              data-action="click->inline-edit#edit"
-             class="text-gray-700 prose prose-sm max-w-none cursor-pointer hover:bg-gray-50 rounded px-1 -mx-1 transition-colors">
+             class="editable-field app-text prose prose-sm max-w-none cursor-pointer rounded px-1 -mx-1">
           <%= markdown(step["content"]) %>
         </div>
 
@@ -52,7 +52,7 @@
           <textarea data-inline-edit-target="input"
                     data-action="blur->inline-edit#save keydown->inline-edit#handleKeydown"
                     rows="3"
-                    class="w-full text-gray-700 border border-indigo-500 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"><%= step["content"] %></textarea>
+                    class="w-full app-inline-input rounded px-2 py-1"><%= step["content"] %></textarea>
         </div>
       </div>
 

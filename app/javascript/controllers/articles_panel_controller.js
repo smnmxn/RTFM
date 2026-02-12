@@ -58,7 +58,7 @@ export default class extends Controller {
   // After a folder tree replacement, re-apply the correct selection highlight
   preserveSelection() {
     // Check if any row already has a server-set selection (from turbo_stream response)
-    const alreadySelected = this.element.querySelector('[data-controller="folder-article"].border-indigo-500')
+    const alreadySelected = this.element.querySelector('[data-controller="folder-article"].row-selected')
     if (alreadySelected) {
       this.selectedArticleIdValue = alreadySelected.dataset.articleId
       return
@@ -70,13 +70,8 @@ export default class extends Controller {
     const row = this.element.querySelector(`#folder_article_${this.selectedArticleIdValue}`)
     if (!row) return
 
-    row.classList.remove("border-transparent")
-    row.classList.add("border-indigo-500", "bg-indigo-50")
-    const titleSpan = row.querySelector("a span.truncate")
-    if (titleSpan) {
-      titleSpan.classList.remove("text-gray-700", "text-gray-400")
-      titleSpan.classList.add("text-indigo-700", "font-medium")
-    }
+    row.classList.remove("row-unselected")
+    row.classList.add("row-selected")
   }
 
   // After a folder tree replacement, restore section collapse/expand state

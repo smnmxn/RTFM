@@ -63,6 +63,8 @@ import EmailPreviewModalController from "controllers/email_preview_modal_control
 import SectionPickerModalController from "controllers/section_picker_modal_controller"
 import WaitlistQuestionsController from "controllers/waitlist_questions_controller"
 import VideoPlayerController from "controllers/video_player_controller"
+import TiltController from "controllers/tilt_controller"
+import ThemeController from "controllers/theme_controller"
 // Color picker — dev tool for experimenting with landing page themes.
 // To re-enable: uncomment the import + registration below, then add
 // data-controller="color-picker" to the landing page wrapper div.
@@ -103,4 +105,6 @@ application.register("email-preview-modal", EmailPreviewModalController)
 application.register("section-picker-modal", SectionPickerModalController)
 application.register("waitlist-questions", WaitlistQuestionsController)
 application.register("video-player", VideoPlayerController)
+application.register("tilt", TiltController)
+application.register("theme", ThemeController)
 // application.register("color-picker", ColorPickerController)

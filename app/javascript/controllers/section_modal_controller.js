@@ -30,11 +30,11 @@ export default class extends Controller {
     if (this.hasIconTarget) this.iconTarget.value = "document-text"
     if (this.hasIconGridTarget) {
       this.iconGridTarget.querySelectorAll("button").forEach((btn, index) => {
-        btn.classList.remove("ring-2", "ring-indigo-500", "bg-indigo-50")
+        btn.classList.remove("ring-2", "ring-zinc-500", "bg-zinc-100")
         if (index === 0) {
-          btn.classList.add("ring-2", "ring-indigo-500", "bg-indigo-50")
+          btn.classList.add("ring-2", "ring-zinc-500", "bg-zinc-100")
         } else {
-          btn.classList.add("hover:bg-gray-100")
+          btn.classList.add("hover:app-surface-alt")
         }
       })
     }
@@ -51,12 +51,12 @@ export default class extends Controller {
     // Update visual selection
     if (this.hasIconGridTarget) {
       this.iconGridTarget.querySelectorAll("button").forEach(btn => {
-        btn.classList.remove("ring-2", "ring-indigo-500", "bg-indigo-50")
-        btn.classList.add("hover:bg-gray-100")
+        btn.classList.remove("ring-2", "ring-zinc-500", "bg-zinc-100")
+        btn.classList.add("hover:app-surface-alt")
       })
     }
-    button.classList.remove("hover:bg-gray-100")
-    button.classList.add("ring-2", "ring-indigo-500", "bg-indigo-50")
+    button.classList.remove("hover:app-surface-alt")
+    button.classList.add("ring-2", "ring-zinc-500", "bg-zinc-100")
   }
 
   closeOnEscape(event) {

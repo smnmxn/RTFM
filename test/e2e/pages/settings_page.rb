@@ -76,7 +76,7 @@ module E2E
       # =====================
 
       def on_settings_tab?
-        has_element?("button[data-tabs-name='settings'].border-indigo-500")
+        has_element?("button[data-tabs-name='settings'].tab-active")
       end
 
       def has_branding_form?

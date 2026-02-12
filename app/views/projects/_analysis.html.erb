@@ -1,13 +1,13 @@
-<div id="<%= dom_id(project, :analysis) %>" class="bg-white shadow rounded-lg p-6 mb-6">
+<div id="<%= dom_id(project, :analysis) %>" class="app-surface shadow rounded-lg p-6 mb-6">
   <div class="flex justify-between items-start">
     <div>
-      <h3 class="text-lg font-semibold text-gray-900">Project Overview</h3>
+      <h3 class="text-lg font-semibold app-text">Project Overview</h3>
       <% if project.analysis_status == "completed" && project.project_overview.present? %>
-        <p class="mt-2 text-gray-600"><%= project.project_overview %></p>
-        <p class="mt-3 text-xs text-gray-500">
+        <p class="mt-2 app-text-secondary"><%= project.project_overview %></p>
+        <p class="mt-3 text-xs app-text-secondary">
           Last analyzed: <%= time_ago_in_words(project.analyzed_at) %> ago
           <% if project.analysis_commit_sha.present? %>
-            · Commit: <code class="text-xs bg-gray-100 px-1 py-0.5 rounded"><%= project.analysis_commit_sha[0..7] %></code>
+            · Commit: <code class="text-xs app-surface-alt px-1 py-0.5 rounded"><%= project.analysis_commit_sha[0..7] %></code>
           <% end %>
         </p>
       <% elsif project.analysis_status == "failed" %>
@@ -22,7 +22,7 @@
           </span>
         </p>
       <% else %>
-        <p class="mt-2 text-sm text-gray-500">
+        <p class="mt-2 text-sm app-text-secondary">
           Analyze this repository to generate an overview.
         </p>
       <% end %>
@@ -32,7 +32,7 @@
         <!-- No button while running -->
       <% elsif project.analysis_status == "completed" %>
         <%= button_to "Re-analyze", analyze_project_path(project),
-            class: "inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50",
+            class: "inline-flex items-center px-3 py-1.5 border app-border-strong shadow-sm text-sm font-medium rounded-md app-text app-surface hover:app-surface-alt",
             data: { turbo_frame: "_top" } %>
       <% elsif project.analysis_status == "failed" %>
         <%= button_to "Retry", analyze_project_path(project),
@@ -40,7 +40,7 @@
             data: { turbo_frame: "_top" } %>
       <% else %>
         <%= button_to "Analyze", analyze_project_path(project),
-            class: "inline-flex items-center px-3 py-1.5 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700",
+            class: "inline-flex items-center px-3 py-1.5 border border-transparent shadow-sm text-sm font-medium rounded-md text-white app-accent-bg hover:app-accent-bg",
             data: { turbo_frame: "_top" } %>
       <% end %>
     </div>

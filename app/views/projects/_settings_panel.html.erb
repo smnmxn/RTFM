@@ -1,9 +1,9 @@
 <!-- Settings Header -->
-<div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+<div class="px-6 py-4 border-b app-border flex-shrink-0">
   <div class="flex items-center justify-between">
     <div>
-      <h2 class="text-xl font-semibold text-gray-900">Settings</h2>
-      <p class="mt-1 text-sm text-gray-500">
+      <h2 class="text-xl font-semibold app-text">Settings</h2>
+      <p class="mt-1 text-sm app-text-secondary">
         Configure your project settings.
       </p>
     </div>
@@ -18,38 +18,38 @@
      data-tabs-hash-prefix-value="settings/">
 
   <!-- Left: Sidebar Navigation -->
-  <div class="w-64 flex-shrink-0 border-r border-gray-200 bg-gray-50">
+  <div class="w-64 flex-shrink-0 border-r app-border app-bg">
     <nav class="p-4 flex flex-col gap-1" aria-label="Settings navigation">
       <button type="button"
               data-tabs-target="tab"
               data-tabs-name="branding"
               data-action="click->tabs#switch"
-              class="settings-nav-item w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 bg-white shadow-sm text-gray-900">
-        <%= heroicon "paint-brush", options: { class: "w-4 h-4 text-gray-400" } %>
+              class="settings-nav-item settings-nav-inactive w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2">
+        <%= heroicon "paint-brush", options: { class: "w-4 h-4 app-text-muted" } %>
         Branding
       </button>
       <button type="button"
               data-tabs-target="tab"
               data-tabs-name="update-strategy"
               data-action="click->tabs#switch"
-              class="settings-nav-item w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 text-gray-600 hover:bg-gray-100">
-        <%= heroicon "light-bulb", options: { class: "w-4 h-4 text-gray-400" } %>
+              class="settings-nav-item settings-nav-inactive w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2">
+        <%= heroicon "light-bulb", options: { class: "w-4 h-4 app-text-muted" } %>
         Recommendations
       </button>
       <button type="button"
               data-tabs-target="tab"
               data-tabs-name="ai-settings"
               data-action="click->tabs#switch"
-              class="settings-nav-item w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 text-gray-600 hover:bg-gray-100">
-        <%= heroicon "cpu-chip", options: { class: "w-4 h-4 text-gray-400" } %>
+              class="settings-nav-item settings-nav-inactive w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2">
+        <%= heroicon "cpu-chip", options: { class: "w-4 h-4 app-text-muted" } %>
         AI Settings
       </button>
       <button type="button"
               data-tabs-target="tab"
               data-tabs-name="custom-domain"
               data-action="click->tabs#switch"
-              class="settings-nav-item w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 text-gray-600 hover:bg-gray-100">
-        <%= heroicon "globe-alt", options: { class: "w-4 h-4 text-gray-400" } %>
+              class="settings-nav-item settings-nav-inactive w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2">
+        <%= heroicon "globe-alt", options: { class: "w-4 h-4 app-text-muted" } %>
         Custom Domain
         <% if @project.custom_domain_active? %>
           <span class="ml-auto inline-flex items-center rounded-full bg-green-100 px-1.5 py-0.5 text-xs font-medium text-green-700">Active</span>
@@ -62,15 +62,15 @@
               data-tabs-target="tab"
               data-tabs-name="notifications"
               data-action="click->tabs#switch"
-              class="settings-nav-item w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 text-gray-600 hover:bg-gray-100">
-        <%= heroicon "bell", options: { class: "w-4 h-4 text-gray-400" } %>
+              class="settings-nav-item settings-nav-inactive w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2">
+        <%= heroicon "bell", options: { class: "w-4 h-4 app-text-muted" } %>
         Notifications
       </button>
       <button type="button"
               data-tabs-target="tab"
               data-tabs-name="danger-zone"
               data-action="click->tabs#switch"
-              class="settings-nav-item w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 text-gray-600 hover:bg-gray-100">
+              class="settings-nav-item settings-nav-inactive w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2">
         <%= heroicon "exclamation-triangle", options: { class: "w-4 h-4 text-red-400" } %>
         Danger Zone
       </button>
@@ -103,24 +103,24 @@
     <div data-tabs-target="panel" data-tabs-name="notifications" class="hidden">
       <div class="space-y-6">
         <!-- In-app & Browser Notifications -->
-        <div class="border border-gray-200 rounded-lg">
-          <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 rounded-t-lg">
-            <h3 class="text-lg font-medium text-gray-900">Notifications</h3>
-            <p class="text-sm text-gray-500 mt-1">Configure how you're notified when background tasks complete.</p>
+        <div class="border app-border rounded-lg">
+          <div class="px-4 py-3 app-bg border-b app-border rounded-t-lg">
+            <h3 class="text-lg font-medium app-text">Notifications</h3>
+            <p class="text-sm app-text-secondary mt-1">Configure how you're notified when background tasks complete.</p>
           </div>
 
-          <div class="divide-y divide-gray-200">
+          <div class="divide-y divide-app-border">
             <!-- In-app toasts (always on) -->
             <div class="flex items-center gap-4 p-4">
               <div class="shrink-0">
                 <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Always on</span>
               </div>
               <div class="flex-1">
-                <p class="text-sm font-medium text-gray-900">In-app toast notifications</p>
-                <p class="text-sm text-gray-500 mt-0.5">Brief pop-up notifications appear in the bottom-right corner when tasks complete.</p>
+                <p class="text-sm font-medium app-text">In-app toast notifications</p>
+                <p class="text-sm app-text-secondary mt-0.5">Brief pop-up notifications appear in the bottom-right corner when tasks complete.</p>
               </div>
               <div class="shrink-0">
-                <%= button_to "Test", test_toast_project_path(project), params: { toast_type: "success" }, class: "px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium cursor-pointer", data: { turbo: true } %>
+                <%= button_to "Test", test_toast_project_path(project), params: { toast_type: "success" }, class: "px-4 py-2 app-accent-bg text-white rounded-lg hover:app-accent-bg transition-colors text-sm font-medium cursor-pointer", data: { turbo: true } %>
               </div>
             </div>
 
@@ -130,18 +130,18 @@
                 <button type="button"
                         data-browser-notification-target="toggle"
                         data-action="browser-notification#request"
-                        class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 hover:bg-gray-200 cursor-pointer transition-colors">
+                        class="inline-flex items-center rounded-full app-surface-alt px-2.5 py-0.5 text-xs font-medium app-text hover:app-surface-alt cursor-pointer transition-colors">
                   Enable
                 </button>
               </div>
               <div class="flex-1">
-                <p class="text-sm font-medium text-gray-900">Browser notifications</p>
-                <p class="text-sm text-gray-500 mt-0.5" data-browser-notification-target="status">Get notified when background tasks finish, even if the tab is not focused.</p>
+                <p class="text-sm font-medium app-text">Browser notifications</p>
+                <p class="text-sm app-text-secondary mt-0.5" data-browser-notification-target="status">Get notified when background tasks finish, even if the tab is not focused.</p>
               </div>
               <div class="shrink-0 hidden" data-browser-notification-target="testButton">
                 <button type="button"
                         data-action="browser-notification#test"
-                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium cursor-pointer">
+                        class="px-4 py-2 app-accent-bg text-white rounded-lg hover:app-accent-bg transition-colors text-sm font-medium cursor-pointer">
                   Test
                 </button>
               </div>

@@ -1,27 +1,27 @@
 <%= turbo_frame_tag "inbox-editor", class: "h-full block" do %>
-  <div class="h-full flex items-center justify-center bg-white">
+  <div class="h-full flex items-center justify-center app-surface">
     <div class="text-center px-6 max-w-md">
 <%= heroicon "check-circle", options: { class: "mx-auto h-20 w-20 text-green-400" } %>
 
-      <h3 class="mt-6 text-2xl font-semibold text-gray-900">All done!</h3>
+      <h3 class="mt-6 text-2xl font-semibold app-text">All done!</h3>
 
-      <p class="mt-4 text-gray-600">
+      <p class="mt-4 app-text-secondary">
         You've reviewed all your articles. Approved articles have been published to your Help Centre.
       </p>
 
       <div class="mt-8">
         <%= link_to project_help_centre_url(project),
             target: "_blank",
-            class: "inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700" do %>
+            class: "inline-flex items-center gap-2 px-6 py-3 app-accent-bg text-white font-medium rounded-lg hover:app-accent-bg" do %>
 View Help Centre
           <%= heroicon "arrow-top-right-on-square", options: { class: "w-4 h-4" } %>
         <% end %>
       </div>
 
-      <div class="mt-8 p-4 bg-gray-50 rounded-lg">
-        <p class="text-sm text-gray-500">
-          <strong class="text-gray-700">Share your Help Centre:</strong><br>
-          <code class="mt-1 block text-indigo-600 break-all"><%= project_help_centre_url(project) %></code>
+      <div class="mt-8 p-4 app-bg rounded-lg">
+        <p class="text-sm app-text-secondary">
+          <strong class="app-text-secondary">Share your Help Centre:</strong><br>
+          <code class="mt-1 block app-accent-text break-all"><%= project_help_centre_url(project) %></code>
         </p>
       </div>
     </div>

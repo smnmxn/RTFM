@@ -137,7 +137,7 @@ export default class extends Controller {
 
     // Update progress dots
     this.dotTargets.forEach((dot, index) => {
-      dot.classList.toggle('bg-violet-600', index <= this.currentIndexValue)
+      dot.classList.toggle('bg-zinc-700', index <= this.currentIndexValue)
       dot.classList.toggle('bg-slate-300', index > this.currentIndexValue)
     })
 
@@ -185,7 +185,7 @@ export default class extends Controller {
 
     // Update all dots to completed
     this.dotTargets.forEach(dot => {
-      dot.classList.add('bg-violet-600')
+      dot.classList.add('bg-zinc-700')
       dot.classList.remove('bg-slate-300')
     })
   }

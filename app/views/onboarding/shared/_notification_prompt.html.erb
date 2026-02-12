@@ -1,18 +1,18 @@
 <div data-controller="notification-prompt" class="mt-6">
   <%# Prompt state (default permission) %>
   <div data-notification-prompt-target="prompt" class="hidden text-center">
-    <div class="inline-flex items-center gap-3 bg-white border border-slate-200 rounded-full pl-4 pr-3 py-2 shadow-sm">
-      <%= heroicon "bell", variant: :outline, options: { class: "w-4 h-4 text-violet-500 shrink-0" } %>
-      <span class="text-sm text-slate-600">Come back later?</span>
+    <div class="inline-flex items-center gap-3 app-surface border app-border rounded-full pl-4 pr-3 py-2 app-shadow-sm">
+      <%= heroicon "bell", variant: :outline, options: { class: "w-4 h-4 app-accent-text shrink-0" } %>
+      <span class="text-sm app-text-secondary">Come back later?</span>
       <button type="button"
               data-action="notification-prompt#enable"
-              class="text-sm font-medium text-violet-600 hover:text-violet-700 transition-colors">
+              class="text-sm font-medium app-accent-text hover:app-accent-text transition-colors">
         Notify me
       </button>
-      <span class="text-slate-200">|</span>
+      <span class="app-border">|</span>
       <button type="button"
               data-action="notification-prompt#dismiss"
-              class="text-sm text-slate-400 hover:text-slate-500 transition-colors">
+              class="text-sm app-text-muted hover:app-text transition-colors">
         No thanks
       </button>
     </div>
@@ -28,6 +28,6 @@
 
   <%# Fallback for when prompt is hidden (dismissed/unavailable) %>
   <div data-notification-prompt-target="fallback">
-    <p class="text-sm text-slate-500 text-center">Please don't close this page.</p>
+    <p class="text-sm app-text-secondary text-center">Please don't close this page.</p>
   </div>
 </div>

@@ -1,15 +1,15 @@
 <%# locals: (project:, saved: false) %>
 <%= turbo_frame_tag "update_strategy_form" do %>
-  <div class="border border-gray-200 rounded-lg">
-    <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 rounded-t-lg">
-      <h3 class="text-lg font-medium text-gray-900">Recommendations</h3>
-      <p class="text-sm text-gray-500 mt-1">When should we check your code for new article recommendations?</p>
+  <div class="border app-border rounded-lg">
+    <div class="px-4 py-3 app-bg border-b app-border rounded-t-lg">
+      <h3 class="text-lg font-medium app-text">Recommendations</h3>
+      <p class="text-sm app-text-secondary mt-1">When should we check your code for new article recommendations?</p>
     </div>
 
     <%= form_with model: project,
                   url: update_strategy_project_path(project),
                   method: :patch,
-                  class: "divide-y divide-gray-200" do |form| %>
+                  class: "divide-y divide-app-border" do |form| %>
 
       <div class="p-4 space-y-3" data-controller="radio-card">
         <% Project::UPDATE_STRATEGIES.each do |label, value, description| %>
@@ -17,20 +17,20 @@
           <label data-radio-card-target="card"
                  data-action="click->radio-card#select"
                  class="flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors
-                        <%= selected ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 hover:bg-gray-50' %>">
+                        <%= selected ? 'border-[color:var(--app-accent)] app-accent-light' : 'app-border hover:app-surface-alt' %>">
             <%= form.radio_button :update_strategy, value,
                 checked: selected,
-                class: "mt-0.5 h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500" %>
+                class: "mt-0.5 h-4 w-4 text-[color:var(--app-accent)] app-border-strong focus:ring-[color:var(--app-focus-ring)]" %>
             <div>
-              <span class="block text-sm font-medium text-gray-900"><%= label %></span>
-              <span class="block text-sm text-gray-500 mt-0.5"><%= description %></span>
+              <span class="block text-sm font-medium app-text"><%= label %></span>
+              <span class="block text-sm app-text-secondary mt-0.5"><%= description %></span>
             </div>
           </label>
         <% end %>
       </div>
 
       <!-- Submit -->
-      <div class="p-4 bg-gray-50 rounded-b-lg flex items-center justify-between">
+      <div class="p-4 app-bg rounded-b-lg flex items-center justify-between">
         <% if saved %>
           <span class="text-sm text-green-600 flex items-center gap-1">
             <%= heroicon "check-circle", options: { class: "w-4 h-4" } %>
@@ -40,7 +40,7 @@
           <span></span>
         <% end %>
         <%= form.submit "Save",
-            class: "px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium cursor-pointer" %>
+            class: "px-4 py-2 app-accent-bg text-white rounded-lg hover:app-accent-bg transition-colors text-sm font-medium cursor-pointer" %>
       </div>
     <% end %>
   </div>

@@ -1,19 +1,19 @@
-<div class="bg-gray-50">
+<div class="app-bg">
   <%= render "shared/app_header", project: @project %>
 
   <main class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
     <!-- Section Header -->
-    <div class="bg-white shadow rounded-lg p-6">
+    <div class="app-surface shadow rounded-lg p-6">
       <div class="flex justify-between items-start">
         <div>
           <div class="flex items-center gap-2">
-            <h2 class="text-2xl font-semibold text-gray-900"><%= @section.name %></h2>
+            <h2 class="text-2xl font-semibold app-text"><%= @section.name %></h2>
             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium <%= section_type_badge_class(@section) %>">
               <%= @section.section_type.humanize %>
             </span>
           </div>
           <% if @section.description.present? %>
-            <p class="mt-1 text-gray-500"><%= @section.description %></p>
+            <p class="mt-1 app-text-secondary"><%= @section.description %></p>
           <% end %>
         </div>
         <div class="flex gap-2">
@@ -21,25 +21,25 @@
             <%= button_to "Generate Recommendations",
                 generate_recommendations_project_section_path(@project, @section),
                 method: :post,
-                class: "inline-flex items-center px-3 py-1.5 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700" %>
+                class: "inline-flex items-center px-3 py-1.5 border border-transparent shadow-sm text-sm font-medium rounded-md text-white app-accent-bg hover:app-accent-bg" %>
           <% end %>
           <%= link_to "Edit",
               edit_project_section_path(@project, @section),
-              class: "inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
+              class: "inline-flex items-center px-3 py-1.5 border app-border-strong shadow-sm text-sm font-medium rounded-md app-text-secondary app-surface hover:app-surface-alt" %>
         </div>
       </div>
     </div>
 
     <!-- Pending Recommendations -->
     <% if @pending_recommendations.any? %>
-      <div class="bg-white shadow rounded-lg">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900">Pending Recommendations</h3>
-          <p class="mt-1 text-sm text-gray-500">
+      <div class="app-surface shadow rounded-lg">
+        <div class="px-6 py-4 border-b app-border">
+          <h3 class="text-lg font-semibold app-text">Pending Recommendations</h3>
+          <p class="mt-1 text-sm app-text-secondary">
             AI-suggested articles for this section
           </p>
         </div>
-        <div class="divide-y divide-gray-200">
+        <div class="divide-y app-border">
           <% @pending_recommendations.each do |recommendation| %>
             <%= render "recommendations/card", recommendation: recommendation %>
           <% end %>
@@ -48,22 +48,22 @@
     <% end %>
 
     <!-- Articles in Section -->
-    <div class="bg-white shadow rounded-lg">
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">Articles</h3>
-        <p class="mt-1 text-sm text-gray-500">
+    <div class="app-surface shadow rounded-lg">
+      <div class="px-6 py-4 border-b app-border">
+        <h3 class="text-lg font-semibold app-text">Articles</h3>
+        <p class="mt-1 text-sm app-text-secondary">
           <%= @articles.count %> article<%= @articles.count == 1 ? "" : "s" %> in this section
         </p>
       </div>
 
       <% if @articles.any? %>
-        <div class="divide-y divide-gray-200">
+        <div class="divide-y app-border">
           <% @articles.each do |article| %>
             <%= render "articles/card", article: article %>
           <% end %>
         </div>
       <% else %>
-        <div class="p-6 text-center text-gray-500">
+        <div class="p-6 text-center app-text-secondary">
           No articles in this section yet.
           <% if @project.analysis_status == "completed" %>
             Generate recommendations to get started.

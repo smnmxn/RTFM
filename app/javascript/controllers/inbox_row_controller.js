@@ -4,13 +4,13 @@ export default class extends Controller {
   select(event) {
     // Remove selection from all rows
     document.querySelectorAll('[data-controller="inbox-row"] a').forEach(link => {
-      link.classList.remove('border-indigo-500', 'bg-indigo-50')
-      link.classList.add('border-transparent', 'bg-white')
+      link.classList.remove('row-selected')
+      link.classList.add('row-unselected')
     })
 
     // Add selection to clicked row
     const link = this.element.querySelector('a')
-    link.classList.remove('border-transparent', 'bg-white')
-    link.classList.add('border-indigo-500', 'bg-indigo-50')
+    link.classList.remove('row-unselected')
+    link.classList.add('row-selected')
   }
 }

@@ -10,41 +10,41 @@
 <div data-controller="contextual-questions"
      data-contextual-questions-save-url-value="<%= save_context_onboarding_project_path(project) %>"
      data-contextual-questions-total-value="<%= questions.size %>">
-  <div class="bg-slate-50 rounded-lg p-4">
+  <div class="app-surface-alt rounded-lg p-4">
     <div class="relative overflow-hidden" style="min-height: 400px;">
       <% questions.each_with_index do |question, index| %>
       <div data-contextual-questions-target="card"
            data-question-id="<%= question['id'] %>"
            data-multi-select="<%= question['multi_select'] %>"
            class="question-card absolute inset-0 transition-transform duration-300 ease-in-out <%= index > 0 ? 'translate-x-full' : '' %>">
-        <h3 class="text-base font-medium text-slate-900 mb-3"><%= question['question'] %></h3>
+        <h3 class="text-base font-medium app-text mb-3"><%= question['question'] %></h3>
 
         <div class="space-y-2">
           <% if question['input_type'] == 'text' %>
             <textarea name="<%= question['id'] %>"
                       rows="3"
                       placeholder="Type your answer..."
-                      class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-smooth"
+                      class="w-full px-3 py-2 border app-border rounded-lg focus:ring-2 focus:ring-[color:var(--app-focus-ring)] focus:border-[color:var(--app-accent)] transition-smooth"
                       data-contextual-questions-target="textInput"
                       data-action="input->contextual-questions#onTextInput"></textarea>
           <% else %>
             <% (question['options'] || []).each do |option| %>
-              <label class="flex items-center p-3 bg-white border border-slate-300 rounded-lg shadow-sm cursor-pointer hover:bg-slate-50 hover:border-slate-400 transition-smooth"
+              <label class="flex items-center p-3 app-surface border app-border-strong rounded-lg shadow-sm cursor-pointer hover:app-surface-alt hover:app-border-strong transition-smooth"
                      data-action="click->contextual-questions#selectOption">
                 <% if question['multi_select'] %>
                   <input type="checkbox"
                          name="<%= question['id'] %>[]"
                          value="<%= option['value'] %>"
-                         class="h-4 w-4 text-violet-600 border-slate-300 rounded focus:ring-violet-500"
+                         class="h-4 w-4 text-[color:var(--app-accent)] border-[color:var(--app-border-strong)] rounded focus:ring-[color:var(--app-focus-ring)]"
                          data-contextual-questions-target="checkbox">
                 <% else %>
                   <input type="radio"
                          name="<%= question['id'] %>"
                          value="<%= option['value'] %>"
-                         class="h-4 w-4 text-violet-600 border-slate-300 focus:ring-violet-500"
+                         class="h-4 w-4 text-[color:var(--app-accent)] border-[color:var(--app-border-strong)] focus:ring-[color:var(--app-focus-ring)]"
                          data-contextual-questions-target="radio">
                 <% end %>
-                <span class="ml-3 text-slate-700"><%= option['label'] %></span>
+                <span class="ml-3 app-text"><%= option['label'] %></span>
               </label>
             <% end %>
           <% end %>
@@ -58,8 +58,8 @@
       <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-4">
         <%= heroicon "check-circle", variant: :solid, options: { class: "w-6 h-6 text-green-600" } %>
       </div>
-      <p class="text-slate-900 font-medium mb-1">Thanks for that!</p>
-      <p class="text-slate-500 text-sm">We're generating help topic suggestions based on your project.</p>
+      <p class="app-text font-medium mb-1">Thanks for that!</p>
+      <p class="app-text-secondary text-sm">We're generating help topic suggestions based on your project.</p>
     </div>
     </div>
 
@@ -68,13 +68,13 @@
     <button type="button"
             data-action="click->contextual-questions#skip"
             data-contextual-questions-target="skipButton"
-            class="text-sm text-slate-500 hover:text-slate-700 transition-smooth">
+            class="text-sm app-text-secondary hover:app-text transition-smooth">
       Skip
     </button>
 
     <div class="flex space-x-2" data-contextual-questions-target="dots">
       <% questions.size.times do |i| %>
-        <span class="h-1.5 w-1.5 rounded-full transition-smooth <%= i == 0 ? 'bg-violet-600' : 'bg-slate-300' %>"
+        <span class="h-1.5 w-1.5 rounded-full transition-smooth <%= i == 0 ? 'app-accent-bg' : 'app-border-strong' %>"
               data-contextual-questions-target="dot"></span>
       <% end %>
     </div>

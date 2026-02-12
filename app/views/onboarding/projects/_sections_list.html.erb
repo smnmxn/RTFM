@@ -14,11 +14,11 @@
 <% if project.sections_being_generated? %>
   <div class="p-6">
     <div class="text-center mb-6">
-      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
-        <%= heroicon "rectangle-stack", variant: :outline, options: { class: "w-8 h-8 text-violet-600 animate-pulse" } %>
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full app-surface-alt mb-4">
+        <%= heroicon "rectangle-stack", variant: :outline, options: { class: "w-8 h-8 app-accent-text animate-pulse" } %>
       </div>
-      <h3 class="text-xl font-semibold text-slate-900 mb-2">Generating topics</h3>
-      <p class="text-slate-500 text-sm max-w-md mx-auto">
+      <h3 class="text-xl font-semibold app-text mb-2">Generating topics</h3>
+      <p class="app-text-secondary text-sm max-w-md mx-auto">
         We're identifying the best documentation topics for your project.
       </p>
     </div>
@@ -32,16 +32,16 @@
 <% elsif sections.any? %>
   <div class="p-6 pb-0">
     <div class="text-center mb-6">
-      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
-        <%= heroicon "check-circle", variant: :outline, options: { class: "w-8 h-8 text-violet-600" } %>
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full app-surface-alt mb-4">
+        <%= heroicon "check-circle", variant: :outline, options: { class: "w-8 h-8 app-accent-text" } %>
       </div>
-      <h3 class="text-xl font-semibold text-slate-900 mb-2">Review your topics</h3>
-      <p class="text-slate-500 text-sm max-w-md mx-auto">
+      <h3 class="text-xl font-semibold app-text mb-2">Review your topics</h3>
+      <p class="app-text-secondary text-sm max-w-md mx-auto">
         Accept the sections you'd like to generate documentation for.
       </p>
     </div>
   </div>
-  <div class="divide-y divide-slate-100">
+  <div class="divide-y divide-[color:var(--app-border)]">
     <% sections.each do |section| %>
       <%= render "sections/pending_card", section: section %>
     <% end %>
@@ -52,8 +52,8 @@
     <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
       <%= heroicon "check", variant: :outline, options: { class: "w-8 h-8 text-emerald-600" } %>
     </div>
-    <h3 class="text-lg font-semibold text-slate-900 mb-2">All topics reviewed!</h3>
-    <p class="text-slate-500 text-sm max-w-sm mx-auto">
+    <h3 class="text-lg font-semibold app-text mb-2">All topics reviewed!</h3>
+    <p class="app-text-secondary text-sm max-w-sm mx-auto">
       You've reviewed all the suggested topics. Click below to continue and we'll start generating article recommendations.
     </p>
   </div>

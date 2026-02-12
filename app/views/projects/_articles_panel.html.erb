@@ -6,11 +6,11 @@
      class="flex-1 flex flex-col min-h-0">
 
   <!-- Articles Header -->
-  <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+  <div class="px-6 py-4 border-b app-border flex-shrink-0">
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-xl font-semibold text-gray-900">Articles</h2>
-        <p class="mt-1 text-sm text-gray-500">
+        <h2 class="text-xl font-semibold app-text">Articles</h2>
+        <p class="mt-1 text-sm app-text-secondary">
           Manage published articles in your Help Centre.
         </p>
       </div>
@@ -23,9 +23,9 @@
   <!-- Two Column Layout -->
   <div class="flex-1 flex overflow-hidden">
     <!-- Left: Folder Tree -->
-    <div class="w-96 flex-shrink-0 border-r border-gray-200 flex flex-col bg-white">
-      <div class="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-        <h3 class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Sections & Articles</h3>
+    <div class="w-96 flex-shrink-0 border-r app-border flex flex-col app-surface">
+      <div class="px-4 py-3 border-b app-border app-bg flex items-center justify-between">
+        <h3 class="text-xs font-semibold app-text-secondary uppercase tracking-wide">Sections & Articles</h3>
         <%= render "sections/new_section_modal", project: project %>
       </div>
       <%= render "projects/articles_folder_tree",
@@ -36,7 +36,7 @@
     </div>
 
     <!-- Right: Article Editor -->
-    <div class="flex-1 flex flex-col overflow-hidden bg-gray-50">
+    <div class="flex-1 flex flex-col overflow-hidden app-bg">
       <%= turbo_frame_tag "articles-editor-frame", class: "h-full" do %>
         <% if display_article %>
           <%= render "projects/articles_editor",

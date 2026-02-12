@@ -10,5 +10,7 @@ export default class extends Controller {
     this.videoTarget.controls = true
     this.videoTarget.currentTime = 0
     this.videoTarget.play()
+
+    this.dispatch("played")
   }
 }

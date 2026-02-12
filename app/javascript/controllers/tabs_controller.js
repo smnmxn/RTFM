@@ -66,20 +66,13 @@ export default class extends Controller {
       const isActive = tab.dataset.tabsName === this.activeValue
 
       if (tab.classList.contains("settings-nav-item")) {
-        // Sidebar navigation styling
-        tab.classList.toggle("bg-white", isActive)
-        tab.classList.toggle("shadow-sm", isActive)
-        tab.classList.toggle("text-gray-900", isActive)
-        tab.classList.toggle("text-gray-600", !isActive)
-        tab.classList.toggle("hover:bg-gray-100", !isActive)
+        // Sidebar navigation styling — uses compound CSS classes
+        tab.classList.toggle("settings-nav-active", isActive)
+        tab.classList.toggle("settings-nav-inactive", !isActive)
       } else {
-        // Horizontal tab styling
-        tab.classList.toggle("border-indigo-500", isActive)
-        tab.classList.toggle("text-indigo-600", isActive)
-        tab.classList.toggle("border-transparent", !isActive)
-        tab.classList.toggle("text-gray-500", !isActive)
-        tab.classList.toggle("hover:text-gray-700", !isActive)
-        tab.classList.toggle("hover:border-gray-300", !isActive)
+        // Horizontal tab styling — uses compound CSS classes
+        tab.classList.toggle("tab-active", isActive)
+        tab.classList.toggle("tab-inactive", !isActive)
       }
     })
 

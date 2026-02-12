@@ -6,7 +6,7 @@
        data-array-edit-dom-prefix-value="<%= dom_prefix %>"
        class="mb-8">
 
-    <h3 class="text-lg font-semibold text-gray-900 mb-4">Steps</h3>
+    <h3 class="text-base font-semibold app-text mb-4">Steps</h3>
 
     <div data-array-edit-target="list" class="space-y-4">
       <% article.steps.each_with_index do |step, index| %>
@@ -18,7 +18,7 @@
     <%= button_to add_array_item_project_article_path(article.project, article, field: "steps", dom_prefix: dom_prefix),
         method: :post,
         form: { data: { turbo_stream: true } },
-        class: "mt-4 inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800 cursor-pointer" do %>
+        class: "mt-4 inline-flex items-center gap-1 text-sm app-accent-text hover:app-accent-hover cursor-pointer" do %>
       <%= heroicon "plus", options: { class: "w-4 h-4" } %>
       Add step
     <% end %>

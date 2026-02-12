@@ -1,9 +1,9 @@
-<div class="bg-gray-50">
+<div class="app-bg">
   <%= render "shared/app_header", project: @project %>
 
   <main class="max-w-2xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-    <div class="bg-white shadow rounded-lg p-6">
-      <h2 class="text-lg font-semibold text-gray-900 mb-6">New Section</h2>
+    <div class="app-surface shadow rounded-lg p-6">
+      <h2 class="text-lg font-semibold app-text mb-6">New Section</h2>
       <%= render "form", project: @project, section: @section %>
     </div>
   </main>

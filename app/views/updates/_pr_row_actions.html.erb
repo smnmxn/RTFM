@@ -1,24 +1,24 @@
 <%= tag.div id: "pr-actions-#{pr_number}", class: "flex items-center gap-2 flex-shrink-0" do %>
   <% if update %>
     <% if update.analysis_status == "running" %>
-<span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 bg-indigo-50 rounded">
+<span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium app-accent-text app-accent-light rounded">
         <%= spinner_icon(size: "w-3 h-3") %>
         Analyzing...
       </span>
     <% else %>
       <%= link_to "View", project_path(project, anchor: dom_id(update)),
-          class: "inline-flex items-center px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded",
+          class: "inline-flex items-center px-2 py-1 text-xs font-medium app-text-secondary app-surface-alt hover:app-surface-alt rounded",
           data: { turbo_frame: "_top" } %>
       <%= button_to "Re-analyze",
           analyze_pull_request_project_path(project, pr_number: pr_number),
           params: { pr_title: pr_title, pr_url: pr_url, pr_body: "" },
-          class: "inline-flex items-center px-2 py-1 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded",
+          class: "inline-flex items-center px-2 py-1 text-xs font-medium app-accent-text app-accent-light hover:opacity-80 rounded",
           data: { turbo_confirm: "Re-analyze PR ##{pr_number}? This will replace the existing analysis." } %>
     <% end %>
   <% else %>
     <%= button_to "Analyze",
         analyze_pull_request_project_path(project, pr_number: pr_number),
         params: { pr_title: pr_title, pr_url: pr_url, pr_body: "" },
-        class: "inline-flex items-center px-3 py-1 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded" %>
+        class: "inline-flex items-center px-3 py-1 text-xs font-medium text-white app-accent-bg hover:app-accent-bg rounded" %>
   <% end %>
 <% end %>

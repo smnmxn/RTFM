@@ -20,7 +20,7 @@ class ProjectsIndexTest < ActionDispatch::IntegrationTest
   test "projects index shows current user info" do
     sign_in_as(@user)
     get projects_path
-    assert_select "span", text: @user.name
+    assert_select "p", text: @user.name
   end
 
   test "projects index renders with one project" do

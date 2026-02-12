@@ -1,82 +1,84 @@
 <%= turbo_frame_tag "inbox-editor", class: "h-full block" do %>
-  <div class="h-full flex flex-col bg-white" data-article-generation-status="<%= article.generation_status %>">
-    <!-- Header with Actions -->
-    <div class="px-6 py-4 border-b border-gray-200 flex items-start justify-between flex-shrink-0">
-      <div class="flex-1">
-        <%= render "articles/editable/title", article: article, dom_prefix: "inbox_editor" %>
+  <div class="h-full flex flex-col app-surface" data-article-generation-status="<%= article.generation_status %>">
+    <!-- Header with Title and Section -->
+    <div class="px-6 py-4 border-b app-border flex-shrink-0">
+      <%= render "articles/editable/title", article: article, dom_prefix: "inbox_editor" %>
+      <div class="flex items-center gap-2 mt-1">
         <% if article.section %>
-          <span class="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium app-accent-light app-accent-on-light">
             <%= article.section.name %>
           </span>
         <% end %>
       </div>
+    </div>
 
-      <div class="flex items-center gap-2">
-        <% if article.unreviewed? %>
-          <% if article.generation_running? %>
-            <span class="inline-flex items-center gap-2 text-sm text-gray-500">
-              <%= spinner_icon(size: "h-4 w-4") %>
-              Generating...
-            </span>
-          <% else %>
-            <% if article.generation_completed? || article.structured? %>
-              <%= render "articles/preview_modal",
-                  article: article,
-                  project: article.project,
-                  button_classes: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 cursor-pointer" %>
-            <% end %>
+    <!-- Action Toolbar -->
+    <div class="px-6 py-3 border-b app-border app-bg flex items-center gap-3 flex-shrink-0">
+      <% if article.unreviewed? && article.generation_running? %>
+        <span class="inline-flex items-center gap-2 text-sm app-text-secondary">
+          <%= spinner_icon(size: "h-4 w-4") %>
+          Generating...
+        </span>
+      <% elsif article.approved? %>
+        <span class="inline-flex items-center gap-1.5 text-sm">
+          <%= heroicon "check-circle", variant: :solid, options: { class: "h-5 w-5 text-green-500" } %>
+          <span class="text-green-700 font-medium">Approved</span>
+        </span>
+      <% elsif article.rejected? %>
+        <span class="inline-flex items-center gap-1.5 text-sm">
+          <%= heroicon "x-circle", variant: :solid, options: { class: "h-5 w-5 app-text-muted" } %>
+          <span class="app-text-secondary font-medium">Rejected</span>
+        </span>
+      <% end %>
 
-            <%= button_to "Reject",
-                reject_article_project_path(article.project, article_id: article.id),
-                method: :post,
-                form: { data: { turbo_stream: true } },
-                class: "px-3 py-1.5 text-sm border border-red-300 text-red-700 font-medium rounded-lg hover:bg-red-50 cursor-pointer" %>
+      <div class="flex-1"></div>
 
-            <% if article.generation_pending? %>
-              <%= render "articles/regenerate_modal",
-                  article: article,
-                  label: "Generate",
-                  button_classes: "px-3 py-1.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 cursor-pointer" %>
-            <% elsif article.generation_completed? || article.generation_failed? %>
-              <%= render "articles/regenerate_modal",
-                  article: article,
-                  button_classes: "px-3 py-1.5 text-sm border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 cursor-pointer" %>
-            <% end %>
-
-            <% if article.section.present? %>
-              <%= button_to "Approve",
-                  approve_article_project_path(article.project, article_id: article.id),
-                  method: :post,
-                  form: { data: { turbo_stream: true } },
-                  class: "px-4 py-1.5 text-sm bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 cursor-pointer" %>
-            <% else %>
-              <%= render "articles/section_picker_modal", article: article %>
-            <% end %>
-          <% end %>
-        <% elsif article.approved? %>
-<span class="inline-flex items-center gap-1.5 text-sm">
-            <%= heroicon "check-circle", variant: :solid, options: { class: "h-5 w-5 text-green-500" } %>
-            <span class="text-green-700 font-medium">Approved</span>
-          </span>
-        <% else %>
-          <div class="flex items-center gap-3">
-<span class="inline-flex items-center gap-1.5 text-sm">
-              <%= heroicon "x-circle", variant: :solid, options: { class: "h-5 w-5 text-gray-400" } %>
-              <span class="text-gray-500 font-medium">Rejected</span>
-            </span>
-            <%= button_to "Undo",
-                undo_reject_article_project_path(article.project, article_id: article.id),
-                method: :post,
-                form: { data: { turbo_stream: true } },
-                class: "text-sm text-indigo-600 hover:text-indigo-800 font-medium cursor-pointer" %>
-          </div>
+      <% if article.unreviewed? && !article.generation_running? %>
+        <% if article.generation_completed? || article.structured? %>
+          <%= render "articles/preview_modal",
+              article: article,
+              project: article.project,
+              button_classes: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border app-border-strong app-text-secondary font-medium rounded-lg hover:app-surface-alt cursor-pointer" %>
         <% end %>
-      </div>
+
+        <%= button_to "Reject",
+            reject_article_project_path(article.project, article_id: article.id),
+            method: :post,
+            form: { data: { turbo_stream: true } },
+            class: "px-3 py-1.5 text-sm border border-red-300 text-red-700 font-medium rounded-lg hover:bg-red-50 cursor-pointer" %>
+
+        <% if article.generation_pending? %>
+          <%= render "articles/regenerate_modal",
+              article: article,
+              label: "Generate",
+              button_classes: "px-3 py-1.5 text-sm border app-border-strong app-text-secondary font-medium rounded-lg hover:app-surface-alt cursor-pointer" %>
+        <% elsif article.generation_completed? || article.generation_failed? %>
+          <%= render "articles/regenerate_modal",
+              article: article,
+              button_classes: "px-3 py-1.5 text-sm border app-border-strong app-text-secondary font-medium rounded-lg hover:app-surface-alt cursor-pointer" %>
+        <% end %>
+
+        <% if article.section.present? %>
+          <%= button_to "Approve",
+              approve_article_project_path(article.project, article_id: article.id),
+              method: :post,
+              form: { data: { turbo_stream: true } },
+              class: "px-4 py-1.5 text-sm bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 cursor-pointer" %>
+        <% else %>
+          <%= render "articles/section_picker_modal", article: article %>
+        <% end %>
+      <% elsif article.rejected? %>
+        <%= button_to "Undo",
+            undo_reject_article_project_path(article.project, article_id: article.id),
+            method: :post,
+            form: { data: { turbo_stream: true } },
+            class: "text-sm app-accent-text hover:app-accent-text font-medium cursor-pointer" %>
+      <% end %>
     </div>
 
     <!-- Article Content (Block Editor) -->
-    <div class="flex-1 overflow-y-auto">
-      <div class="px-6 py-6 max-w-3xl">
+    <div class="flex-1 overflow-y-auto app-bg p-6">
+      <div class="max-w-3xl mx-auto app-surface rounded-lg shadow-sm border app-border px-8 py-8">
         <% if article.generation_completed? || article.generation_pending? %>
           <% if article.structured? %>
             <!-- Structured Content Rendering (Editable) -->
@@ -93,8 +95,8 @@
           <% end %>
         <% elsif article.generation_running? %>
           <div class="text-center py-12">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-            <p class="mt-4 text-gray-500">Article content is being generated...</p>
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 app-accent-bg mx-auto"></div>
+            <p class="mt-4 app-text-secondary">Article content is being generated...</p>
           </div>
         <% elsif article.generation_failed? %>
 <div class="text-center py-12">

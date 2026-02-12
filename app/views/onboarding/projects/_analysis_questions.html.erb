@@ -5,13 +5,13 @@
 <% else %>
 <div data-controller="onboarding-questions"
      data-onboarding-questions-save-url-value="<%= save_context_onboarding_project_path(project) %>">
-  <div class="bg-slate-50 rounded-lg p-4">
+  <div class="app-surface-alt rounded-lg p-4">
     <div class="relative overflow-hidden" style="min-height: 400px;">
       <!-- Card 1: Target Audience -->
     <div data-onboarding-questions-target="card"
          data-question="target_audience"
-         class="question-card absolute inset-0 bg-slate-50 overflow-hidden transition-transform duration-300 ease-in-out">
-      <h3 class="text-base font-medium text-slate-900 mb-3">Who's reading these docs?</h3>
+         class="question-card absolute inset-0 app-surface-alt overflow-hidden transition-transform duration-300 ease-in-out">
+      <h3 class="text-base font-medium app-text mb-3">Who's reading these docs?</h3>
       <div class="space-y-2">
         <% [
           ["developers", "Developers / Engineers"],
@@ -19,12 +19,12 @@
           ["end_users", "End Users / Customers"],
           ["internal", "Internal Team Members"]
         ].each do |value, label| %>
-          <label class="flex items-center p-3 bg-white border border-slate-300 rounded-lg shadow-sm cursor-pointer hover:bg-slate-50 hover:border-slate-400 transition-smooth"
+          <label class="flex items-center p-3 app-surface border app-border-strong rounded-lg shadow-sm cursor-pointer hover:app-surface-alt hover:app-border-strong transition-smooth"
                  data-action="click->onboarding-questions#selectOption">
             <input type="radio" name="target_audience" value="<%= value %>"
-                   class="h-4 w-4 text-violet-600 border-slate-300 focus:ring-violet-500"
+                   class="h-4 w-4 text-[color:var(--app-accent)] border-[color:var(--app-border-strong)] focus:ring-[color:var(--app-focus-ring)]"
                    data-onboarding-questions-target="input">
-            <span class="ml-3 text-slate-700"><%= label %></span>
+            <span class="ml-3 app-text"><%= label %></span>
           </label>
         <% end %>
       </div>
@@ -33,8 +33,8 @@
     <!-- Card 2: Industry -->
     <div data-onboarding-questions-target="card"
          data-question="industry"
-         class="question-card absolute inset-0 bg-slate-50 overflow-hidden transition-transform duration-300 ease-in-out translate-x-full">
-      <h3 class="text-base font-medium text-slate-900 mb-3">What kind of product is this?</h3>
+         class="question-card absolute inset-0 app-surface-alt overflow-hidden transition-transform duration-300 ease-in-out translate-x-full">
+      <h3 class="text-base font-medium app-text mb-3">What kind of product is this?</h3>
       <div class="space-y-2">
         <% [
           ["devtools", "Developer Tools / Infrastructure"],
@@ -44,12 +44,12 @@
           ["healthcare", "Healthcare / Life Sciences"],
           ["other", "Other"]
         ].each do |value, label| %>
-          <label class="flex items-center p-3 bg-white border border-slate-300 rounded-lg shadow-sm cursor-pointer hover:bg-slate-50 hover:border-slate-400 transition-smooth"
+          <label class="flex items-center p-3 app-surface border app-border-strong rounded-lg shadow-sm cursor-pointer hover:app-surface-alt hover:app-border-strong transition-smooth"
                  data-action="click->onboarding-questions#selectOption">
             <input type="radio" name="industry" value="<%= value %>"
-                   class="h-4 w-4 text-violet-600 border-slate-300 focus:ring-violet-500"
+                   class="h-4 w-4 text-[color:var(--app-accent)] border-[color:var(--app-border-strong)] focus:ring-[color:var(--app-focus-ring)]"
                    data-onboarding-questions-target="input">
-            <span class="ml-3 text-slate-700"><%= label %></span>
+            <span class="ml-3 app-text"><%= label %></span>
           </label>
         <% end %>
       </div>
@@ -58,8 +58,8 @@
     <!-- Card 3: Documentation Goals (multi-select) -->
     <div data-onboarding-questions-target="card"
          data-question="documentation_goals"
-         class="question-card absolute inset-0 bg-slate-50 overflow-hidden transition-transform duration-300 ease-in-out translate-x-full">
-      <h3 class="text-base font-medium text-slate-900 mb-3">What should the docs help with?</h3>
+         class="question-card absolute inset-0 app-surface-alt overflow-hidden transition-transform duration-300 ease-in-out translate-x-full">
+      <h3 class="text-base font-medium app-text mb-3">What should the docs help with?</h3>
       <div class="space-y-2">
         <% [
           ["onboarding", "Onboarding new users"],
@@ -68,12 +68,12 @@
           ["features", "Feature explanations"],
           ["compliance", "Compliance / Security"]
         ].each do |value, label| %>
-          <label class="flex items-center p-3 bg-white border border-slate-300 rounded-lg shadow-sm cursor-pointer hover:bg-slate-50 hover:border-slate-400 transition-smooth"
+          <label class="flex items-center p-3 app-surface border app-border-strong rounded-lg shadow-sm cursor-pointer hover:app-surface-alt hover:app-border-strong transition-smooth"
                  data-action="click->onboarding-questions#toggleCheckbox">
             <input type="checkbox" name="documentation_goals[]" value="<%= value %>"
-                   class="h-4 w-4 text-violet-600 border-slate-300 rounded focus:ring-violet-500"
+                   class="h-4 w-4 text-[color:var(--app-accent)] border-[color:var(--app-border-strong)] rounded focus:ring-[color:var(--app-focus-ring)]"
                    data-onboarding-questions-target="checkbox">
-            <span class="ml-3 text-slate-700"><%= label %></span>
+            <span class="ml-3 app-text"><%= label %></span>
           </label>
         <% end %>
       </div>
@@ -82,8 +82,8 @@
     <!-- Card 4: Tone Preference -->
     <div data-onboarding-questions-target="card"
          data-question="tone_preference"
-         class="question-card absolute inset-0 bg-slate-50 overflow-hidden transition-transform duration-300 ease-in-out translate-x-full">
-      <h3 class="text-base font-medium text-slate-900 mb-3">What tone feels right?</h3>
+         class="question-card absolute inset-0 app-surface-alt overflow-hidden transition-transform duration-300 ease-in-out translate-x-full">
+      <h3 class="text-base font-medium app-text mb-3">What tone feels right?</h3>
       <div class="space-y-2">
         <% [
           ["technical", "Technical & precise"],
@@ -91,12 +91,12 @@
           ["minimal", "Minimal & scannable"],
           ["formal", "Formal & professional"]
         ].each do |value, label| %>
-          <label class="flex items-center p-3 bg-white border border-slate-300 rounded-lg shadow-sm cursor-pointer hover:bg-slate-50 hover:border-slate-400 transition-smooth"
+          <label class="flex items-center p-3 app-surface border app-border-strong rounded-lg shadow-sm cursor-pointer hover:app-surface-alt hover:app-border-strong transition-smooth"
                  data-action="click->onboarding-questions#selectOption">
             <input type="radio" name="tone_preference" value="<%= value %>"
-                   class="h-4 w-4 text-violet-600 border-slate-300 focus:ring-violet-500"
+                   class="h-4 w-4 text-[color:var(--app-accent)] border-[color:var(--app-border-strong)] focus:ring-[color:var(--app-focus-ring)]"
                    data-onboarding-questions-target="input">
-            <span class="ml-3 text-slate-700"><%= label %></span>
+            <span class="ml-3 app-text"><%= label %></span>
           </label>
         <% end %>
       </div>
@@ -105,8 +105,8 @@
     <!-- Card 5: Product Stage -->
     <div data-onboarding-questions-target="card"
          data-question="product_stage"
-         class="question-card absolute inset-0 bg-slate-50 overflow-hidden transition-transform duration-300 ease-in-out translate-x-full">
-      <h3 class="text-base font-medium text-slate-900 mb-3">Where's the product at?</h3>
+         class="question-card absolute inset-0 app-surface-alt overflow-hidden transition-transform duration-300 ease-in-out translate-x-full">
+      <h3 class="text-base font-medium app-text mb-3">Where's the product at?</h3>
       <div class="space-y-2">
         <% [
           ["early", "Early stage / MVP"],
@@ -114,12 +114,12 @@
           ["mature", "Mature / Enterprise"],
           ["internal", "Internal tool"]
         ].each do |value, label| %>
-          <label class="flex items-center p-3 bg-white border border-slate-300 rounded-lg shadow-sm cursor-pointer hover:bg-slate-50 hover:border-slate-400 transition-smooth"
+          <label class="flex items-center p-3 app-surface border app-border-strong rounded-lg shadow-sm cursor-pointer hover:app-surface-alt hover:app-border-strong transition-smooth"
                  data-action="click->onboarding-questions#selectOption">
             <input type="radio" name="product_stage" value="<%= value %>"
-                   class="h-4 w-4 text-violet-600 border-slate-300 focus:ring-violet-500"
+                   class="h-4 w-4 text-[color:var(--app-accent)] border-[color:var(--app-border-strong)] focus:ring-[color:var(--app-focus-ring)]"
                    data-onboarding-questions-target="input">
-            <span class="ml-3 text-slate-700"><%= label %></span>
+            <span class="ml-3 app-text"><%= label %></span>
           </label>
         <% end %>
       </div>
@@ -127,12 +127,12 @@
 
     <!-- Completion Card -->
     <div data-onboarding-questions-target="completionCard"
-         class="absolute inset-0 bg-slate-50 transition-transform duration-300 ease-in-out translate-x-full flex flex-col items-center justify-center text-center">
+         class="absolute inset-0 app-surface-alt transition-transform duration-300 ease-in-out translate-x-full flex flex-col items-center justify-center text-center">
       <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-4">
         <%= heroicon "check-circle", variant: :solid, options: { class: "w-6 h-6 text-green-600" } %>
       </div>
-      <p class="text-slate-900 font-medium mb-1">Thanks for that!</p>
-      <p class="text-slate-500 text-sm">We're analyzing your codebase to tailor your documentation.</p>
+      <p class="app-text font-medium mb-1">Thanks for that!</p>
+      <p class="app-text-secondary text-sm">We're analyzing your codebase to tailor your documentation.</p>
     </div>
     </div>
 
@@ -141,13 +141,13 @@
       <button type="button"
               data-action="click->onboarding-questions#skip"
               data-onboarding-questions-target="skipButton"
-              class="text-sm text-slate-500 hover:text-slate-700 transition-smooth">
+              class="text-sm app-text-secondary hover:app-text transition-smooth">
         Skip
       </button>
 
       <div class="flex space-x-2" data-onboarding-questions-target="dots">
         <% 5.times do |i| %>
-          <span class="h-1.5 w-1.5 rounded-full transition-smooth <%= i == 0 ? 'bg-violet-600' : 'bg-slate-300' %>"
+          <span class="h-1.5 w-1.5 rounded-full transition-smooth <%= i == 0 ? 'app-accent-bg' : 'app-border-strong' %>"
                 data-onboarding-questions-target="dot"></span>
         <% end %>
       </div>

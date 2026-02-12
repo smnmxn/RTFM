@@ -1,5 +1,5 @@
 <%# locals: (article:, project:, button_classes: nil) %>
-<% button_classes ||= "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 text-gray-700 cursor-pointer" %>
+<% button_classes ||= "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border app-border-strong rounded-lg app-surface hover:app-surface-alt app-text cursor-pointer" %>
 
 <div data-controller="article-preview"
      data-article-preview-url-value="<%= preview_project_article_path(project, article) %>">
@@ -23,17 +23,17 @@
   <div data-article-preview-target="dialog"
        class="hidden fixed inset-y-0 right-0 z-50 w-full max-w-3xl"
        data-action="click->article-preview#stopPropagation">
-    <div class="h-full flex flex-col bg-white shadow-xl">
+    <div class="h-full flex flex-col app-surface shadow-xl">
 
       <!-- Header -->
-      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+      <div class="px-6 py-4 border-b app-border flex items-center justify-between flex-shrink-0">
         <div>
-          <span class="text-xs text-gray-500 uppercase tracking-wide font-medium">Help Centre Preview</span>
-          <h2 class="text-lg font-semibold text-gray-900"><%= article.title %></h2>
+          <span class="text-xs app-text-secondary uppercase tracking-wide font-medium">Help Centre Preview</span>
+          <h2 class="text-lg font-semibold app-text"><%= article.title %></h2>
         </div>
         <button type="button"
                 data-action="article-preview#close"
-                class="text-gray-400 hover:text-gray-600 p-1">
+                class="app-text-muted hover:app-text-secondary p-1">
           <%= heroicon "x-mark", options: { class: "h-6 w-6" } %>
         </button>
       </div>
@@ -45,14 +45,14 @@
         <!-- Loading state -->
         <div class="flex items-center justify-center h-full">
           <div class="text-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-            <p class="mt-3 text-sm text-gray-500">Loading preview...</p>
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[color:var(--app-accent)] mx-auto"></div>
+            <p class="mt-3 text-sm app-text-secondary">Loading preview...</p>
           </div>
         </div>
       </turbo-frame>
 
       <!-- Footer -->
-      <div class="px-6 py-3 border-t border-gray-200 bg-gray-50 text-center text-sm text-gray-500 flex-shrink-0">
+      <div class="px-6 py-3 border-t app-border app-surface-alt text-center text-sm app-text-secondary flex-shrink-0">
         This is a preview of how your article will appear in the Help Centre.
       </div>
     </div>

@@ -10,34 +10,37 @@
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="apple-touch-icon" href="/icon.png">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
   </head>
 
-  <body class="bg-slate-50 min-h-screen">
-    <%= render "shared/public_header", active: "trust" %>
+  <body class="bg-zinc-950 min-h-screen text-zinc-300" style="font-family: 'Inter', system-ui, sans-serif;">
+    <!-- Ambient orbs -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden">
+      <div class="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-zinc-500/12 blur-3xl animate-orb-1"></div>
+      <div class="absolute top-[30%] right-[-15%] w-[500px] h-[500px] rounded-full bg-zinc-400/12 blur-3xl animate-orb-2"></div>
+      <div class="absolute bottom-[-10%] left-[20%] w-[400px] h-[400px] rounded-full bg-zinc-600/12 blur-3xl animate-orb-3"></div>
+    </div>
+
+    <%= render "shared/public_header", active: "trust", theme: "dark" %>
 
     <!-- Main content -->
-    <main>
+    <main class="relative z-10 pt-20">
       <%= yield %>
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 mt-16">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div class="text-slate-500 text-sm space-y-1">
-            <p>&copy; <%= Date.current.year %> Surface Layer Limited (Company No. 17026012)</p>
-            <p>supportpages.io is a trading name of Surface Layer Limited</p>
-            <p>Registered in England and Wales | 128 City Road, London, EC1V 2NX</p>
-          </div>
-          <nav class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-            <a href="/legal/privacy" class="text-slate-600 hover:text-slate-900 transition-colors">Privacy</a>
-            <a href="/legal/terms" class="text-slate-600 hover:text-slate-900 transition-colors">Terms</a>
-            <a href="/legal/dpa" class="text-slate-600 hover:text-slate-900 transition-colors">DPA</a>
-            <a href="/legal/subprocessors" class="text-slate-600 hover:text-slate-900 transition-colors">Sub-processors</a>
-            <a href="/legal/security" class="text-slate-600 hover:text-slate-900 transition-colors">Security</a>
-          </nav>
-        </div>
+    <footer class="relative z-10 border-t border-zinc-800/50 mt-16">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-zinc-600">
+        <span>&copy; <%= Date.current.year %> Surface Layer Limited (Company No. 17026012) | 128 City Road, London, EC1V 2NX</span>
+        <nav class="flex gap-4">
+          <a href="/legal/privacy" class="hover:text-zinc-400 transition-colors">Privacy</a>
+          <a href="/legal/terms" class="hover:text-zinc-400 transition-colors">Terms</a>
+          <a href="/legal" class="hover:text-zinc-400 transition-colors">Trust Center</a>
+        </nav>
       </div>
     </footer>
   </body>

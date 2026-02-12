@@ -9,7 +9,7 @@
   <% end %>
 
   <% if uncategorized_articles.any? %>
-    <div class="border-t border-gray-200 mt-2 pt-2">
+    <div class="border-t app-border mt-2 pt-2">
       <%= render "projects/articles_folder_section",
           section: nil,
           articles: uncategorized_articles,
@@ -19,7 +19,7 @@
   <% end %>
 
   <% if sections.empty? && uncategorized_articles.empty? %>
-    <div class="p-4 text-center text-gray-500 text-sm">
+    <div class="p-4 text-center app-text-secondary text-sm">
       No sections yet
     </div>
   <% end %>

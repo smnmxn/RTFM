@@ -5,7 +5,7 @@
     data-inline-edit-field-value="tips.<%= index %>">
 
   <!-- Drag Handle -->
-  <button type="button" data-drag-handle class="flex-shrink-0 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600">
+  <button type="button" data-drag-handle class="flex-shrink-0 cursor-grab active:cursor-grabbing app-text-muted hover:app-text-secondary">
     <%= heroicon "bars-2", options: { class: "w-4 h-4" } %>
   </button>
 
@@ -14,7 +14,7 @@
   <!-- Display Mode -->
   <span data-inline-edit-target="display"
         data-action="click->inline-edit#edit"
-        class="flex-1 cursor-pointer hover:bg-amber-100 rounded px-1 -mx-1 transition-colors">
+        class="editable-field flex-1 cursor-pointer rounded px-1 -mx-1">
     <%= tip %>
   </span>
 

@@ -35,12 +35,12 @@ export default class extends Controller {
     // Update visual selection
     if (this.hasIconGridTarget) {
       this.iconGridTarget.querySelectorAll("button").forEach(btn => {
-        btn.classList.remove("ring-2", "ring-indigo-500", "bg-indigo-50")
-        btn.classList.add("hover:bg-gray-100")
+        btn.classList.remove("ring-2", "ring-zinc-500", "bg-zinc-100")
+        btn.classList.add("hover:app-surface-alt")
       })
     }
-    button.classList.remove("hover:bg-gray-100")
-    button.classList.add("ring-2", "ring-indigo-500", "bg-indigo-50")
+    button.classList.remove("hover:app-surface-alt")
+    button.classList.add("ring-2", "ring-zinc-500", "bg-zinc-100")
   }
 
   closeOnEscape(event) {

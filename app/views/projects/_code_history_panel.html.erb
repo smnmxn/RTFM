@@ -1,9 +1,9 @@
 <!-- Code History Header -->
-<div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+<div class="px-6 py-4 border-b app-border flex-shrink-0">
   <div class="flex items-center justify-between">
     <div>
-      <h2 class="text-xl font-semibold text-gray-900">Code History</h2>
-      <p class="mt-1 text-sm text-gray-500">
+      <h2 class="text-xl font-semibold app-text">Code History</h2>
+      <p class="mt-1 text-sm app-text-secondary">
         Commits and pull requests, sorted by date.
       </p>
     </div>
@@ -12,12 +12,12 @@
   <!-- Analysis Baseline Indicator -->
   <% if project.analysis_commit_sha.present? %>
     <div class="mt-3 flex items-center gap-2 text-sm">
-      <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100">
+      <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md app-accent-light app-accent-on-light border border-[color:var(--app-accent)]">
         <%= heroicon "flag", options: { class: "w-3.5 h-3.5" } %>
         <span class="font-medium">Docs baseline:</span>
         <code class="font-mono text-xs"><%= project.analysis_commit_sha.first(7) %></code>
         <% if project.analyzed_at.present? %>
-          <span class="text-indigo-500">(<%= time_ago_in_words(project.analyzed_at) %> ago)</span>
+          <span class="app-accent-text">(<%= time_ago_in_words(project.analyzed_at) %> ago)</span>
         <% end %>
       </span>
       <% last_check = project.article_update_checks.completed.recent.first %>
@@ -39,7 +39,7 @@
       src: code_history_project_path(project),
       loading: "lazy" do %>
     <div class="flex items-center justify-center py-12">
-<div class="flex items-center gap-2 text-gray-500">
+<div class="flex items-center gap-2 app-text-secondary">
         <%= spinner_icon(size: "w-5 h-5") %>
         <span>Loading code history...</span>
       </div>

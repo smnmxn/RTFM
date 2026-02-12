@@ -1,29 +1,29 @@
 <%= turbo_frame_tag "articles-editor-frame", class: "h-full block" do %>
-  <div class="h-full flex flex-col bg-white">
+  <div class="h-full flex flex-col app-surface">
     <!-- Header with Title and Section -->
-    <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+    <div class="px-6 py-4 border-b app-border flex-shrink-0">
       <%= render "articles/editable/title", article: article, dom_prefix: "articles_editor" %>
       <div class="flex items-center gap-2 mt-1">
         <% if article.section %>
-          <span class="inline-flex items-center gap-1 text-sm text-gray-500">
+          <span class="inline-flex items-center gap-1 text-sm app-text-secondary">
             <%= heroicon article.section.icon_name, options: { class: "w-4 h-4" } %>
             <%= article.section.name %>
           </span>
-          <span class="text-gray-300">&middot;</span>
+          <span class="app-text-muted">&middot;</span>
         <% end %>
         <% if article.published? %>
           <span class="text-sm text-green-600">Published</span>
         <% else %>
-          <span class="text-sm text-gray-500">Draft</span>
+          <span class="text-sm app-text-secondary">Draft</span>
         <% end %>
       </div>
     </div>
 
     <!-- Action Toolbar -->
-    <div class="px-6 py-3 border-b border-gray-200 bg-gray-50 flex items-center gap-3 flex-shrink-0">
+    <div class="px-6 py-3 border-b app-border app-bg flex items-center gap-3 flex-shrink-0">
       <% if article.generation_running? %>
-        <span class="inline-flex items-center gap-2 text-sm text-gray-500">
-          <svg class="animate-spin h-4 w-4 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <span class="inline-flex items-center gap-2 text-sm app-text-secondary">
+          <svg class="animate-spin h-4 w-4 app-accent-text" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
@@ -37,13 +37,13 @@
       <% if article.generation_pending? %>
         <%= render "articles/regenerate_modal",
             article: article,
-            button_classes: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 cursor-pointer",
+            button_classes: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm app-accent-bg text-white rounded-lg hover:app-accent-bg cursor-pointer",
             show_icon: true,
             label: "Generate" %>
       <% elsif article.generation_completed? || article.generation_failed? %>
         <%= render "articles/regenerate_modal",
             article: article,
-            button_classes: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 text-gray-700 cursor-pointer",
+            button_classes: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border app-border-strong rounded-lg app-surface hover:app-surface-alt app-text-secondary cursor-pointer",
             show_icon: true,
             label: "Regenerate" %>
       <% end %>
@@ -56,7 +56,7 @@
         <%= button_to unpublish_project_article_path(project, article),
             method: :post,
             form: { data: { turbo_stream: true } },
-            class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 text-gray-700 cursor-pointer" do %>
+            class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border app-border-strong rounded-lg app-surface hover:app-surface-alt app-text-secondary cursor-pointer" do %>
           <%= heroicon "globe-alt", options: { class: "w-4 h-4" } %>
           Unpublish
         <% end %>
@@ -74,7 +74,7 @@
       <%= button_to duplicate_project_article_path(project, article),
           method: :post,
           form: { data: { turbo_stream: true } },
-          class: "inline-flex items-center p-1.5 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 text-gray-700 cursor-pointer",
+          class: "inline-flex items-center p-1.5 text-sm border app-border-strong rounded-lg app-surface hover:app-surface-alt app-text-secondary cursor-pointer",
           title: "Duplicate" do %>
         <%= heroicon "document-duplicate", options: { class: "w-4 h-4" } %>
       <% end %>
@@ -90,25 +90,25 @@
     </div>
 
     <!-- Article Content -->
-    <div class="flex-1 overflow-y-auto">
-      <div class="px-6 py-6 max-w-3xl">
+    <div class="flex-1 overflow-y-auto app-bg p-6">
+      <div class="max-w-3xl mx-auto app-surface rounded-lg shadow-sm border app-border px-8 py-8">
         <% if article.generation_running? %>
           <div class="text-center py-12">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-            <p class="mt-4 text-gray-500">Article content is being generated...</p>
-            <p class="mt-2 text-sm text-gray-400">This may take a few minutes</p>
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-current app-accent-text mx-auto"></div>
+            <p class="mt-4 app-text-secondary">Article content is being generated...</p>
+            <p class="mt-2 text-sm app-text-muted">This may take a few minutes</p>
           </div>
         <% elsif article.generation_failed? %>
           <div class="text-center py-12">
             <%= heroicon "exclamation-triangle", options: { class: "mx-auto h-12 w-12 text-red-400" } %>
             <p class="mt-4 text-red-600 font-medium">Article generation failed</p>
-            <p class="mt-2 text-sm text-gray-500">Click "Regenerate" to try again</p>
+            <p class="mt-2 text-sm app-text-secondary">Click "Regenerate" to try again</p>
           </div>
         <% elsif article.generation_pending? && !article.structured? %>
           <div class="text-center py-12">
-            <%= heroicon "document-text", options: { class: "mx-auto h-12 w-12 text-gray-300" } %>
-            <p class="mt-4 text-gray-600 font-medium">Ready to generate</p>
-            <p class="mt-2 text-sm text-gray-500">Click "Generate" to create content with AI</p>
+            <%= heroicon "document-text", options: { class: "mx-auto h-12 w-12 app-text-muted" } %>
+            <p class="mt-4 app-text-secondary font-medium">Ready to generate</p>
+            <p class="mt-2 text-sm app-text-secondary">Click "Generate" to create content with AI</p>
           </div>
         <% elsif article.structured? %>
           <!-- Structured Content Rendering (Editable) -->
