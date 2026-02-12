@@ -21,7 +21,7 @@
 
       <div>
         <label for="project_subdomain" class="block text-sm font-medium text-slate-700 mb-1">Subdomain</label>
-        <div class="flex items-center">
+        <div class="flex items-stretch">
           <input type="text" name="project[subdomain]" id="project_subdomain"
                  value="<%= @project.subdomain %>"
                  class="flex-1 px-3 py-2 border border-slate-300 rounded-l-lg shadow-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
@@ -30,7 +30,7 @@
                  minlength="3"
                  maxlength="63"
                  required />
-          <span class="px-3 py-2 bg-slate-100 border border-l-0 border-slate-300 rounded-r-lg text-slate-500 text-sm">
+          <span class="px-3 flex items-center bg-slate-100 border border-l-0 border-slate-300 rounded-r-lg text-slate-500 text-sm">
             .supportpages.io
           </span>
         </div>
@@ -82,7 +82,7 @@
                 <div class="w-48">
                   <% if repo_data[:branches].any? %>
                     <select name="repo_branches[<%= pr.id %>]"
-                            class="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500">
+                            class="w-full appearance-none h-[38px] px-3 pr-8 border border-slate-300 rounded-lg shadow-sm text-sm bg-white bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%2364748b%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.22%208.22a.75.75%200%20011.06%200L10%2011.94l3.72-3.72a.75.75%200%20111.06%201.06l-4.25%204.25a.75.75%200%2001-1.06%200L5.22%209.28a.75.75%200%20010-1.06z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[position:right_0.5rem_center] bg-no-repeat focus:ring-2 focus:ring-violet-500 focus:border-violet-500 cursor-pointer">
                       <% repo_data[:branches].each do |branch| %>
                         <option value="<%= branch %>"
                                 <%= 'selected' if branch == (pr.branch || repo_data[:default_branch]) %>>
