@@ -1,14 +1,5 @@
 <div class="bg-gray-50">
-  <header class="bg-white shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
-<%= link_to projects_path, class: "hover:opacity-80 transition-opacity" do %>
-          <%= image_tag "logo.png", class: "h-12", alt: "supportpages.io" %>
-        <% end %>
-      <div class="flex items-center gap-4">
-        <%= link_to "Back to Sections", project_sections_path(@project), class: "text-indigo-600 hover:text-indigo-800" %>
-      </div>
-    </div>
-  </header>
+  <%= render "shared/app_header", project: @project %>
 
   <main class="max-w-2xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
     <div class="bg-white shadow rounded-lg p-6">

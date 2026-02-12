@@ -1,5 +1,5 @@
 <nav aria-label="Progress">
-  <ol class="flex items-center justify-between">
+  <ol class="flex items-center pb-6">
     <% steps = [
       { num: 1, name: "Connect" },
       { num: 2, name: "Setup" },
@@ -7,35 +7,30 @@
       { num: 4, name: "Review" }
     ] %>
     <% steps.each_with_index do |step, index| %>
-      <li class="relative flex flex-col items-center <%= 'flex-1' unless index == steps.length - 1 %>">
-        <div class="flex items-center w-full">
+      <li class="relative flex items-center <%= 'flex-1' unless index == steps.length - 1 %>">
+        <%# Circle with label positioned beneath %>
+        <div class="relative flex-shrink-0">
           <% if step[:num] < current_step %>
-            <!-- Completed step -->
-<div class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-brand shadow-sm">
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-brand shadow-sm">
               <%= heroicon "check", variant: :solid, options: { class: "h-5 w-5 text-white" } %>
             </div>
           <% elsif step[:num] == current_step %>
-            <!-- Current step -->
             <div class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-violet-600 bg-white ring-glow">
               <span class="text-violet-600 font-semibold"><%= step[:num] %></span>
             </div>
           <% else %>
-            <!-- Upcoming step -->
             <div class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-slate-300 bg-white">
               <span class="text-slate-400"><%= step[:num] %></span>
             </div>
           <% end %>
-
-          <% unless index == steps.length - 1 %>
-            <!-- Connector line -->
-            <div class="flex-1 h-0.5 mx-3 <%= step[:num] < current_step ? 'bg-gradient-connector' : 'bg-slate-200' %>"></div>
-          <% end %>
+          <span class="absolute left-1/2 -translate-x-1/2 top-full mt-2 text-xs font-medium whitespace-nowrap <%= step[:num] <= current_step ? 'text-violet-600' : 'text-slate-400' %>">
+            <%= step[:name] %>
+          </span>
         </div>
 
-        <!-- Step name below circle -->
-        <span class="mt-2 text-xs font-medium <%= step[:num] <= current_step ? 'text-violet-600' : 'text-slate-400' %>">
-          <%= step[:name] %>
-        </span>
+        <% unless index == steps.length - 1 %>
+          <div class="flex-1 h-0.5 mx-3 <%= step[:num] < current_step ? 'bg-gradient-connector' : 'bg-slate-200' %>"></div>
+        <% end %>
       </li>
     <% end %>
   </ol>

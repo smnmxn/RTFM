@@ -5,31 +5,7 @@
 <%= turbo_stream_from @project, :notifications %>
 
 <div class="bg-gray-50">
-  <!-- Header -->
-  <header class="bg-white shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center">
-        <div class="flex items-center gap-4">
-          <%= link_to projects_path, class: "hover:opacity-80 transition-opacity" do %>
-            <%= image_tag "logo.png", class: "h-12", alt: "supportpages.io" %>
-          <% end %>
-          <h1 class="text-2xl font-bold text-gray-900"><%= @project.name %></h1>
-          <%= link_to @project.github_repo, "https://github.com/#{@project.github_repo}", target: "_blank", class: "text-sm text-gray-500 hover:text-indigo-600" %>
-        </div>
-        <div class="flex items-center gap-4">
-          <%= link_to project_help_centre_url(@project), target: "_blank", class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-indigo-600 hover:text-indigo-800 font-medium" do %>
-            View your help centre
-            <%= heroicon "arrow-top-right-on-square", options: { class: "w-4 h-4" } %>
-          <% end %>
-          <%= link_to "https://help.supportpages.io", target: "_blank", class: "inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700" do %>
-            <%= heroicon "question-mark-circle", options: { class: "w-4 h-4" } %>
-            Get Help
-          <% end %>
-          <%= link_to "Projects", projects_path, class: "text-sm text-gray-500 hover:text-gray-700" %>
-        </div>
-      </div>
-    </div>
-  </header>
+  <%= render "shared/app_header", project: @project %>
 
   <!-- Docs Behind Banner -->
   <%= render "projects/docs_behind_banner", project: @project %>

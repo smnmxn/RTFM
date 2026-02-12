@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
+/* Suppress browser default focus/invalid styling - Tailwind focus:ring handles focus, we show our own validation errors */
+@layer base {
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+  }
+
+  input:invalid,
+  select:invalid,
+  textarea:invalid {
+    box-shadow: none;
+  }
+}
+
 /* Restore pointer cursor on interactive elements (Tailwind v4 preflight removes this) */
 a, button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"], [data-action*="click"] {
   cursor: pointer;
@@ -60,47 +75,47 @@ a, button, [role="button"], input[type="button"], input[type="submit"], input[ty
 
 /* Primary buttons - main CTAs */
 .btn-primary-lg {
-  @apply px-6 py-3 bg-gradient-brand text-white font-medium rounded-lg hover:opacity-90 transition-smooth;
+  @apply px-6 py-3 bg-gradient-brand text-white font-medium rounded-lg hover:opacity-90 focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 transition-smooth;
 }
 
 .btn-primary-md {
-  @apply px-5 py-2 bg-gradient-brand text-white font-medium rounded-lg hover:opacity-90 transition-smooth;
+  @apply px-5 py-2 bg-gradient-brand text-white font-medium rounded-lg hover:opacity-90 focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 transition-smooth;
 }
 
 .btn-primary-sm {
-  @apply px-3 py-1.5 text-sm bg-gradient-brand text-white font-medium rounded-lg hover:opacity-90 transition-smooth;
+  @apply px-3 py-1.5 text-sm bg-gradient-brand text-white font-medium rounded-lg hover:opacity-90 focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 transition-smooth;
 }
 
 /* Secondary buttons - alternative actions */
 .btn-secondary-lg {
-  @apply px-6 py-3 bg-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-300 transition-smooth;
+  @apply px-6 py-3 bg-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-300 focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 transition-smooth;
 }
 
 .btn-secondary-md {
-  @apply px-5 py-2 bg-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-300 transition-smooth;
+  @apply px-5 py-2 bg-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-300 focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 transition-smooth;
 }
 
 .btn-secondary-sm {
-  @apply px-3 py-1.5 text-sm bg-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-300 transition-smooth;
+  @apply px-3 py-1.5 text-sm bg-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-300 focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 transition-smooth;
 }
 
 /* Success buttons - accept/approve actions */
 .btn-success-sm {
-  @apply px-3 py-1.5 text-sm bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 transition-smooth;
+  @apply px-3 py-1.5 text-sm bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 transition-smooth;
 }
 
 /* Danger buttons - error/retry actions */
 .btn-danger-md {
-  @apply px-5 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-smooth;
+  @apply px-5 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 transition-smooth;
 }
 
 .btn-danger-sm {
-  @apply px-3 py-1.5 text-sm bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-smooth;
+  @apply px-3 py-1.5 text-sm bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 transition-smooth;
 }
 
 /* Ghost buttons - subtle actions */
 .btn-ghost-sm {
-  @apply px-3 py-1.5 text-sm bg-white text-slate-500 border border-slate-200 font-medium rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-smooth;
+  @apply px-3 py-1.5 text-sm bg-white text-slate-500 border border-slate-200 font-medium rounded-lg hover:bg-slate-50 hover:border-slate-300 focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 transition-smooth;
 }
 
 /* ===== ONBOARDING CARD STYLES ===== */

@@ -15,6 +15,7 @@ RUN apt-get update -qq && \
     pkg-config \
     ca-certificates \
     gnupg \
+    watchman \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Docker CLI (not Docker daemon - we use host's daemon via socket)
