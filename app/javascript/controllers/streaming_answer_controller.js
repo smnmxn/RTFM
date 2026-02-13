@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["thinking", "content", "text", "cursor", "sources", "rendered"]
+  static targets = ["thinking", "content", "text", "cursor", "sources", "rendered", "disclaimer"]
   static values = { streamId: String }
 
   connect() {
@@ -9,12 +9,29 @@ export default class extends Controller {
     this.rawText = ""
     this.isProcessing = false
 
+    // Process any spans that arrived before the observer connected (cached responses)
+    this.processExistingSpans()
+
     // Observe the text target for Turbo Stream appends
     this.observer = new MutationObserver(this.handleMutation.bind(this))
     this.observer.observe(this.textTarget, {
       childList: true,
       subtree: false
     })
+  }
+
+  processExistingSpans() {
+    const existingSpans = this.textTarget.querySelectorAll("span")
+    for (const span of existingSpans) {
+      if (span.dataset.streamingDone === "true") {
+        this.handleComplete()
+        return
+      }
+      const text = span.textContent || ""
+      if (text) {
+        this.handleChunk(text)
+      }
+    }
   }
 
   handleMutation(mutations) {
@@ -100,6 +117,11 @@ export default class extends Controller {
     // Hide the cursor
     if (this.hasCursorTarget) {
       this.cursorTarget.classList.add("hidden")
+    }
+
+    // Show disclaimer
+    if (this.hasDisclaimerTarget) {
+      this.disclaimerTarget.classList.remove("hidden")
     }
 
     // Show sources (Turbo Stream will have already replaced the sources element)

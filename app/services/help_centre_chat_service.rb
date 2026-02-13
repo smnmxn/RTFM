@@ -10,9 +10,10 @@ class HelpCentreChatService
   MAX_CONTEXT_TOKENS = 150_000
   CACHE_PREFIX = "help_centre_chat:v1"
 
-  def initialize(project, question)
+  def initialize(project, question, skip_cache: false)
     @project = project
     @question = question.to_s.strip
+    @skip_cache = skip_cache
   end
 
   def call
@@ -51,10 +52,12 @@ class HelpCentreChatService
     end
 
     # Check cache first
-    if (cached = read_cache)
-      Rails.logger.info "[HelpCentreCache] HIT project=#{@project.id} question_hash=#{question_hash}"
-      stream_cached_response(cached, &block)
-      return
+    unless @skip_cache
+      if (cached = read_cache)
+        Rails.logger.info "[HelpCentreCache] HIT project=#{@project.id} question_hash=#{question_hash}"
+        stream_cached_response(cached, &block)
+        return
+      end
     end
 
     Rails.logger.info "[HelpCentreCache] MISS project=#{@project.id} question_hash=#{question_hash}"
@@ -160,24 +163,45 @@ class HelpCentreChatService
   end
 
   def build_system_prompt(articles_context)
+    support_contact = build_support_contact_info
+
     <<~PROMPT
-      You are a helpful support assistant for #{@project.name}. Answer questions using ONLY the help articles provided below.
+      You ARE the #{@project.name} help centre. The knowledge below is yours — answer as if you just know these things, the way a knowledgeable team member would.
 
-      Rules:
-      1. Answer the question directly and concisely
-      2. When referencing an article, cite it as a markdown link: [Article Title](URL)
-      3. If the articles don't contain enough information to answer, say "I couldn't find a specific answer to that question in our help articles."
-      4. Never make up information not in the articles
-      5. Use a friendly, helpful tone
-      6. Format your response with markdown for readability
-      7. When an image would help illustrate a step or concept, include it using: ![description](image_url)
-         - Only include images marked as [Image available: URL] in the articles
-         - Use images when they directly help answer the question
-         - Place images after the relevant text they illustrate
+      VOICE — CRITICAL:
+      - NEVER reference articles, documentation, guides, help pages, or "the information I have". You don't "have access to" anything — you simply know things or you don't.
+      - NEVER say: "I checked…", "based on the documentation…", "in our help articles…", "the articles I can help with cover…", "I don't have information about X in…", or ANY variation that reveals you are searching or reading a knowledge base.
+      - Instead of "I don't have information about X", just say "That's not something I can help with right now" or similar.
+      - Instead of "The articles I can help with cover X, Y, Z", just say "I can help with X, Y, Z" — own it.
 
-      Help Articles:
+      ANSWERING:
+      1. Answer directly and concisely.
+      2. When linking to a relevant page, cite it as a markdown link: [Title](URL).
+      3. Never make up information you don't have.
+      4. Use a friendly, helpful tone. Format with markdown for readability.
+      5. IMAGES — actively include images from the knowledge base when they're relevant. They make answers much more useful. Use: ![description](image_url). Only use images marked [Image available: URL] in the knowledge below. Place them inline after the text they illustrate. If a step-by-step answer has images available for those steps, include them.
+      6. This is a single question-and-answer, NOT a chat. There is no way for the user to reply. NEVER end with anything that implies a continuing conversation like "Is there anything else I can help with?", "Let me know if you need more details", "Feel free to ask if you have questions", "Hope that helps!", "Would you like me to explain further?", etc. Just answer and stop.
+
+      WHEN YOU DON'T KNOW:
+      - Say so naturally and briefly — no scripted fallback phrases.
+      - Suggest related things you CAN help with, or recommend browsing a category.
+      #{support_contact}
+
+      ---
       #{articles_context}
     PROMPT
+  end
+
+  def build_support_contact_info
+    parts = []
+    parts << @project.support_email if @project.support_email.present?
+    parts << @project.support_phone if @project.support_phone.present?
+
+    if parts.any?
+      "- Offer to connect them with the support team: #{parts.join(' or ')}"
+    else
+      ""
+    end
   end
 
   def call_claude_api(articles_context)
