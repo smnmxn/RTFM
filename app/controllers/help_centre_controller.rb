@@ -33,13 +33,19 @@ class HelpCentreController < ApplicationController
     project_id = @project.id
     question = @question
     stream_id = @stream_id
+    skip_cache = params[:nocache].present?
 
     # Start streaming after response is sent
     Thread.new do
       Rails.application.executor.wrap do
+        # Give the browser time to establish the ActionCable subscription
+        # before we start broadcasting. Without this, cached responses
+        # fire chunks before the client is listening and they're lost.
+        sleep 0.5
+
         Rails.logger.info "[HelpCentre] Starting stream for #{stream_id}"
         project = Project.find(project_id)
-        service = HelpCentreChatService.new(project, question)
+        service = HelpCentreChatService.new(project, question, skip_cache: skip_cache)
 
         service.stream do |event|
           Rails.logger.info "[HelpCentre] Event: #{event[:type]}"
