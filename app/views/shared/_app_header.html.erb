@@ -6,7 +6,7 @@
       <% end %>
       <% if local_assigns[:project] %>
         <span class="app-text-muted select-none">/</span>
-        <h1 class="text-lg font-semibold app-text"><%= link_to project.name, project_path(project), class: "hover:opacity-80 transition-opacity" %></h1>
+        <h1 class="text-lg font-semibold app-text" style="font-family: var(--app-font-display);"><%= link_to project.name, project_path(project), class: "hover:opacity-80 transition-opacity" %></h1>
       <% end %>
     </div>
     <div class="flex items-center gap-2">
@@ -42,12 +42,18 @@
               <p class="text-xs app-text-muted truncate">@<%= current_user.github_username %></p>
             <% end %>
           </div>
+          <%= link_to projects_path,
+              class: "flex items-center gap-2 px-3 py-2 text-sm app-text-secondary hover:app-text hover:app-surface-alt transition-colors" do %>
+            <%= heroicon "rectangle-stack", options: { class: "w-4 h-4" } %>
+            Projects
+          <% end %>
           <%= link_to "https://help.supportpages.io", target: "_blank",
               class: "flex items-center gap-2 px-3 py-2 text-sm app-text-secondary hover:app-text hover:app-surface-alt transition-colors" do %>
             <%= heroicon "question-mark-circle", options: { class: "w-4 h-4" } %>
             Get Help
           <% end %>
           <%= button_to "Sign out", logout_path, method: :delete,
+              data: { turbo: false },
               class: "w-full flex items-center gap-2 px-3 py-2 text-sm app-text-secondary hover:app-text hover:app-surface-alt transition-colors text-left" %>
         </div>
       </div>

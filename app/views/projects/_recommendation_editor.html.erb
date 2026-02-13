@@ -16,13 +16,13 @@
             reject_recommendation_project_path(recommendation.project, recommendation_id: recommendation.id),
             method: :post,
             form: { data: { turbo_stream: true } },
-            class: "px-3 py-1.5 text-sm border border-red-300 text-red-700 font-medium rounded-lg hover:bg-red-50 cursor-pointer" %>
+            class: "btn-reject cursor-pointer" %>
 
         <%= button_to "Accept",
             accept_recommendation_project_path(recommendation.project, recommendation_id: recommendation.id),
             method: :post,
             form: { data: { turbo_stream: true } },
-            class: "px-4 py-1.5 text-sm bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 cursor-pointer" %>
+            class: "btn-approve cursor-pointer" %>
       </div>
     </div>
 
@@ -56,10 +56,10 @@
         <% end %>
 
         <!-- Info Box -->
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div class="app-info-bg border app-info-border rounded-lg p-4">
 <div class="flex">
-            <%= heroicon "information-circle", variant: :solid, options: { class: "h-5 w-5 text-blue-400 mr-3 flex-shrink-0" } %>
-            <div class="text-sm text-blue-700">
+            <%= heroicon "information-circle", variant: :solid, options: { class: "h-5 w-5 app-info-text mr-3 flex-shrink-0" } %>
+            <div class="text-sm app-info-text">
               <p class="font-medium">What happens when you accept?</p>
               <p class="mt-1">An article will be generated based on this suggestion. You'll be able to review and edit it before publishing.</p>
             </div>
