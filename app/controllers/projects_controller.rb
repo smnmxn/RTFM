@@ -2,7 +2,9 @@ class ProjectsController < ApplicationController
   before_action :set_project, except: [ :index, :new, :create, :repositories ]
 
   def index
-    @projects = current_user.projects.order(updated_at: :desc)
+    @projects = current_user.projects
+      .includes(logo_attachment: :blob)
+      .order(updated_at: :desc)
   end
 
   def new
