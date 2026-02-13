@@ -45,7 +45,7 @@
             reject_article_project_path(article.project, article_id: article.id),
             method: :post,
             form: { data: { turbo_stream: true } },
-            class: "px-3 py-1.5 text-sm border border-red-300 text-red-700 font-medium rounded-lg hover:bg-red-50 cursor-pointer" %>
+            class: "btn-reject cursor-pointer" %>
 
         <% if article.generation_pending? %>
           <%= render "articles/regenerate_modal",
@@ -63,7 +63,7 @@
               approve_article_project_path(article.project, article_id: article.id),
               method: :post,
               form: { data: { turbo_stream: true } },
-              class: "px-4 py-1.5 text-sm bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 cursor-pointer" %>
+              class: "btn-approve cursor-pointer" %>
         <% else %>
           <%= render "articles/section_picker_modal", article: article %>
         <% end %>

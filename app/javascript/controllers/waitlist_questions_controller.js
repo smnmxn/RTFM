@@ -11,6 +11,19 @@ export default class extends Controller {
   connect() {
     this.totalCards = this.cardTargets.length
     this.updateUI()
+    this.boundKeydown = this.handleKeydown.bind(this)
+    document.addEventListener("keydown", this.boundKeydown)
+  }
+
+  disconnect() {
+    document.removeEventListener("keydown", this.boundKeydown)
+  }
+
+  handleKeydown(event) {
+    if (event.key === "Enter" && !this.nextButtonTarget.disabled) {
+      event.preventDefault()
+      this.next()
+    }
   }
 
   selectOption(event) {
@@ -33,7 +46,7 @@ export default class extends Controller {
     // Show loading state
     const originalText = this.nextButtonTarget.textContent
     this.nextButtonTarget.disabled = true
-    this.nextButtonTarget.innerHTML = `<span class="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></span>Saving...`
+    this.nextButtonTarget.innerHTML = `<span class="inline-block w-4 h-4 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin mr-2"></span>Saving...`
 
     // Save current answer
     await this.saveCurrentAnswer()
@@ -137,8 +150,8 @@ export default class extends Controller {
 
     // Update progress dots
     this.dotTargets.forEach((dot, index) => {
-      dot.classList.toggle('bg-zinc-700', index <= this.currentIndexValue)
-      dot.classList.toggle('bg-slate-300', index > this.currentIndexValue)
+      dot.classList.toggle('bg-zinc-400', index <= this.currentIndexValue)
+      dot.classList.toggle('bg-zinc-700', index > this.currentIndexValue)
     })
 
     // Reset next button state for new card
@@ -185,8 +198,8 @@ export default class extends Controller {
 
     // Update all dots to completed
     this.dotTargets.forEach(dot => {
-      dot.classList.add('bg-zinc-700')
-      dot.classList.remove('bg-slate-300')
+      dot.classList.add('bg-zinc-400')
+      dot.classList.remove('bg-zinc-700')
     })
   }
 }
