@@ -1,4 +1,6 @@
 <% content_for(:title) { "Ask - #{@project.name} Help Centre" } %>
+<% content_for(:meta_description) { meta_description("Get answers about #{@project.name}") } %>
+<% content_for(:noindex) { "true" } %>
 
 <%= turbo_stream_from "help_centre_ask_#{@stream_id}" %>
 

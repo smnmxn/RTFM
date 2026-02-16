@@ -1,4 +1,5 @@
 <% content_for(:title) { "#{@project.name} Help Centre" } %>
+<% content_for(:meta_description) { meta_description(@project.help_centre_tagline_or_default) } %>
 
 <% content_for :hero do %>
   <%= render "help_centre/hero" %>

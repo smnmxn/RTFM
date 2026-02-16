@@ -3,6 +3,8 @@
   <head>
     <title><%= content_for(:title) || "#{@project.name} #{@project.help_centre_title_or_default}" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= seo_meta_tags %>
+    <%= content_for(:json_ld) %>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 

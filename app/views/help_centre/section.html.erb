@@ -1,4 +1,5 @@
 <% content_for(:title) { "#{@section.name} - #{@project.name} Help Centre" } %>
+<% content_for(:meta_description) { meta_description(@section.description) } %>
 
 <div class="space-y-8">
   <!-- Breadcrumb -->

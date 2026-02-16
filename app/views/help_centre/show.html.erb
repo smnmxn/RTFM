@@ -1,4 +1,7 @@
 <% content_for(:title) { "#{@article.title} - #{@project.name} Help Centre" } %>
+<% content_for(:meta_description) { meta_description(@article.introduction.presence || @article.content) } %>
+<% content_for(:og_type) { "article" } %>
+<% content_for(:json_ld) { article_json_ld(@article, @project) } %>
 
 <div class="lg:grid lg:grid-cols-4 lg:gap-8">
   <!-- Sidebar (Table of Contents) - Desktop -->

@@ -285,6 +285,27 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, 'target="articles-section"'
   end
 
+  # ========================================
+  # Branding settings tests
+  # ========================================
+
+  test "update_branding saves seo_indexing_enabled" do
+    sign_in_as(@user)
+    project = projects(:one)
+
+    patch update_branding_project_path(project),
+          params: { project: { seo_indexing_enabled: "1" } }
+
+    project.reload
+    assert project.seo_indexing_enabled?
+
+    patch update_branding_project_path(project),
+          params: { project: { seo_indexing_enabled: "0" } }
+
+    project.reload
+    assert_not project.seo_indexing_enabled?
+  end
+
   test "show renders inbox and articles tab badge partials" do
     sign_in_as(@user)
     project = projects(:one)

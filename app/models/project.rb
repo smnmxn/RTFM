@@ -40,7 +40,8 @@ class Project < ApplicationRecord
     :help_centre_tagline,
     :support_email,
     :support_phone,
-    :dark_mode
+    :dark_mode,
+    :seo_indexing_enabled
   ], coder: JSON
 
   # AI settings
@@ -306,6 +307,10 @@ class Project < ApplicationRecord
 
   def dark_mode_enabled?
     dark_mode == true || dark_mode == "true" || dark_mode == "1"
+  end
+
+  def seo_indexing_enabled?
+    !["false", "0", false].include?(seo_indexing_enabled)
   end
 
   # AI settings helper methods

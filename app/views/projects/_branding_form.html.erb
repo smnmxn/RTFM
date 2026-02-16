@@ -209,6 +209,29 @@
         </div>
       </div>
 
+      <!-- SEO Indexing -->
+      <div class="p-4 space-y-4">
+        <div>
+          <label class="block text-sm font-medium app-text mb-1">Search Engine Indexing</label>
+          <p class="text-sm app-text-secondary mb-3">Control whether search engines can index your help centre.</p>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="hidden" name="project[seo_indexing_enabled]" value="0">
+            <input type="checkbox"
+                   name="project[seo_indexing_enabled]"
+                   value="1"
+                   <%= "checked" if project.seo_indexing_enabled? %>
+                   class="mt-0.5 h-4 w-4 rounded app-border-strong text-[color:var(--app-accent)] focus:ring-[color:var(--app-focus-ring)]">
+            <div>
+              <span class="block text-sm font-medium app-text">Allow search engines to index</span>
+              <span class="block text-sm app-text-secondary mt-0.5">
+                When disabled, a <code class="app-surface-alt px-1 py-0.5 rounded text-xs">noindex</code> meta tag will be added to all help centre pages.
+              </span>
+            </div>
+          </label>
+        </div>
+      </div>
+
       <!-- Submit -->
       <div class="p-4 app-bg rounded-b-lg flex items-center justify-between">
         <% if saved %>
