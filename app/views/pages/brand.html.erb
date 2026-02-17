@@ -1,0 +1,54 @@
+<% content_for(:title) { "Brand - supportpages.io" } %>
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+
+  <!-- Dark versions -->
+  <div class="mb-16">
+    <p class="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-8">Dark background</p>
+
+    <!-- Logo + text mark — large -->
+    <div class="flex items-center mb-12">
+      <%= image_tag "icon-dark.png", alt: "supportpages.io", style: "width: 104px; height: 104px; margin-top: 4px;" %>
+      <span class="text-white text-6xl font-semibold tracking-tight" style="font-family: 'Space Grotesk', system-ui, sans-serif;">
+        supportpages<span class="text-zinc-500">.io</span>
+      </span>
+    </div>
+
+    <!-- Logo only — large -->
+    <div class="mb-12">
+      <%= image_tag "icon-dark.png", class: "w-24 h-24", alt: "supportpages.io" %>
+    </div>
+
+    <!-- Text mark only — large -->
+    <div class="mb-12">
+      <span class="text-white text-6xl font-semibold tracking-tight" style="font-family: 'Space Grotesk', system-ui, sans-serif;">
+        supportpages<span class="text-zinc-500">.io</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Light versions -->
+  <div class="bg-white rounded-2xl p-12">
+    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider mb-8">Light background</p>
+
+    <!-- Logo + text mark — large -->
+    <div class="flex items-center mb-12">
+      <%= image_tag "icon.png", alt: "supportpages.io", style: "width: 104px; height: 104px; margin-top: 4px;" %>
+      <span class="text-slate-900 text-6xl font-semibold tracking-tight" style="font-family: 'Space Grotesk', system-ui, sans-serif;">
+        supportpages<span class="text-slate-400">.io</span>
+      </span>
+    </div>
+
+    <!-- Logo only — large -->
+    <div class="mb-12">
+      <%= image_tag "icon.png", class: "w-24 h-24", alt: "supportpages.io" %>
+    </div>
+
+    <!-- Text mark only — large -->
+    <div>
+      <span class="text-slate-900 text-6xl font-semibold tracking-tight" style="font-family: 'Space Grotesk', system-ui, sans-serif;">
+        supportpages<span class="text-slate-400">.io</span>
+      </span>
+    </div>
+  </div>
+</div>

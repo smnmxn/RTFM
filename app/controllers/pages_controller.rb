@@ -5,4 +5,7 @@ class PagesController < ApplicationController
   def how_it_works
     @nav_active = "how-it-works"
   end
+
+  def brand
+  end
 end

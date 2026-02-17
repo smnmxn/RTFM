@@ -17,18 +17,6 @@
   <!-- Main content -->
   <div class="relative z-10 flex flex-col items-center px-4 pt-28 pb-16">
 
-    <!-- Flash messages -->
-    <% if flash[:notice] %>
-      <div class="mb-6 max-w-xl w-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-4 py-3 rounded-lg text-sm backdrop-blur-sm">
-        <%= flash[:notice] %>
-      </div>
-    <% end %>
-    <% if flash[:alert] %>
-      <div class="mb-6 max-w-xl w-full bg-red-500/10 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg text-sm backdrop-blur-sm">
-        <%= flash[:alert] %>
-      </div>
-    <% end %>
-
     <!-- Hero headline -->
     <h1 class="text-gradient-hero text-5xl sm:text-6xl md:text-7xl font-extrabold text-center leading-tight tracking-tight max-w-4xl" style="font-family: 'Space Grotesk', system-ui, sans-serif;">
       Support pages that<br>write themselves
@@ -85,6 +73,18 @@
         </div>
       </div>
     </div>
+
+    <!-- Flash messages -->
+    <% if flash[:notice] %>
+      <div class="mt-8 max-w-xl w-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-4 py-3 rounded-lg text-sm backdrop-blur-sm">
+        <%= flash[:notice] %>
+      </div>
+    <% end %>
+    <% if flash[:alert] %>
+      <div class="mt-8 max-w-xl w-full bg-red-500/10 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg text-sm backdrop-blur-sm">
+        <%= flash[:alert] %>
+      </div>
+    <% end %>
 
     <!-- Primary CTA: GitHub sign in -->
     <div class="mt-12 flex flex-col items-center">

@@ -34,6 +34,7 @@ Rails.application.routes.draw do
 
   # How it works (bare domain, public)
   get "/how-it-works", to: "pages#how_it_works", as: :how_it_works
+  get "/brand", to: "pages#brand", as: :brand
 
   # OmniAuth callbacks (bare domain)
   get "/auth/github/callback", to: "sessions#create"
