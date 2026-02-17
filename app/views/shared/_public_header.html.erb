@@ -11,6 +11,10 @@
         <%= render "shared/logo", theme: theme %>
       </a>
       <nav class="flex items-center gap-6 text-sm">
+        <a href="/how-it-works"
+           class="<%= dark ? (active == 'how-it-works' ? 'text-white font-semibold' : 'text-zinc-400 hover:text-white') : (active == 'how-it-works' ? 'text-slate-900 font-semibold' : 'text-slate-600 hover:text-slate-900') %> transition-colors">
+          How it Works
+        </a>
         <a href="https://help.supportpages.io"
            target="_blank"
            rel="noopener noreferrer"

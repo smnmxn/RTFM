@@ -32,6 +32,9 @@ Rails.application.routes.draw do
     get "/security", to: "legal#security", as: :security
   end
 
+  # How it works (bare domain, public)
+  get "/how-it-works", to: "pages#how_it_works", as: :how_it_works
+
   # OmniAuth callbacks (bare domain)
   get "/auth/github/callback", to: "sessions#create"
   get "/auth/failure", to: "sessions#failure"
