@@ -1,0 +1,19 @@
+start	end	text
+0	3000	Every developer knows this feeling.
+3000	9000	You ship a feature, users love it, and then the support ticket start.
+9000	12000	How do I use this? Where's the documentation?
+12000	15000	You look at your help docs. They're six months out of date.
+15000	20000	Here's the thing. We all know documentation matters, but nobody wants to write it,
+20000	24000	so we don't, and our users suffer.
+24000	28000	What if your documentation wrote itself?
+28000	33000	This is supportpages.io. You connect your GitHub repo just like that,
+33000	39000	and our AI reads your entire code base. It understands your product, your features, your users.
+39000	42000	Now watch what happens. You merge a pull request.
+42000	49000	Instantly, supportpages analyzes the change, not what code changed, what changed for your users,
+49000	56000	and it writes a help article, a real one, with steps, with screenshots, ready to publish.
+56000	61000	You review it. One click to approve, one click to publish, done.
+61000	67000	Your documentation is now always up to date. Every feature, every update, automatically.
+67000	75000	And your users, they get a beautiful help center, with search, with AI chat that actually answers their questions.
+75000	79000	No more writing docs at midnight. No more. We'll update that later.
+79000	84000	No more frustrated users. You ship code. We ship the docs.
+84000	88000	That supportpages.io.

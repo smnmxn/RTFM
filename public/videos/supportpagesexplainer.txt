@@ -1,0 +1,18 @@
+Every developer knows this feeling.
+You ship a feature, users love it, and then the support ticket start.
+How do I use this? Where's the documentation?
+You look at your help docs. They're six months out of date.
+Here's the thing. We all know documentation matters, but nobody wants to write it,
+so we don't, and our users suffer.
+What if your documentation wrote itself?
+This is supportpages.io. You connect your GitHub repo just like that,
+and our AI reads your entire code base. It understands your product, your features, your users.
+Now watch what happens. You merge a pull request.
+Instantly, supportpages analyzes the change, not what code changed, what changed for your users,
+and it writes a help article, a real one, with steps, with screenshots, ready to publish.
+You review it. One click to approve, one click to publish, done.
+Your documentation is now always up to date. Every feature, every update, automatically.
+And your users, they get a beautiful help center, with search, with AI chat that actually answers their questions.
+No more writing docs at midnight. No more. We'll update that later.
+No more frustrated users. You ship code. We ship the docs.
+That supportpages.io.

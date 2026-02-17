@@ -1,0 +1,56 @@
+WEBVTT
+
+00:00.000 --> 00:03.000
+Every developer knows this feeling.
+
+00:03.000 --> 00:09.000
+You ship a feature, users love it, and then the support ticket start.
+
+00:09.000 --> 00:12.000
+How do I use this? Where's the documentation?
+
+00:12.000 --> 00:15.000
+You look at your help docs. They're six months out of date.
+
+00:15.000 --> 00:20.000
+Here's the thing. We all know documentation matters, but nobody wants to write it,
+
+00:20.000 --> 00:24.000
+so we don't, and our users suffer.
+
+00:24.000 --> 00:28.000
+What if your documentation wrote itself?
+
+00:28.000 --> 00:33.000
+This is supportpages.io. You connect your GitHub repo just like that,
+
+00:33.000 --> 00:39.000
+and our AI reads your entire code base. It understands your product, your features, your users.
+
+00:39.000 --> 00:42.000
+Now watch what happens. You merge a pull request.
+
+00:42.000 --> 00:49.000
+Instantly, supportpages analyzes the change, not what code changed, what changed for your users,
+
+00:49.000 --> 00:56.000
+and it writes a help article, a real one, with steps, with screenshots, ready to publish.
+
+00:56.000 --> 01:01.000
+You review it. One click to approve, one click to publish, done.
+
+01:01.000 --> 01:07.000
+Your documentation is now always up to date. Every feature, every update, automatically.
+
+01:07.000 --> 01:15.000
+And your users, they get a beautiful help center, with search, with AI chat that actually answers their questions.
+
+01:15.000 --> 01:19.000
+No more writing docs at midnight. No more. We'll update that later.
+
+01:19.000 --> 01:24.000
+No more frustrated users. You ship code. We ship the docs.
+
+01:24.000 --> 01:28.000
+That supportpages.io.
+

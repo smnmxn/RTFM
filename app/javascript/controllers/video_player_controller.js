@@ -11,6 +11,14 @@ export default class extends Controller {
     this.videoTarget.currentTime = 0
     this.videoTarget.play()
 
+    // Enable captions by default
+    const tracks = this.videoTarget.textTracks
+    for (let i = 0; i < tracks.length; i++) {
+      if (tracks[i].kind === "captions") {
+        tracks[i].mode = "showing"
+      }
+    }
+
     this.dispatch("played")
   }
 }
