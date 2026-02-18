@@ -79,8 +79,8 @@ class BrandingExtractorService
       Rules:
       - primary_color: The main brand color used in the header/nav/buttons. Must be a 6-digit hex code.
       - accent_color: A secondary/complementary brand color. Must be a 6-digit hex code.
-      - logo_url: The URL of the main logo image from the header/nav. Look for <img> tags inside <header>, <nav>, or elements with class names containing "logo", "brand", or "header". Return the full absolute URL. Return null if not found.
-      - favicon_url: The URL from <link rel="icon"> or <link rel="shortcut icon">. Return the full absolute URL. Return null if not found.
+      - logo_url: The URL of the main logo image from the header/nav. Look for <img> tags inside <header>, <nav>, or elements with class names containing "logo", "brand", or "header". STRONGLY prefer PNG, JPG, or WEBP formats over SVG. If multiple logo images exist, pick the raster (non-SVG) version. Return the full absolute URL. Return null if not found.
+      - favicon_url: The URL from <link rel="icon"> or <link rel="shortcut icon">. Prefer PNG format. Return the full absolute URL. Return null if not found.
       - dark_mode: true if the site primarily uses a dark background theme, false otherwise.
       - Do NOT return generic colors like pure black (#000000) or pure white (#ffffff) as the primary color unless the brand truly uses them.
       - If you cannot determine a color, use a reasonable default based on any brand colors you can find.
