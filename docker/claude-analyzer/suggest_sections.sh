@@ -79,6 +79,32 @@ DO NOT suggest sections that:
 - Are too narrow (only 1-2 articles)
 - Are generic (e.g., "features", "help", "guides", "overview")
 
+ICON SELECTION - Choose the most appropriate icon for each section from this list:
+- document-text (general docs)
+- paper-airplane (getting started / launch)
+- clipboard-document-list (tasks / checklists)
+- cog-6-tooth (settings / configuration)
+- wrench-screwdriver (troubleshooting / fixes)
+- book-open (documentation / guides)
+- code-bracket (API / code)
+- puzzle-piece (integrations / plugins)
+- shield-check (security / privacy)
+- chart-bar (analytics / reporting)
+- users (team / user management)
+- credit-card (billing / payments)
+- sparkles (new features / highlights)
+- light-bulb (tips / ideas)
+- bolt (quick actions / performance)
+- globe-alt (web / international)
+- key (authentication / access)
+- cube (components / modules)
+- command-line (CLI / terminal)
+- academic-cap (learning / tutorials)
+- megaphone (announcements / updates)
+- calendar (scheduling / events)
+- beaker (experiments / beta)
+- bell (notifications / alerts)
+
 OUTPUT FORMAT - Return ONLY a valid JSON object:
 {
   "sections": [
@@ -86,7 +112,8 @@ OUTPUT FORMAT - Return ONLY a valid JSON object:
       "name": "Section Name",
       "slug": "section-name",
       "description": "Brief description of what articles belong in this section",
-      "justification": "Why this section would be valuable for the target users"
+      "justification": "Why this section would be valuable for the target users",
+      "icon": "icon-name-from-list-above"
     }
   ]
 }

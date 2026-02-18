@@ -165,11 +165,15 @@ class SuggestSectionsJob < ApplicationJob
       slug = sec["slug"] || sec["name"].to_s.parameterize
       next if project.sections.exists?(slug: slug)
 
+      icon = sec["icon"]
+      icon = nil unless icon.present? && Section::ICON_OPTIONS.include?(icon)
+
       project.sections.create!(
         name: sec["name"],
         slug: slug,
         description: sec["description"],
         justification: sec["justification"],
+        icon: icon,
         position: max_position + index + 1,
         section_type: :ai_generated,
         status: :pending
