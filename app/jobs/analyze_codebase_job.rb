@@ -35,6 +35,10 @@ class AnalyzeCodebaseJob < ApplicationJob
           contextual_questions: result[:contextual_questions]
         )
         Rails.logger.info "[AnalyzeCodebaseJob] Analysis completed for project #{project.id}"
+
+        # Apply style_context colors to branding as a fallback (won't overwrite existing values)
+        apply_style_context_to_branding(project, result[:metadata]&.dig("style_context"))
+
         broadcast_toast(project, message: "We've finished analysing your codebase", action_url: "/onboarding/projects/#{project.slug}/analyze", action_label: "View", event_type: "analysis_complete", notification_metadata: { repo_count: project.project_repositories.count })
         if result[:contextual_questions].present?
           Rails.logger.info "[AnalyzeCodebaseJob] Generated #{result[:contextual_questions].size} contextual questions"
@@ -351,6 +355,34 @@ class AnalyzeCodebaseJob < ApplicationJob
     token
   rescue => e
     Rails.logger.error "[AnalyzeCodebaseJob] Failed to get GitHub App token: #{e.message}"
+    nil
+  end
+
+  def apply_style_context_to_branding(project, style_context)
+    return unless style_context.is_a?(Hash)
+
+    colors = style_context["brand_colors"] || style_context["colors"] || {}
+    primary = colors["primary"] || colors["main"]
+    accent = colors["secondary"] || colors["accent"]
+
+    return if primary.blank? && accent.blank?
+
+    branding = project.branding || {}
+
+    # Only fill in colors that aren't already set (e.g., by ExtractBrandingJob)
+    branding["primary_color"] = normalize_hex_color(primary) if branding["primary_color"].blank? && primary.present?
+    branding["accent_color"] = normalize_hex_color(accent) if branding["accent_color"].blank? && accent.present?
+
+    project.update!(branding: branding)
+    Rails.logger.info "[AnalyzeCodebaseJob] Applied style_context colors to branding for project #{project.id}"
+  rescue StandardError => e
+    Rails.logger.warn "[AnalyzeCodebaseJob] Failed to apply style_context: #{e.message}"
+  end
+
+  def normalize_hex_color(color)
+    return nil if color.blank?
+    color = "##{color}" unless color.start_with?("#")
+    return color if color.match?(/\A#[0-9a-fA-F]{6}\z/)
     nil
   end
 

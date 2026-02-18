@@ -132,6 +132,12 @@ module Onboarding
           }
         end
       end
+
+      # Pre-fill website URL from saved value or GitHub repo homepage
+      @suggested_website_url = @project.website_url
+      if @suggested_website_url.blank?
+        @suggested_website_url = fetch_repo_homepage_url
+      end
     end
 
     def save_setup
@@ -177,6 +183,13 @@ module Onboarding
       end
 
       @project.save(validate: false)
+
+      # Save website URL and enqueue branding extraction
+      website_url = params.dig(:project, :website_url).presence
+      if website_url.present?
+        @project.update_column(:website_url, website_url)
+        ExtractBrandingJob.perform_later(@project.id, website_url)
+      end
 
       # Save branch selections per repo
       repo_branches = params[:repo_branches] || {}
@@ -316,6 +329,20 @@ module Onboarding
 
       # Redirect to correct step
       redirect_to send("#{expected_step}_onboarding_project_path", @project)
+    end
+
+    def fetch_repo_homepage_url
+      repo = @project.primary_repository
+      return nil unless repo
+
+      client = repo.client
+      return nil unless client
+
+      github_repo_info = client.repository(repo.github_repo)
+      github_repo_info&.homepage.presence
+    rescue => e
+      Rails.logger.debug "[Onboarding] Could not fetch repo homepage: #{e.message}"
+      nil
     end
 
     def context_params

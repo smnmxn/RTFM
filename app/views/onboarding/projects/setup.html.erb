@@ -43,6 +43,15 @@
         <% end %>
       </div>
 
+      <div>
+        <label for="project_website_url" class="block text-sm font-medium app-text-secondary mb-1">Website URL <span class="app-text-muted font-normal">(optional)</span></label>
+        <input type="url" name="project[website_url]" id="project_website_url"
+               value="<%= @suggested_website_url %>"
+               class="w-full px-3 py-2 app-input rounded-lg"
+               placeholder="https://yourapp.com" />
+        <p class="mt-1 text-xs app-text-secondary">Used to automatically configure your branding colors and logo.</p>
+      </div>
+
       <!-- Support Contact (Optional) -->
       <div class="border-t app-border pt-6">
         <h3 class="text-sm font-medium app-text-secondary mb-1">Support Contact <span class="app-text-muted font-normal">(optional)</span></h3>
