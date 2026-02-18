@@ -26,5 +26,8 @@ module Rtfm
 
     # Use Sidekiq for background job processing
     config.active_job.queue_adapter = :sidekiq
+
+    # Allow SVG logos to be served inline (Active Storage defaults to attachment for SVGs)
+    config.active_storage.content_types_allowed_inline += %w[image/svg+xml]
   end
 end

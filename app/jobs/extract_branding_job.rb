@@ -1,7 +1,8 @@
 class ExtractBrandingJob < ApplicationJob
   queue_as :default
 
-  def perform(project_id, website_url)
+  def perform(project_id, website_url, force: false)
+    @force = force
     project = Project.find_by(id: project_id)
     return unless project
 
@@ -20,19 +21,31 @@ class ExtractBrandingJob < ApplicationJob
 
   private
 
+  # Default branding colors that should be treated as "not yet configured"
+  DEFAULT_COLORS = %w[#4f46e5 #7c3aed].freeze
+
   def apply_branding(project, result)
     branding = project.branding || {}
 
-    # Only set colors that are currently blank (don't overwrite manual settings)
-    branding["primary_color"] = result.primary_color if branding["primary_color"].blank? && result.primary_color.present?
-    branding["accent_color"] = result.accent_color if branding["accent_color"].blank? && result.accent_color.present?
-    branding["dark_mode"] = result.dark_mode if branding["dark_mode"].nil?
+    if @force
+      branding["primary_color"] = result.primary_color if result.primary_color.present?
+      branding["accent_color"] = result.accent_color if result.accent_color.present?
+      branding["dark_mode"] = result.dark_mode
+    else
+      branding["primary_color"] = result.primary_color if color_is_default?(branding["primary_color"]) && result.primary_color.present?
+      branding["accent_color"] = result.accent_color if color_is_default?(branding["accent_color"]) && result.accent_color.present?
+      branding["dark_mode"] = result.dark_mode if branding["dark_mode"].nil?
+    end
 
     project.update!(branding: branding)
   end
 
+  def color_is_default?(color)
+    color.blank? || DEFAULT_COLORS.include?(color)
+  end
+
   def attach_logo(project, result)
-    return if project.logo.attached?
+    return if project.logo.attached? && !@force
 
     # Try logo first, fall back to favicon
     image_url = result.logo_url.presence || result.favicon_url.presence

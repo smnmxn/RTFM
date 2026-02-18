@@ -358,6 +358,9 @@ class AnalyzeCodebaseJob < ApplicationJob
     nil
   end
 
+  # Default branding colors that should be treated as "not yet configured"
+  DEFAULT_BRANDING_COLORS = %w[#4f46e5 #7c3aed].freeze
+
   def apply_style_context_to_branding(project, style_context)
     return unless style_context.is_a?(Hash)
 
@@ -369,9 +372,9 @@ class AnalyzeCodebaseJob < ApplicationJob
 
     branding = project.branding || {}
 
-    # Only fill in colors that aren't already set (e.g., by ExtractBrandingJob)
-    branding["primary_color"] = normalize_hex_color(primary) if branding["primary_color"].blank? && primary.present?
-    branding["accent_color"] = normalize_hex_color(accent) if branding["accent_color"].blank? && accent.present?
+    # Only fill in colors that aren't already set by the user (defaults are fair game)
+    branding["primary_color"] = normalize_hex_color(primary) if color_is_default?(branding["primary_color"]) && primary.present?
+    branding["accent_color"] = normalize_hex_color(accent) if color_is_default?(branding["accent_color"]) && accent.present?
 
     project.update!(branding: branding)
     Rails.logger.info "[AnalyzeCodebaseJob] Applied style_context colors to branding for project #{project.id}"
@@ -384,6 +387,10 @@ class AnalyzeCodebaseJob < ApplicationJob
     color = "##{color}" unless color.start_with?("#")
     return color if color.match?(/\A#[0-9a-fA-F]{6}\z/)
     nil
+  end
+
+  def color_is_default?(color)
+    color.blank? || DEFAULT_BRANDING_COLORS.include?(color)
   end
 
   def broadcast_onboarding_update(project)

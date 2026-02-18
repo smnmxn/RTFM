@@ -188,7 +188,7 @@ module Onboarding
       website_url = params.dig(:project, :website_url).presence
       if website_url.present?
         @project.update_column(:website_url, website_url)
-        ExtractBrandingJob.perform_later(@project.id, website_url)
+        ExtractBrandingJob.perform_later(@project.id, website_url, force: true)
       end
 
       # Save branch selections per repo
