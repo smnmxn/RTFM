@@ -4,13 +4,16 @@
 <% active ||= nil %>
 <% theme ||= "light" %>
 <% dark = theme == "dark" %>
-<header class="<%= dark ? 'absolute top-0 left-0 right-0 z-30 bg-transparent' : 'bg-white border-b border-slate-200' %>">
+<header class="<%= dark ? 'absolute top-0 left-0 right-0 z-30 bg-transparent' : 'bg-white border-b border-slate-200' %>"
+        data-controller="mobile-menu">
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
     <div class="flex items-center justify-between">
       <a href="/" class="flex items-center hover:opacity-80 transition-opacity">
         <%= render "shared/logo", theme: theme %>
       </a>
-      <nav class="flex items-center gap-6 text-sm">
+
+      <!-- Desktop nav -->
+      <nav class="hidden sm:flex items-center gap-6 text-sm">
         <a href="/how-it-works"
            class="<%= dark ? (active == 'how-it-works' ? 'text-white font-semibold' : 'text-zinc-400 hover:text-white') : (active == 'how-it-works' ? 'text-slate-900 font-semibold' : 'text-slate-600 hover:text-slate-900') %> transition-colors">
           How it Works
@@ -30,6 +33,45 @@
           Sign in
         </a>
       </nav>
+
+      <!-- Mobile hamburger button -->
+      <button class="sm:hidden p-2 rounded-lg <%= dark ? 'text-zinc-300 hover:text-white hover:bg-white/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' %> transition-colors"
+              data-action="click->mobile-menu#toggle"
+              aria-label="Toggle menu">
+        <!-- Hamburger icon -->
+        <svg data-mobile-menu-target="openIcon" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+        <!-- Close icon -->
+        <svg data-mobile-menu-target="closeIcon" class="w-6 h-6 hidden" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
   </div>
+
+  <!-- Mobile menu panel -->
+  <nav data-mobile-menu-target="menu"
+       class="hidden sm:hidden border-t <%= dark ? 'border-zinc-700/50 bg-zinc-900/95 backdrop-blur-sm' : 'border-slate-200 bg-white' %>">
+    <div class="max-w-4xl mx-auto px-4 py-3 space-y-1">
+      <a href="/how-it-works"
+         class="block px-3 py-2.5 rounded-lg text-sm font-medium <%= dark ? (active == 'how-it-works' ? 'text-white bg-white/10' : 'text-zinc-300 hover:text-white hover:bg-white/5') : (active == 'how-it-works' ? 'text-slate-900 bg-slate-100' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50') %> transition-colors">
+        How it Works
+      </a>
+      <a href="https://help.supportpages.io"
+         target="_blank"
+         rel="noopener noreferrer"
+         class="block px-3 py-2.5 rounded-lg text-sm font-medium <%= dark ? (active == 'help' ? 'text-white bg-white/10' : 'text-zinc-300 hover:text-white hover:bg-white/5') : (active == 'help' ? 'text-slate-900 bg-slate-100' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50') %> transition-colors">
+        Help
+      </a>
+      <a href="/legal"
+         class="block px-3 py-2.5 rounded-lg text-sm font-medium <%= dark ? (active == 'trust' ? 'text-white bg-white/10' : 'text-zinc-300 hover:text-white hover:bg-white/5') : (active == 'trust' ? 'text-slate-900 bg-slate-100' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50') %> transition-colors">
+        Trust Center
+      </a>
+      <a href="/login"
+         class="block px-3 py-2.5 rounded-lg text-sm font-medium <%= dark ? (active == 'login' ? 'text-white bg-white/10' : 'text-zinc-300 hover:text-white hover:bg-white/5') : (active == 'login' ? 'text-slate-900 bg-slate-100' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50') %> transition-colors">
+        Sign in
+      </a>
+    </div>
+  </nav>
 </header>
