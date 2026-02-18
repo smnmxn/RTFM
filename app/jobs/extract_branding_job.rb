@@ -47,23 +47,11 @@ class ExtractBrandingJob < ApplicationJob
   def attach_logo(project, result)
     return if project.logo.attached? && !@force
 
-    # Try each candidate URL, skipping SVGs
-    candidates = [result.logo_url, result.favicon_url].compact_blank
-    image_data = nil
-    image_url = nil
+    # Try logo first, fall back to favicon
+    image_url = result.logo_url.presence || result.favicon_url.presence
+    return unless image_url
 
-    candidates.each do |url|
-      next if svg_url?(url)
-
-      data = download_image(url)
-      next unless data
-      next if svg_content?(data)
-
-      image_data = data
-      image_url = url
-      break
-    end
-
+    image_data = download_image(image_url)
     return unless image_data
 
     filename = File.basename(URI.parse(image_url).path).presence || "logo"
@@ -82,14 +70,6 @@ class ExtractBrandingJob < ApplicationJob
     Rails.logger.info "[ExtractBrandingJob] Attached logo for project #{project.id} from #{image_url}"
   rescue StandardError => e
     Rails.logger.warn "[ExtractBrandingJob] Failed to attach logo for project #{project.id}: #{e.message}"
-  end
-
-  def svg_url?(url)
-    url.to_s.downcase.end_with?(".svg") || url.to_s.include?(".svg?")
-  end
-
-  def svg_content?(data)
-    data.include?("<svg") || data.start_with?("<?xml")
   end
 
   def download_image(url, redirects = 0)
