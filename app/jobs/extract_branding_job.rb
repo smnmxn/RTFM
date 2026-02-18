@@ -15,6 +15,7 @@ class ExtractBrandingJob < ApplicationJob
 
     apply_branding(project, result)
     attach_logo(project, result)
+    attach_favicon(project, result)
   rescue StandardError => e
     Rails.logger.error "[ExtractBrandingJob] Error for project #{project_id}: #{e.message}"
   end
@@ -70,6 +71,31 @@ class ExtractBrandingJob < ApplicationJob
     Rails.logger.info "[ExtractBrandingJob] Attached logo for project #{project.id} from #{image_url}"
   rescue StandardError => e
     Rails.logger.warn "[ExtractBrandingJob] Failed to attach logo for project #{project.id}: #{e.message}"
+  end
+
+  def attach_favicon(project, result)
+    return if project.favicon.attached? && !@force
+    return if result.favicon_url.blank?
+
+    image_data = download_image(result.favicon_url)
+    return unless image_data
+
+    filename = File.basename(URI.parse(result.favicon_url).path).presence || "favicon"
+    filename = "#{filename}.png" unless filename.include?(".")
+    content_type = detect_content_type(image_data, filename)
+
+    io = StringIO.new(image_data)
+    io.binmode
+
+    project.favicon.attach(
+      io: io,
+      filename: filename,
+      content_type: content_type
+    )
+
+    Rails.logger.info "[ExtractBrandingJob] Attached favicon for project #{project.id} from #{result.favicon_url}"
+  rescue StandardError => e
+    Rails.logger.warn "[ExtractBrandingJob] Failed to attach favicon for project #{project.id}: #{e.message}"
   end
 
   def download_image(url, redirects = 0)

@@ -117,7 +117,9 @@
       .animate-cursor-blink { animation: cursor-blink 0.8s ease-in-out infinite; }
     </style>
 
-    <% if @project.logo.attached? %>
+    <% if @project.favicon.attached? %>
+      <link rel="icon" href="<%= url_for(@project.favicon) %>" type="<%= @project.favicon.content_type %>">
+    <% elsif @project.logo.attached? %>
       <link rel="icon" href="<%= url_for(@project.logo) %>" type="<%= @project.logo.content_type %>">
     <% else %>
       <link rel="icon" href="/icon.png" type="image/png">

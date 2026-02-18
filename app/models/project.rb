@@ -19,8 +19,9 @@ class Project < ApplicationRecord
   has_many :article_update_checks, dependent: :destroy
   has_many :pending_notifications, dependent: :destroy
 
-  # Logo upload via Active Storage
+  # Logo and favicon uploads via Active Storage
   has_one_attached :logo
+  has_one_attached :favicon
 
   # User-provided context (collected during onboarding)
   store :user_context, accessors: [
