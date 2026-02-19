@@ -3,6 +3,11 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["menu", "openIcon", "closeIcon"]
 
+  connect() {
+    // Reset to closed state on connect (fixes Turbo cache restoration)
+    this.close()
+  }
+
   toggle() {
     const isHidden = this.menuTarget.classList.contains("hidden")
     if (isHidden) {
