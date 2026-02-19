@@ -1,4 +1,6 @@
 class SessionsController < ApplicationController
+  include Trackable
+
   skip_before_action :require_authentication, only: [ :new, :create, :failure, :destroy ]
 
   def new

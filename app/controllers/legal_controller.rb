@@ -1,4 +1,6 @@
 class LegalController < ApplicationController
+  include Trackable
+
   skip_before_action :require_authentication
   layout "legal"
 

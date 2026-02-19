@@ -47,6 +47,13 @@
             <%= heroicon "rectangle-stack", options: { class: "w-4 h-4" } %>
             Projects
           <% end %>
+          <% if current_user.admin? %>
+            <%= link_to analytics_path,
+                class: "flex items-center gap-2 px-3 py-2 text-sm app-text-secondary hover:app-text hover:app-surface-alt transition-colors" do %>
+              <%= heroicon "chart-bar", options: { class: "w-4 h-4" } %>
+              Analytics
+            <% end %>
+          <% end %>
           <%= link_to "https://help.supportpages.io", target: "_blank",
               class: "flex items-center gap-2 px-3 py-2 text-sm app-text-secondary hover:app-text hover:app-surface-alt transition-colors" do %>
             <%= heroicon "question-mark-circle", options: { class: "w-4 h-4" } %>

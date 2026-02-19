@@ -17,6 +17,9 @@ Rails.application.routes.draw do
   # Invites (bare domain)
   get "/invite/:token", to: "invites#show", as: :invite
 
+  # Analytics tracking endpoint (bare domain, public)
+  post "/t", to: "analytics_events#create", as: :analytics_track
+
   # Waitlist (bare domain)
   post "/waitlist", to: "waitlist#create", as: :waitlist
   get "/waitlist/questions/:token", to: "waitlist_questions#show", as: :waitlist_questions
@@ -77,6 +80,9 @@ Rails.application.routes.draw do
     if Rails.env.development?
       mount LetterOpenerWeb::Engine, at: "/letter_opener"
     end
+
+    # Analytics dashboard
+    get "/analytics", to: "analytics#show", as: :analytics
 
     # GitHub App installation
     get "/github_app/install", to: "github_app#install", as: :github_app_install

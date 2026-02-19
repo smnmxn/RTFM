@@ -69,6 +69,7 @@ import StaggerController from "controllers/stagger_controller"
 import HoverLiftController from "controllers/hover_lift_controller"
 import ScrollRevealController from "controllers/scroll_reveal_controller"
 import MobileMenuController from "controllers/mobile_menu_controller"
+import AnalyticsTrackingController from "controllers/analytics_controller"
 // Color picker — dev tool for experimenting with landing page themes.
 // To re-enable: uncomment the import + registration below, then add
 // data-controller="color-picker" to the landing page wrapper div.
@@ -115,4 +116,5 @@ application.register("stagger", StaggerController)
 application.register("hover-lift", HoverLiftController)
 application.register("scroll-reveal", ScrollRevealController)
 application.register("mobile-menu", MobileMenuController)
+application.register("analytics", AnalyticsTrackingController)
 // application.register("color-picker", ColorPickerController)

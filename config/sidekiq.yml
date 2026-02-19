@@ -3,6 +3,7 @@
   - default
   - mailers
   - analysis
+  - low
 
 development:
   :concurrency: 5

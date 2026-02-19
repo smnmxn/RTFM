@@ -6,6 +6,10 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: true
   validates :github_uid, uniqueness: true, allow_nil: true
 
+  def admin?
+    admin
+  end
+
   # Onboarding helpers
   def needs_onboarding?
     projects.empty?

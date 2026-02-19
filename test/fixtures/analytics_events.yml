@@ -1,0 +1,78 @@
+page_view_home:
+  visitor_id: "550e8400-e29b-41d4-a716-446655440000"
+  event_type: "page_view"
+  page_path: "/"
+  referrer_url: "https://google.com/search?q=supportpages"
+  referrer_host: "google.com"
+  utm_source: "google"
+  utm_medium: "organic"
+  device_type: "desktop"
+  browser_family: "Chrome"
+  os_family: "macOS"
+  created_at: <%= 2.days.ago.to_fs(:db) %>
+
+page_view_hiw:
+  visitor_id: "550e8400-e29b-41d4-a716-446655440000"
+  event_type: "page_view"
+  page_path: "/how-it-works"
+  device_type: "desktop"
+  browser_family: "Chrome"
+  os_family: "macOS"
+  created_at: <%= 2.days.ago.to_fs(:db) %>
+
+page_view_mobile:
+  visitor_id: "660e8400-e29b-41d4-a716-446655440001"
+  event_type: "page_view"
+  page_path: "/"
+  device_type: "mobile"
+  browser_family: "Safari"
+  os_family: "iOS"
+  created_at: <%= 1.day.ago.to_fs(:db) %>
+
+video_play:
+  visitor_id: "550e8400-e29b-41d4-a716-446655440000"
+  event_type: "video_play"
+  event_data: '{"duration":90}'
+  page_path: "/"
+  device_type: "desktop"
+  browser_family: "Chrome"
+  os_family: "macOS"
+  created_at: <%= 2.days.ago.to_fs(:db) %>
+
+video_progress_50:
+  visitor_id: "550e8400-e29b-41d4-a716-446655440000"
+  event_type: "video_progress"
+  event_data: '{"progress":50,"current_time":45,"duration":90}'
+  page_path: "/"
+  device_type: "desktop"
+  browser_family: "Chrome"
+  os_family: "macOS"
+  created_at: <%= 2.days.ago.to_fs(:db) %>
+
+waitlist_submit:
+  visitor_id: "660e8400-e29b-41d4-a716-446655440001"
+  event_type: "waitlist_submit"
+  page_path: "/"
+  device_type: "mobile"
+  browser_family: "Safari"
+  os_family: "iOS"
+  created_at: <%= 1.day.ago.to_fs(:db) %>
+
+cta_click_github:
+  visitor_id: "550e8400-e29b-41d4-a716-446655440000"
+  event_type: "cta_click"
+  event_data: '{"cta":"github_signin"}'
+  page_path: "/"
+  device_type: "desktop"
+  browser_family: "Chrome"
+  os_family: "macOS"
+  created_at: <%= 2.days.ago.to_fs(:db) %>
+
+old_page_view:
+  visitor_id: "770e8400-e29b-41d4-a716-446655440002"
+  event_type: "page_view"
+  page_path: "/"
+  device_type: "desktop"
+  browser_family: "Firefox"
+  os_family: "Linux"
+  created_at: <%= 60.days.ago.to_fs(:db) %>

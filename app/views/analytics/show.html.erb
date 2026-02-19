@@ -1,0 +1,203 @@
+<% content_for(:title) { "Analytics - supportpages.io" } %>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <%= render "shared/app_header" %>
+
+  <div class="mt-6">
+    <h1 class="text-2xl font-bold app-text" style="font-family: var(--app-font-display);">Analytics</h1>
+    <p class="mt-1 text-sm app-text-muted">Public page visitor engagement</p>
+  </div>
+
+  <!-- Period selector -->
+  <div class="mt-4 flex gap-2">
+    <% %w[7d 30d 90d].each do |period| %>
+      <%= link_to period,
+          analytics_path(period: period),
+          class: "px-3 py-1.5 text-sm font-medium rounded-lg transition-colors #{@period == period ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'app-text-muted hover:app-text app-surface-alt'}" %>
+    <% end %>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="app-surface rounded-xl border app-border p-5">
+      <p class="text-sm app-text-muted">Page Views</p>
+      <p class="mt-1 text-3xl font-bold app-text"><%= number_with_delimiter(@data[:summary][:total_page_views]) %></p>
+    </div>
+    <div class="app-surface rounded-xl border app-border p-5">
+      <p class="text-sm app-text-muted">Unique Visitors</p>
+      <p class="mt-1 text-3xl font-bold app-text"><%= number_with_delimiter(@data[:summary][:unique_visitors]) %></p>
+    </div>
+    <div class="app-surface rounded-xl border app-border p-5">
+      <p class="text-sm app-text-muted">Video Plays</p>
+      <p class="mt-1 text-3xl font-bold app-text"><%= number_with_delimiter(@data[:engagement][:video_plays]) %></p>
+    </div>
+    <div class="app-surface rounded-xl border app-border p-5">
+      <p class="text-sm app-text-muted">Waitlist Signups</p>
+      <p class="mt-1 text-3xl font-bold app-text"><%= number_with_delimiter(@data[:engagement][:waitlist_submits]) %></p>
+    </div>
+  </div>
+
+  <!-- Daily views chart -->
+  <div class="mt-6 app-surface rounded-xl border app-border p-5">
+    <h2 class="text-sm font-semibold app-text mb-4">Daily Page Views</h2>
+    <% max_views = @data[:daily_views].map { |d| d[:views] }.max || 1 %>
+    <div class="flex items-end gap-px h-40">
+      <% @data[:daily_views].each do |day| %>
+        <% height = max_views > 0 ? (day[:views].to_f / max_views * 100).round : 0 %>
+        <div class="flex-1 group relative">
+          <div class="bg-zinc-700 dark:bg-zinc-500 rounded-t-sm transition-colors group-hover:bg-zinc-500 dark:group-hover:bg-zinc-300"
+               style="height: <%= [height, 2].max %>%; min-height: 2px;">
+          </div>
+          <div class="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs app-surface rounded shadow app-text whitespace-nowrap border app-border z-10">
+            <%= day[:date] %><br><%= day[:views] %> views / <%= day[:uniques] %> unique
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Engagement section -->
+  <div class="mt-6 app-surface rounded-xl border app-border p-5">
+    <h2 class="text-sm font-semibold app-text mb-4">Engagement</h2>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div>
+        <p class="text-xs app-text-muted">Video Play Rate</p>
+        <% play_rate = @data[:summary][:unique_visitors] > 0 ? (@data[:engagement][:video_plays].to_f / @data[:summary][:unique_visitors] * 100).round(1) : 0 %>
+        <p class="text-lg font-semibold app-text"><%= play_rate %>%</p>
+      </div>
+      <div>
+        <p class="text-xs app-text-muted">Avg Watch Progress</p>
+        <p class="text-lg font-semibold app-text"><%= @data[:engagement][:avg_video_progress] %>%</p>
+      </div>
+      <div>
+        <p class="text-xs app-text-muted">Waitlist Conversion</p>
+        <% waitlist_rate = @data[:summary][:unique_visitors] > 0 ? (@data[:engagement][:waitlist_submits].to_f / @data[:summary][:unique_visitors] * 100).round(1) : 0 %>
+        <p class="text-lg font-semibold app-text"><%= waitlist_rate %>%</p>
+      </div>
+      <div>
+        <p class="text-xs app-text-muted">CTA Clicks</p>
+        <p class="text-lg font-semibold app-text"><%= number_with_delimiter(@data[:engagement][:cta_clicks]) %></p>
+      </div>
+    </div>
+
+    <% if @data[:engagement][:cta_detail].any? %>
+      <div class="mt-4 pt-4 border-t app-border">
+        <p class="text-xs app-text-muted mb-2">CTA Breakdown</p>
+        <div class="flex flex-wrap gap-2">
+          <% @data[:engagement][:cta_detail].sort_by { |_, v| -v }.each do |cta, count| %>
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium app-surface-alt app-text">
+              <%= cta.to_s.humanize %> <span class="app-text-muted"><%= count %></span>
+            </span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Funnel -->
+  <% if @data[:funnel][:steps].any? %>
+    <div class="mt-6 app-surface rounded-xl border app-border p-5">
+      <h2 class="text-sm font-semibold app-text mb-4">Conversion Funnel</h2>
+      <div class="flex items-center gap-2">
+        <% @data[:funnel][:steps].each_with_index do |step, i| %>
+          <div class="flex-1 text-center">
+            <p class="text-xs app-text-muted"><%= step[:name] %></p>
+            <p class="text-lg font-semibold app-text"><%= number_with_delimiter(step[:count]) %></p>
+          </div>
+          <% if i < @data[:funnel][:steps].size - 1 %>
+            <div class="text-xs app-text-muted flex flex-col items-center">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+              <span><%= @data[:funnel][:rates][i][:rate] %>%</span>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Two-column: Top Pages + Top Referrers -->
+  <div class="mt-6 grid lg:grid-cols-2 gap-6">
+    <div class="app-surface rounded-xl border app-border p-5">
+      <h2 class="text-sm font-semibold app-text mb-4">Top Pages</h2>
+      <% if @data[:top_pages].any? %>
+        <div class="space-y-2">
+          <% @data[:top_pages].each do |page| %>
+            <div class="flex justify-between items-center text-sm">
+              <span class="app-text truncate mr-2"><%= page[:path] %></span>
+              <span class="app-text-muted flex-shrink-0"><%= number_with_delimiter(page[:views]) %></span>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-sm app-text-muted">No data yet</p>
+      <% end %>
+    </div>
+
+    <div class="app-surface rounded-xl border app-border p-5">
+      <h2 class="text-sm font-semibold app-text mb-4">Top Referrers</h2>
+      <% if @data[:top_referrers].any? %>
+        <div class="space-y-2">
+          <% @data[:top_referrers].each do |ref| %>
+            <div class="flex justify-between items-center text-sm">
+              <span class="app-text truncate mr-2"><%= ref[:host] %></span>
+              <span class="app-text-muted flex-shrink-0"><%= number_with_delimiter(ref[:views]) %></span>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-sm app-text-muted">No referrer data yet</p>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Two-column: UTM Sources + Devices -->
+  <div class="mt-6 grid lg:grid-cols-2 gap-6">
+    <div class="app-surface rounded-xl border app-border p-5">
+      <h2 class="text-sm font-semibold app-text mb-4">UTM Sources</h2>
+      <% if @data[:utm_breakdown].any? %>
+        <div class="space-y-2">
+          <% @data[:utm_breakdown].each do |utm| %>
+            <div class="flex justify-between items-center text-sm">
+              <span class="app-text truncate mr-2"><%= utm[:source] %></span>
+              <span class="app-text-muted flex-shrink-0"><%= number_with_delimiter(utm[:views]) %></span>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-sm app-text-muted">No UTM data yet</p>
+      <% end %>
+    </div>
+
+    <div class="app-surface rounded-xl border app-border p-5">
+      <h2 class="text-sm font-semibold app-text mb-4">Devices & Browsers</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs app-text-muted mb-2">Device Type</p>
+          <% if @data[:device_breakdown].any? %>
+            <% @data[:device_breakdown].sort_by { |_, v| -v }.each do |device, count| %>
+              <div class="flex justify-between items-center text-sm mb-1">
+                <span class="app-text capitalize"><%= device %></span>
+                <span class="app-text-muted"><%= number_with_delimiter(count) %></span>
+              </div>
+            <% end %>
+          <% else %>
+            <p class="text-sm app-text-muted">No data</p>
+          <% end %>
+        </div>
+        <div>
+          <p class="text-xs app-text-muted mb-2">Browser</p>
+          <% if @data[:browser_breakdown].any? %>
+            <% @data[:browser_breakdown].sort_by { |_, v| -v }.each do |browser, count| %>
+              <div class="flex justify-between items-center text-sm mb-1">
+                <span class="app-text"><%= browser %></span>
+                <span class="app-text-muted"><%= number_with_delimiter(count) %></span>
+              </div>
+            <% end %>
+          <% else %>
+            <p class="text-sm app-text-muted">No data</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -30,6 +30,12 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def require_admin
+    unless current_user&.admin?
+      redirect_to projects_path, alert: "You don't have permission to access that page."
+    end
+  end
+
   def base_domain
     Rails.application.config.x.base_domain
   end
