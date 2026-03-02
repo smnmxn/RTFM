@@ -13,10 +13,10 @@ class AccountAnalyticsService
 
     total_events_by_project = events_in_period.group(:project_id).count
     last_active_by_project = events_in_period.group(:project_id).maximum(:created_at)
-    published_by_project = events_in_period.for_event("article.published").group(:project_id).count
 
     # All-time queries for structural data
     articles_by_project = Article.group(:project_id).count
+    published_by_project = Article.where(status: "published").group(:project_id).count
     custom_domains = Project.where.not(custom_domain: nil).where(custom_domain_status: "active")
       .pluck(:id, :custom_domain).to_h
 
@@ -73,9 +73,6 @@ class AccountAnalyticsService
     # Articles
     articles_count = project.articles.count
     published_count = Article.where(project: project, status: "published").count
-    if published_count == 0
-      published_count = ProductEvent.for_event("article.published").where(project_id: project.id).distinct.count
-    end
 
     # TTFV for this project
     ttfv = compute_ttfv_for_project(project.id)
@@ -119,7 +116,7 @@ class AccountAnalyticsService
       project: project,
       user: project.user,
       articles_count: articles_count,
-      articles_published: published_article_ids.size,
+      articles_published: published_count,
       ttfv_minutes: ttfv,
       approval_rate: review_total > 0 ? (approved.to_f / review_total * 100).round(1) : nil,
       articles_reviewed: review_total,

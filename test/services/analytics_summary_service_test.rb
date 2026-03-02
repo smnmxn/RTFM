@@ -92,4 +92,59 @@ class AnalyticsSummaryServiceTest < ActiveSupport::TestCase
       assert eng[:cta_detail].key?("github_signin")
     end
   end
+
+  test "returns prospect tracking data" do
+    prospects = @data[:prospect_tracking]
+    assert_kind_of Array, prospects
+  end
+
+  test "prospect tracking groups by utm_content" do
+    # Create test events with utm_content
+    visitor_id = SecureRandom.uuid
+    AnalyticsEvent.create!(
+      visitor_id: visitor_id,
+      event_type: "page_view",
+      page_path: "/",
+      utm_content: "acme-corp"
+    )
+    AnalyticsEvent.create!(
+      visitor_id: visitor_id,
+      event_type: "video_play",
+      page_path: "/",
+      utm_content: "acme-corp"
+    )
+
+    service = AnalyticsSummaryService.new(1.hour.ago, Time.current)
+    data = service.call
+    prospects = data[:prospect_tracking]
+
+    acme = prospects.find { |p| p[:prospect] == "acme-corp" }
+    assert acme, "Should find acme-corp prospect"
+    assert_equal 1, acme[:page_views]
+    assert_equal 1, acme[:video_plays]
+    assert acme[:last_active].present?
+  end
+
+  test "prospect tracking excludes events without utm_content" do
+    # Events without utm_content should not appear
+    visitor_id = SecureRandom.uuid
+    AnalyticsEvent.create!(
+      visitor_id: visitor_id,
+      event_type: "page_view",
+      page_path: "/",
+      utm_content: nil
+    )
+
+    service = AnalyticsSummaryService.new(1.hour.ago, Time.current)
+    data = service.call
+
+    # Should only include events with utm_content
+    if data[:prospect_tracking].any?
+      data[:prospect_tracking].each do |prospect|
+        assert prospect[:prospect].present?
+      end
+    else
+      assert_equal [], data[:prospect_tracking]
+    end
+  end
 end

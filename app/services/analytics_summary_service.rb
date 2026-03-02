@@ -12,6 +12,7 @@ class AnalyticsSummaryService
       top_pages: top_pages,
       top_referrers: top_referrers,
       utm_breakdown: utm_breakdown,
+      prospect_tracking: prospect_tracking,
       device_breakdown: device_breakdown,
       browser_breakdown: browser_breakdown,
       engagement: engagement,
@@ -79,6 +80,32 @@ class AnalyticsSummaryService
       .limit(10)
       .count
       .map { |source, count| { source: source, views: count } }
+  end
+
+  def prospect_tracking
+    prospect_events = @events.where.not(utm_content: [ nil, "" ])
+    return [] if prospect_events.empty?
+
+    # Group all events by utm_content
+    prospects_data = prospect_events.group_by(&:utm_content)
+
+    prospects_data.map do |utm_content, events|
+      page_views = events.select { |e| e.event_type == "page_view" }
+      video_plays = events.count { |e| e.event_type == "video_play" }
+      waitlist_submits = events.count { |e| e.event_type == "waitlist_submit" }
+      cta_clicks = events.count { |e| e.event_type == "cta_click" }
+
+      {
+        prospect: utm_content,
+        page_views: page_views.size,
+        unique_visitors: page_views.map(&:visitor_id).uniq.size,
+        video_plays: video_plays,
+        waitlist_submits: waitlist_submits,
+        cta_clicks: cta_clicks,
+        first_seen: events.map(&:created_at).min,
+        last_active: events.map(&:created_at).max
+      }
+    end.sort_by { |p| p[:last_active] }.reverse
   end
 
   def device_breakdown

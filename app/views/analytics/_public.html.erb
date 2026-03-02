@@ -131,6 +131,47 @@
   </div>
 </div>
 
+<!-- Prospect Tracking (full width) -->
+<% if @data[:prospect_tracking].any? %>
+  <div class="mt-6 app-surface rounded-xl border app-border p-5">
+    <h2 class="text-sm font-semibold app-text mb-4">Prospect Tracking</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b app-border">
+            <th class="text-left py-2 app-text font-medium">Prospect</th>
+            <th class="text-right py-2 app-text font-medium">Views</th>
+            <th class="text-right py-2 app-text font-medium">Visitors</th>
+            <th class="text-right py-2 app-text font-medium">Video Plays</th>
+            <th class="text-right py-2 app-text font-medium">Waitlist</th>
+            <th class="text-right py-2 app-text font-medium">CTA Clicks</th>
+            <th class="text-right py-2 app-text font-medium">Last Active</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @data[:prospect_tracking].each do |prospect| %>
+            <tr class="border-b app-border">
+              <td class="py-2 app-text font-medium"><%= prospect[:prospect] %></td>
+              <td class="text-right py-2 app-text-muted"><%= prospect[:page_views] %></td>
+              <td class="text-right py-2 app-text-muted"><%= prospect[:unique_visitors] %></td>
+              <td class="text-right py-2 app-text-muted"><%= prospect[:video_plays] %></td>
+              <td class="text-right py-2 app-text-muted">
+                <% if prospect[:waitlist_submits] > 0 %>
+                  <span class="text-green-600 dark:text-green-400 font-semibold"><%= prospect[:waitlist_submits] %></span>
+                <% else %>
+                  <%= prospect[:waitlist_submits] %>
+                <% end %>
+              </td>
+              <td class="text-right py-2 app-text-muted"><%= prospect[:cta_clicks] %></td>
+              <td class="text-right py-2 app-text-muted whitespace-nowrap"><%= time_ago_in_words(prospect[:last_active]) %> ago</td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% end %>
+
 <!-- Two-column: UTM Sources + Devices -->
 <div class="mt-6 grid lg:grid-cols-2 gap-6">
   <div class="app-surface rounded-xl border app-border p-5">
