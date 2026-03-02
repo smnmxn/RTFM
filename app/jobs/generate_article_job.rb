@@ -7,6 +7,7 @@ class GenerateArticleJob < ApplicationJob
   include DockerVolumeHelper
   include ClaudeUsageTracker
   include ToastNotifier
+  include ProductEventTracker
 
   queue_as :analysis
 
@@ -52,12 +53,14 @@ class GenerateArticleJob < ApplicationJob
           article.update!(update_attrs)
         end
         Rails.logger.info "[GenerateArticleJob] Article generation completed for article #{article.id}"
+        track_product_event("article.generated", user: project.user, project: project, article_id: article.id)
         broadcast_toast(project, message: "Your article is ready: #{article.title}", action_url: "/projects/#{project.slug}?tab=inbox&selected=article_#{article.id}", action_label: "View", event_type: "article_generated", notification_metadata: { article_title: article.title, article_id: article.id })
       else
         article.update!(
           content: placeholder_content(recommendation),
           generation_status: :generation_failed
         )
+        track_product_event("article.generation_failed", user: project.user, project: project, article_id: article.id)
         Rails.logger.warn "[GenerateArticleJob] Article generation failed for article #{article.id}: #{result[:error]}"
         broadcast_toast(project, message: "We couldn't generate #{article.title}", type: "error", action_url: "/projects/#{project.slug}?tab=inbox&selected=article_#{article.id}", action_label: "View", event_type: "article_generated", notification_metadata: { article_title: article.title, article_id: article.id })
       end

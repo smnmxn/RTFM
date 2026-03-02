@@ -25,6 +25,7 @@ module Onboarding
       @project.github_repo = "placeholder/placeholder"
 
       if @project.save(validate: false)
+        track_event("project.created")
         redirect_to repository_onboarding_project_path(@project)
       else
         redirect_to projects_path, alert: "Could not start onboarding"
@@ -106,6 +107,7 @@ module Onboarding
       end
 
       @project.advance_onboarding!("setup")
+      track_event("project.onboarding_step_completed", step: "repository")
       redirect_to setup_onboarding_project_path(@project)
     end
 
@@ -199,6 +201,7 @@ module Onboarding
       end
 
       @project.advance_onboarding!("analyze")
+      track_event("project.onboarding_step_completed", step: "setup")
       redirect_to analyze_onboarding_project_path(@project)
     end
 
@@ -222,6 +225,7 @@ module Onboarding
         )
         AnalyzeCodebaseJob.perform_later(@project.id)
       end
+      track_event("project.onboarding_step_completed", step: "analyze")
       redirect_to analyze_onboarding_project_path(@project)
     end
 
@@ -272,6 +276,7 @@ module Onboarding
 
       # Advance to generating step (will redirect to inbox when complete)
       @project.advance_onboarding!("generating")
+      track_event("project.onboarding_step_completed", step: "sections")
       redirect_to generating_onboarding_project_path(@project)
     end
 
@@ -280,6 +285,7 @@ module Onboarding
       # If all recommendations are generated, complete onboarding and redirect
       if @project.all_recommendations_generated?
         @project.complete_onboarding!
+        track_event("project.onboarding_completed")
         redirect_to project_path(@project), notice: "Your help centre is ready!"
         return
       end

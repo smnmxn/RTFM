@@ -21,6 +21,7 @@ class SectionsController < ApplicationController
     @section.position = @project.sections.maximum(:position).to_i + 1
 
     if @section.save
+      track_event("section.created", section_id: @section.id)
       respond_to do |format|
         format.json { render json: { success: true, redirect_url: project_path(@project, section: @section.id) } }
         format.turbo_stream { redirect_to project_sections_path(@project), notice: "Section created." }
@@ -53,6 +54,7 @@ class SectionsController < ApplicationController
   end
 
   def destroy
+    track_event("section.deleted", section_id: @section.id)
     @section.articles.update_all(section_id: nil)
     @section.recommendations.update_all(section_id: nil)
     @section.destroy

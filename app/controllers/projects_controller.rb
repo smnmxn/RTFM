@@ -101,6 +101,7 @@ class ProjectsController < ApplicationController
     article_created_at = @article.created_at
     @article.approve!
     @article.publish!
+    track_event("article.approved", article_id: @article.id)
 
     load_inbox_items
     @next_item = find_next_item_after_article(article_created_at)
@@ -115,6 +116,7 @@ class ProjectsController < ApplicationController
     @article = @project.articles.find(params[:article_id])
     article_created_at = @article.created_at
     @article.reject!
+    track_event("article.rejected", article_id: @article.id)
 
     load_inbox_items
     @next_item = find_next_item_after_article(article_created_at)
@@ -128,6 +130,7 @@ class ProjectsController < ApplicationController
   def undo_reject_article
     @article = @project.articles.find(params[:article_id])
     @article.update!(review_status: :unreviewed, reviewed_at: nil)
+    track_event("article.undo_rejected", article_id: @article.id)
 
     load_inbox_items
 
@@ -167,6 +170,7 @@ class ProjectsController < ApplicationController
 
     # Enqueue article generation job
     GenerateArticleJob.perform_later(article_id: @article.id)
+    track_event("recommendation.accepted", recommendation_id: @recommendation.id)
 
     load_inbox_items
     @next_item = find_next_item_after_recommendation(recommendation_created_at)
@@ -181,6 +185,7 @@ class ProjectsController < ApplicationController
     @recommendation = @project.recommendations.find(params[:recommendation_id])
     recommendation_created_at = @recommendation.created_at
     @recommendation.update!(status: :rejected, rejected_at: Time.current)
+    track_event("recommendation.rejected", recommendation_id: @recommendation.id)
 
     load_inbox_items
     @next_item = find_next_item_after_recommendation(recommendation_created_at)
@@ -450,6 +455,7 @@ class ProjectsController < ApplicationController
   end
 
   def start_over
+    track_event("project.start_over")
     # Clear all generated content
     @project.articles.destroy_all
     @project.recommendations.destroy_all
@@ -478,6 +484,7 @@ class ProjectsController < ApplicationController
     update_attrs[:subdomain] = subdomain_value.presence if params[:project]&.key?(:subdomain) || subdomain_value.present?
 
     if @project.update(update_attrs)
+      track_event("settings.branding_updated")
       @project.reload
       respond_to do |format|
         format.turbo_stream do
@@ -505,6 +512,7 @@ class ProjectsController < ApplicationController
 
   def upload_logo
     if params[:logo].present? && @project.logo.attach(params[:logo])
+      track_event("settings.logo_uploaded")
       respond_to do |format|
         format.turbo_stream
         format.json { render json: { success: true, url: url_for(@project.logo) } }
@@ -531,6 +539,7 @@ class ProjectsController < ApplicationController
     new_ai_settings = current_ai_settings.merge(ai_settings_params.to_h.stringify_keys)
 
     if @project.update(ai_settings: new_ai_settings)
+      track_event("settings.ai_settings_updated")
       @project.reload
       respond_to do |format|
         format.turbo_stream do
@@ -644,6 +653,7 @@ class ProjectsController < ApplicationController
   end
 
   def destroy
+    track_event("project.deleted")
     @project.destroy
     redirect_to projects_path, notice: "Project '#{@project.name}' disconnected."
   end
@@ -672,6 +682,7 @@ class ProjectsController < ApplicationController
       github_installation_id: installation.github_installation_id,
       is_primary: @project.project_repositories.empty?
     )
+    track_event("settings.repository_added", repo: repo_full_name)
 
     redirect_to project_path(@project, anchor: "settings"), notice: "Repository #{repo_full_name} added."
   end
@@ -689,6 +700,7 @@ class ProjectsController < ApplicationController
       @project.project_repositories.where.not(id: repo.id).first&.update!(is_primary: true)
     end
 
+    track_event("settings.repository_removed", repo: repo.github_repo)
     repo.destroy
 
     redirect_to project_path(@project, anchor: "settings"), notice: "Repository removed."
@@ -717,6 +729,7 @@ class ProjectsController < ApplicationController
     end
 
     if @project.update(custom_domain: custom_domain)
+      track_event("settings.custom_domain_added", domain: custom_domain)
       respond_to do |format|
         format.turbo_stream do
           render turbo_stream: turbo_stream.replace(
@@ -765,6 +778,7 @@ class ProjectsController < ApplicationController
   def remove_custom_domain
     old_cloudflare_id = @project.custom_domain_cloudflare_id
 
+    track_event("settings.custom_domain_removed")
     @project.update!(
       custom_domain: nil,
       custom_domain_status: nil,

@@ -7,6 +7,7 @@ class AnalyzeCodebaseJob < ApplicationJob
   include DockerVolumeHelper
   include ClaudeUsageTracker
   include ToastNotifier
+  include ProductEventTracker
 
   queue_as :analysis
 
@@ -34,6 +35,7 @@ class AnalyzeCodebaseJob < ApplicationJob
           project_overview: result[:overview],
           contextual_questions: result[:contextual_questions]
         )
+        track_product_event("analysis.codebase_analyzed", user: project.user, project: project)
         Rails.logger.info "[AnalyzeCodebaseJob] Analysis completed for project #{project.id}"
 
         # Apply style_context colors to branding as a fallback (won't overwrite existing values)

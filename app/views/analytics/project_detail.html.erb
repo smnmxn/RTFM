@@ -1,0 +1,139 @@
+<% content_for(:title) { "#{@project.name} - Project Analytics" } %>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <%= render "shared/app_header" %>
+
+  <!-- Back link -->
+  <div class="mt-6">
+    <%= link_to analytics_path(tab: "projects", period: @period), class: "text-sm app-text-muted hover:app-text transition-colors" do %>
+      &larr; Back to Projects
+    <% end %>
+  </div>
+
+  <!-- Header -->
+  <div class="mt-4 flex items-start justify-between">
+    <div>
+      <h1 class="text-2xl font-bold app-text" style="font-family: var(--app-font-display);"><%= @project.name %></h1>
+      <div class="mt-1 flex items-center gap-3 text-sm app-text-muted">
+        <span><%= @project.slug %></span>
+        <span><%= @user.name || @user.github_username || @user.email %></span>
+        <span>Created <%= @project.created_at.strftime("%b %d, %Y") %></span>
+        <% if @detail[:last_active_at] %>
+          <span>Last active <%= time_ago_in_words(@detail[:last_active_at]) %> ago</span>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Period selector -->
+    <div class="flex gap-2">
+      <% %w[7d 30d 90d].each do |period| %>
+        <%= link_to period,
+            analytics_project_path(@project, period: period),
+            class: "px-3 py-1.5 text-sm font-medium rounded-lg transition-colors #{@period == period ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'app-text-muted hover:app-text app-surface-alt'}" %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Key Metrics -->
+  <div class="mt-6 grid grid-cols-2 lg:grid-cols-5 gap-4">
+    <div class="app-surface rounded-xl border app-border p-5">
+      <p class="text-sm app-text-muted">Articles</p>
+      <p class="mt-1 text-3xl font-bold app-text"><%= @detail[:articles_count] %></p>
+    </div>
+    <div class="app-surface rounded-xl border app-border p-5">
+      <p class="text-sm app-text-muted">Articles Published</p>
+      <p class="mt-1 text-3xl font-bold app-text"><%= @detail[:articles_published] %></p>
+    </div>
+    <div class="app-surface rounded-xl border app-border p-5">
+      <p class="text-sm app-text-muted">TTFV</p>
+      <% if @detail[:ttfv_minutes] %>
+        <p class="mt-1 text-3xl font-bold <%= @detail[:ttfv_minutes] <= 30 ? 'text-green-600 dark:text-green-400' : 'app-text' %>"><%= @detail[:ttfv_minutes] %> <span class="text-sm font-normal app-text-muted">min</span></p>
+      <% else %>
+        <p class="mt-1 text-3xl font-bold app-text-muted">&mdash;</p>
+      <% end %>
+    </div>
+    <div class="app-surface rounded-xl border app-border p-5">
+      <p class="text-sm app-text-muted">Approval Rate</p>
+      <% if @detail[:approval_rate] %>
+        <p class="mt-1 text-3xl font-bold <%= @detail[:approval_rate] >= 60 ? 'text-green-600 dark:text-green-400' : 'app-text' %>"><%= @detail[:approval_rate] %>%</p>
+        <p class="text-xs app-text-muted"><%= @detail[:articles_reviewed] %> reviewed</p>
+      <% else %>
+        <p class="mt-1 text-3xl font-bold app-text-muted">&mdash;</p>
+      <% end %>
+    </div>
+    <div class="app-surface rounded-xl border app-border p-5">
+      <p class="text-sm app-text-muted">Edit Rate</p>
+      <% if @detail[:edit_rate] %>
+        <p class="mt-1 text-3xl font-bold <%= @detail[:edit_rate] < 30 ? 'text-green-600 dark:text-green-400' : 'app-text' %>"><%= @detail[:edit_rate] %>%</p>
+      <% else %>
+        <p class="mt-1 text-3xl font-bold app-text-muted">&mdash;</p>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Custom Domain Status -->
+  <div class="mt-6 app-surface rounded-xl border app-border p-5">
+    <h2 class="text-sm font-semibold app-text mb-3">Custom Domain</h2>
+    <% if @detail[:has_active_domain] %>
+      <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">Active</span>
+      <span class="ml-2 text-sm app-text-muted"><%= @detail[:custom_domain] %></span>
+    <% else %>
+      <span class="text-sm app-text-muted">No active custom domain</span>
+    <% end %>
+  </div>
+
+  <!-- Article Lifecycle -->
+  <div class="mt-6 app-surface rounded-xl border app-border p-5">
+    <h2 class="text-sm font-semibold app-text mb-3">Article Lifecycle (in period)</h2>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="text-center">
+        <p class="text-2xl font-bold app-text"><%= @detail[:article_lifecycle][:generated] %></p>
+        <p class="text-xs app-text-muted">Generated</p>
+      </div>
+      <div class="text-center">
+        <p class="text-2xl font-bold text-green-600 dark:text-green-400"><%= @detail[:article_lifecycle][:approved] %></p>
+        <p class="text-xs app-text-muted">Approved</p>
+      </div>
+      <div class="text-center">
+        <p class="text-2xl font-bold text-red-600 dark:text-red-400"><%= @detail[:article_lifecycle][:rejected] %></p>
+        <p class="text-xs app-text-muted">Rejected</p>
+      </div>
+      <div class="text-center">
+        <p class="text-2xl font-bold text-blue-600 dark:text-blue-400"><%= @detail[:article_lifecycle][:published] %></p>
+        <p class="text-xs app-text-muted">Published</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Events -->
+  <div class="mt-6 app-surface rounded-xl border app-border overflow-hidden">
+    <div class="px-5 py-4 border-b app-border flex items-center justify-between">
+      <h2 class="text-sm font-semibold app-text">Recent Events</h2>
+      <span class="text-xs app-text-muted"><%= @detail[:total_events_in_period] %> events in period</span>
+    </div>
+    <% if @detail[:recent_events].any? %>
+      <div class="divide-y app-border max-h-96 overflow-y-auto">
+        <% current_date = nil %>
+        <% @detail[:recent_events].each do |event| %>
+          <% event_date = event.created_at.to_date %>
+          <% if event_date != current_date %>
+            <% current_date = event_date %>
+            <div class="px-5 py-2 app-surface-alt sticky top-0">
+              <p class="text-xs font-medium app-text-muted"><%= event_date.strftime("%A, %b %d, %Y") %></p>
+            </div>
+          <% end %>
+          <div class="px-5 py-2 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono app-surface-alt app-text"><%= event.event_name %></span>
+            </div>
+            <span class="text-xs app-text-muted whitespace-nowrap"><%= event.created_at.strftime("%H:%M") %></span>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="px-5 py-8 text-center">
+        <p class="text-sm app-text-muted">No events recorded</p>
+      </div>
+    <% end %>
+  </div>
+</div>

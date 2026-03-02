@@ -8,6 +8,7 @@ class AnalyzePullRequestJob < ApplicationJob
   include DockerVolumeHelper
   include ClaudeUsageTracker
   include ToastNotifier
+  include ProductEventTracker
 
   queue_as :analysis
 
@@ -80,6 +81,7 @@ class AnalyzePullRequestJob < ApplicationJob
           Rails.logger.info "[AnalyzePullRequestJob] Baseline advanced to #{@merge_commit_sha[0..6]}"
         end
 
+        track_product_event("analysis.pr_analyzed", user: project.user, project: project, update_id: update.id, pr_number: pull_request_number)
         Rails.logger.info "[AnalyzePullRequestJob] AI analysis completed for PR ##{pull_request_number} in project #{project.id}"
         article_titles = result[:recommended_articles]&.dig("articles")&.map { |a| a["title"] } || []
         broadcast_toast(project, message: "We've reviewed code changes from PR ##{pull_request_number}", action_url: "/projects/#{project.slug}#code-history", action_label: "View", event_type: "pr_analyzed", notification_metadata: { pr_number: pull_request_number, pr_title: pull_request_title, article_titles: article_titles })

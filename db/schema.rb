@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_19_122930) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_25_105446) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -185,6 +185,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_19_122930) do
     t.index ["user_id"], name: "index_pending_notifications_on_user_id"
   end
 
+  create_table "product_events", force: :cascade do |t|
+    t.string "category", null: false
+    t.datetime "created_at", null: false
+    t.string "event_name", null: false
+    t.integer "project_id"
+    t.json "properties"
+    t.integer "user_id", null: false
+    t.index ["category", "created_at"], name: "index_product_events_on_category_and_created_at"
+    t.index ["event_name", "created_at"], name: "index_product_events_on_event_name_and_created_at"
+    t.index ["project_id", "created_at"], name: "index_product_events_on_project_id_and_created_at"
+    t.index ["user_id", "created_at"], name: "index_product_events_on_user_id_and_created_at"
+  end
+
   create_table "project_repositories", force: :cascade do |t|
     t.string "branch"
     t.datetime "created_at", null: false
@@ -353,6 +366,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_19_122930) do
   add_foreign_key "invites", "users"
   add_foreign_key "pending_notifications", "projects"
   add_foreign_key "pending_notifications", "users"
+  add_foreign_key "product_events", "projects"
+  add_foreign_key "product_events", "users"
   add_foreign_key "project_repositories", "projects"
   add_foreign_key "projects", "github_app_installations"
   add_foreign_key "projects", "users"

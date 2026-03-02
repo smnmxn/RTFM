@@ -1,0 +1,104 @@
+<!-- Projects Summary -->
+<div class="mt-6 grid grid-cols-3 gap-4">
+  <div class="app-surface rounded-xl border app-border p-5">
+    <p class="text-sm app-text-muted">Total Projects</p>
+    <p class="mt-1 text-3xl font-bold app-text"><%= @projects.size %></p>
+  </div>
+  <div class="app-surface rounded-xl border app-border p-5">
+    <p class="text-sm app-text-muted">With Published Articles</p>
+    <p class="mt-1 text-3xl font-bold text-green-600 dark:text-green-400"><%= @projects.count { |a| a[:articles_published] > 0 } %></p>
+  </div>
+  <div class="app-surface rounded-xl border app-border p-5">
+    <p class="text-sm app-text-muted">With Custom Domain</p>
+    <p class="mt-1 text-3xl font-bold app-text"><%= @projects.count { |a| a[:custom_domain].present? } %></p>
+  </div>
+</div>
+
+<!-- Projects Table -->
+<div class="mt-6 app-surface rounded-xl border border-zinc-200 dark:border-zinc-700/50 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="min-w-full">
+      <thead>
+        <tr class="border-b app-border">
+          <th class="px-4 py-3 text-left text-xs font-medium app-text-muted uppercase tracking-wider">Project</th>
+          <th class="px-4 py-3 text-left text-xs font-medium app-text-muted uppercase tracking-wider">Account</th>
+          <th class="px-4 py-3 text-left text-xs font-medium app-text-muted uppercase tracking-wider">Created</th>
+          <th class="px-4 py-3 text-left text-xs font-medium app-text-muted uppercase tracking-wider">Onboarding</th>
+          <th class="px-4 py-3 text-center text-xs font-medium app-text-muted uppercase tracking-wider">Articles</th>
+          <th class="px-4 py-3 text-center text-xs font-medium app-text-muted uppercase tracking-wider">Published</th>
+          <th class="px-4 py-3 text-left text-xs font-medium app-text-muted uppercase tracking-wider">Domain</th>
+          <th class="px-4 py-3 text-center text-xs font-medium app-text-muted uppercase tracking-wider">TTFV</th>
+          <th class="px-4 py-3 text-center text-xs font-medium app-text-muted uppercase tracking-wider">Approval</th>
+          <th class="px-4 py-3 text-center text-xs font-medium app-text-muted uppercase tracking-wider">Edit Rate</th>
+          <th class="px-4 py-3 text-left text-xs font-medium app-text-muted uppercase tracking-wider">Last Active</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @projects.each do |entry| %>
+          <% project = entry[:project] %>
+          <% user = entry[:user] %>
+          <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer"
+              onclick="window.location='<%= analytics_project_path(project, period: @period) %>'">
+            <td class="px-4 py-3">
+              <div>
+                <p class="text-sm font-medium app-text"><%= project.name %></p>
+                <p class="text-xs app-text-muted"><%= project.slug %></p>
+              </div>
+            </td>
+            <td class="px-4 py-3">
+              <p class="text-sm app-text"><%= user.name || user.github_username || "Unknown" %></p>
+              <p class="text-xs app-text-muted"><%= user.email %></p>
+            </td>
+            <td class="px-4 py-3 text-xs app-text-muted whitespace-nowrap">
+              <%= project.created_at.strftime("%b %d, %Y") %>
+            </td>
+            <td class="px-4 py-3">
+              <% if entry[:onboarding_status] == "complete" %>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">Complete</span>
+              <% else %>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"><%= entry[:onboarding_status].capitalize %></span>
+              <% end %>
+            </td>
+            <td class="px-4 py-3 text-center text-sm app-text">
+              <%= entry[:articles_count] %>
+            </td>
+            <td class="px-4 py-3 text-center text-sm app-text">
+              <%= entry[:articles_published] %>
+            </td>
+            <td class="px-4 py-3 text-xs app-text-muted whitespace-nowrap">
+              <%= entry[:custom_domain] || "&mdash;".html_safe %>
+            </td>
+            <td class="px-4 py-3 text-center text-sm">
+              <% if entry[:ttfv_minutes] %>
+                <span class="<%= entry[:ttfv_minutes] <= 30 ? 'text-green-600 dark:text-green-400' : 'app-text' %>"><%= entry[:ttfv_minutes] %> min</span>
+              <% else %>
+                <span class="app-text-muted">&mdash;</span>
+              <% end %>
+            </td>
+            <td class="px-4 py-3 text-center text-sm">
+              <% if entry[:approval_rate] %>
+                <span class="<%= entry[:approval_rate] >= 60 ? 'text-green-600 dark:text-green-400' : 'app-text' %>"><%= entry[:approval_rate] %>%</span>
+              <% else %>
+                <span class="app-text-muted">&mdash;</span>
+              <% end %>
+            </td>
+            <td class="px-4 py-3 text-center text-sm">
+              <% if entry[:edit_rate] %>
+                <span class="<%= entry[:edit_rate] < 30 ? 'text-green-600 dark:text-green-400' : 'app-text' %>"><%= entry[:edit_rate] %>%</span>
+              <% else %>
+                <span class="app-text-muted">&mdash;</span>
+              <% end %>
+            </td>
+            <td class="px-4 py-3 text-xs app-text-muted whitespace-nowrap">
+              <% if entry[:last_active_at] %>
+                <%= time_ago_in_words(entry[:last_active_at]) %> ago
+              <% else %>
+                &mdash;
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

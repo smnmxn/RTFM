@@ -1,0 +1,244 @@
+<!-- Fundraise Metrics -->
+<div class="mt-6 app-surface rounded-xl border-2 border-indigo-500/30 p-5">
+  <h2 class="text-sm font-semibold app-text mb-1">Fundraise Metrics</h2>
+  <p class="text-xs app-text-muted mb-4">Financial model validation</p>
+
+  <div class="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
+    <!-- Design Partners Live -->
+    <div>
+      <div class="flex items-baseline gap-2">
+        <p class="text-2xl font-bold app-text"><%= @data[:fundraise_metrics][:design_partners_live] %></p>
+        <p class="text-xs app-text-muted">/ 5 target</p>
+      </div>
+      <p class="text-xs app-text-muted mt-0.5">Design Partners Live</p>
+      <% progress = [(@data[:fundraise_metrics][:design_partners_live].to_f / 5 * 100).round, 100].min %>
+      <div class="mt-1.5 h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
+        <div class="h-full rounded-full <%= progress >= 100 ? 'bg-green-500' : 'bg-indigo-500' %>" style="width: <%= progress %>%"></div>
+      </div>
+    </div>
+
+    <!-- Time-to-First-Value -->
+    <div>
+      <div class="flex items-baseline gap-2">
+        <% if @data[:fundraise_metrics][:median_ttfv_minutes] %>
+          <p class="text-2xl font-bold <%= @data[:fundraise_metrics][:median_ttfv_minutes] <= 30 ? 'text-green-600 dark:text-green-400' : 'app-text' %>"><%= @data[:fundraise_metrics][:median_ttfv_minutes] %></p>
+          <p class="text-xs app-text-muted">min</p>
+        <% else %>
+          <p class="text-2xl font-bold app-text-muted">&mdash;</p>
+        <% end %>
+      </div>
+      <p class="text-xs app-text-muted mt-0.5">Median Time-to-First-Value</p>
+      <p class="text-xs app-text-muted">Target: &lt;30 min</p>
+    </div>
+
+    <!-- Approval Rate -->
+    <div>
+      <div class="flex items-baseline gap-2">
+        <% if @data[:fundraise_metrics][:approval_rate] %>
+          <p class="text-2xl font-bold <%= @data[:fundraise_metrics][:approval_rate] >= 60 ? 'text-green-600 dark:text-green-400' : 'app-text' %>"><%= @data[:fundraise_metrics][:approval_rate] %>%</p>
+          <p class="text-xs app-text-muted"><%= @data[:fundraise_metrics][:articles_reviewed] %> reviewed</p>
+        <% else %>
+          <p class="text-2xl font-bold app-text-muted">&mdash;</p>
+        <% end %>
+      </div>
+      <p class="text-xs app-text-muted mt-0.5">Inbox Approval Rate</p>
+      <p class="text-xs app-text-muted">Target: &gt;60%</p>
+    </div>
+
+    <!-- Edit Rate -->
+    <div>
+      <div class="flex items-baseline gap-2">
+        <% if @data[:fundraise_metrics][:edit_rate] %>
+          <p class="text-2xl font-bold <%= @data[:fundraise_metrics][:edit_rate] < 30 ? 'text-green-600 dark:text-green-400' : 'app-text' %>"><%= @data[:fundraise_metrics][:edit_rate] %>%</p>
+          <p class="text-xs app-text-muted"><%= @data[:fundraise_metrics][:articles_published] %> published</p>
+        <% else %>
+          <p class="text-2xl font-bold app-text-muted">&mdash;</p>
+        <% end %>
+      </div>
+      <p class="text-xs app-text-muted mt-0.5">Edit Rate (before publish)</p>
+      <p class="text-xs app-text-muted">Target: &lt;30%</p>
+    </div>
+
+    <!-- Repo Drop-off (Security Objection Proxy) -->
+    <div>
+      <div class="flex items-baseline gap-2">
+        <% if @data[:fundraise_metrics][:repo_drop_off_rate] %>
+          <p class="text-2xl font-bold app-text"><%= @data[:fundraise_metrics][:repo_drop_off_rate] %>%</p>
+          <p class="text-xs app-text-muted"><%= @data[:fundraise_metrics][:onboarding_started] %> started, <%= @data[:fundraise_metrics][:repo_connected] %> connected</p>
+        <% else %>
+          <p class="text-2xl font-bold app-text-muted">&mdash;</p>
+        <% end %>
+      </div>
+      <p class="text-xs app-text-muted mt-0.5">Repo Connection Drop-off</p>
+      <p class="text-xs app-text-muted">Proxy: security objection rate</p>
+    </div>
+
+    <!-- Support Deflection -->
+    <div>
+      <div class="flex items-baseline gap-2">
+        <p class="text-2xl font-bold app-text"><%= number_with_delimiter(@data[:fundraise_metrics][:help_centre_views]) %></p>
+        <p class="text-xs app-text-muted"><%= number_with_delimiter(@data[:fundraise_metrics][:help_centre_visitors]) %> visitors</p>
+      </div>
+      <p class="text-xs app-text-muted mt-0.5">Help Centre Page Views</p>
+      <p class="text-xs app-text-muted">Support deflection proxy</p>
+    </div>
+  </div>
+</div>
+
+<!-- Summary cards -->
+<div class="mt-6 grid grid-cols-2 lg:grid-cols-5 gap-4">
+  <div class="app-surface rounded-xl border app-border p-5">
+    <p class="text-sm app-text-muted">Total Events</p>
+    <p class="mt-1 text-3xl font-bold app-text"><%= number_with_delimiter(@data[:summary][:total_events]) %></p>
+  </div>
+  <div class="app-surface rounded-xl border app-border p-5">
+    <p class="text-sm app-text-muted">Active Users</p>
+    <p class="mt-1 text-3xl font-bold app-text"><%= number_with_delimiter(@data[:summary][:active_users]) %></p>
+  </div>
+  <div class="app-surface rounded-xl border app-border p-5">
+    <p class="text-sm app-text-muted">Active Projects</p>
+    <p class="mt-1 text-3xl font-bold app-text"><%= number_with_delimiter(@data[:summary][:active_projects]) %></p>
+  </div>
+  <div class="app-surface rounded-xl border app-border p-5">
+    <p class="text-sm app-text-muted">Articles Published</p>
+    <p class="mt-1 text-3xl font-bold app-text"><%= number_with_delimiter(@data[:summary][:articles_published]) %></p>
+  </div>
+  <div class="app-surface rounded-xl border app-border p-5">
+    <p class="text-sm app-text-muted">Domains Verified</p>
+    <p class="mt-1 text-3xl font-bold app-text"><%= number_with_delimiter(@data[:summary][:custom_domains_verified]) %></p>
+  </div>
+</div>
+
+<!-- Custom Domain (North Star) -->
+<div class="mt-6 app-surface rounded-xl border-2 border-green-500/30 p-5">
+  <div class="flex items-center gap-2 mb-4">
+    <h2 class="text-sm font-semibold app-text">Custom Domains (North Star)</h2>
+  </div>
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div>
+      <p class="text-xs app-text-muted">Added</p>
+      <p class="text-2xl font-bold app-text"><%= @data[:custom_domain][:added] %></p>
+    </div>
+    <div>
+      <p class="text-xs app-text-muted">Verified</p>
+      <p class="text-2xl font-bold app-text"><%= @data[:custom_domain][:verified] %></p>
+    </div>
+    <div>
+      <p class="text-xs app-text-muted">Removed</p>
+      <p class="text-2xl font-bold app-text"><%= @data[:custom_domain][:removed] %></p>
+    </div>
+    <div>
+      <p class="text-xs app-text-muted">Currently Active</p>
+      <p class="text-2xl font-bold text-green-600 dark:text-green-400"><%= @data[:custom_domain][:current_active] %></p>
+    </div>
+  </div>
+</div>
+
+<!-- Article Lifecycle -->
+<div class="mt-6 app-surface rounded-xl border app-border p-5">
+  <h2 class="text-sm font-semibold app-text mb-4">Article Lifecycle</h2>
+  <div class="grid grid-cols-2 lg:grid-cols-6 gap-4">
+    <div>
+      <p class="text-xs app-text-muted">Generated</p>
+      <p class="text-lg font-semibold app-text"><%= @data[:article_lifecycle][:generated] %></p>
+    </div>
+    <div>
+      <p class="text-xs app-text-muted">Approved</p>
+      <p class="text-lg font-semibold app-text"><%= @data[:article_lifecycle][:approved] %></p>
+    </div>
+    <div>
+      <p class="text-xs app-text-muted">Rejected</p>
+      <p class="text-lg font-semibold app-text"><%= @data[:article_lifecycle][:rejected] %></p>
+    </div>
+    <div>
+      <p class="text-xs app-text-muted">Published</p>
+      <p class="text-lg font-semibold app-text"><%= @data[:article_lifecycle][:published] %></p>
+    </div>
+    <div>
+      <p class="text-xs app-text-muted">Published (No Edit)</p>
+      <p class="text-lg font-semibold app-text"><%= @data[:article_lifecycle][:published_without_edit] %></p>
+    </div>
+    <div class="app-surface-alt rounded-lg p-3 -m-1">
+      <p class="text-xs app-text-muted">No-Edit Rate</p>
+      <p class="text-lg font-bold text-green-600 dark:text-green-400"><%= @data[:article_lifecycle][:published_without_edit_pct] %>%</p>
+    </div>
+  </div>
+</div>
+
+<!-- Onboarding Funnel -->
+<div class="mt-6 app-surface rounded-xl border app-border p-5">
+  <h2 class="text-sm font-semibold app-text mb-4">Onboarding Funnel</h2>
+  <div class="flex items-center gap-2 overflow-x-auto">
+    <% @data[:onboarding_funnel][:steps].each_with_index do |step, i| %>
+      <div class="flex-1 text-center min-w-0">
+        <p class="text-xs app-text-muted capitalize"><%= step[:step] %></p>
+        <p class="text-lg font-semibold app-text"><%= step[:count] %></p>
+      </div>
+      <% if i < @data[:onboarding_funnel][:steps].size - 1 %>
+        <div class="text-xs app-text-muted flex flex-col items-center flex-shrink-0">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+          <span><%= @data[:onboarding_funnel][:rates][i][:rate] %>%</span>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<!-- Recommendations -->
+<div class="mt-6 grid lg:grid-cols-2 gap-6">
+  <div class="app-surface rounded-xl border app-border p-5">
+    <h2 class="text-sm font-semibold app-text mb-4">Recommendations</h2>
+    <div class="grid grid-cols-3 gap-4">
+      <div>
+        <p class="text-xs app-text-muted">Accepted</p>
+        <p class="text-lg font-semibold app-text"><%= @data[:recommendations][:accepted] %></p>
+      </div>
+      <div>
+        <p class="text-xs app-text-muted">Rejected</p>
+        <p class="text-lg font-semibold app-text"><%= @data[:recommendations][:rejected] %></p>
+      </div>
+      <div>
+        <p class="text-xs app-text-muted">Acceptance Rate</p>
+        <p class="text-lg font-semibold app-text"><%= @data[:recommendations][:acceptance_rate] %>%</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Users (DAU/WAU/MAU) -->
+  <div class="app-surface rounded-xl border app-border p-5">
+    <h2 class="text-sm font-semibold app-text mb-4">Active Users</h2>
+    <div class="grid grid-cols-3 gap-4">
+      <div>
+        <p class="text-xs app-text-muted">DAU</p>
+        <p class="text-lg font-semibold app-text"><%= @data[:active_users][:dau] %></p>
+      </div>
+      <div>
+        <p class="text-xs app-text-muted">WAU</p>
+        <p class="text-lg font-semibold app-text"><%= @data[:active_users][:wau] %></p>
+      </div>
+      <div>
+        <p class="text-xs app-text-muted">MAU</p>
+        <p class="text-lg font-semibold app-text"><%= @data[:active_users][:mau] %></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Daily Activity Chart -->
+<div class="mt-6 app-surface rounded-xl border app-border p-5">
+  <h2 class="text-sm font-semibold app-text mb-4">Daily Activity</h2>
+  <% max_events = @data[:daily_activity].map { |d| d[:events] }.max || 1 %>
+  <div class="flex items-end gap-px h-40">
+    <% @data[:daily_activity].each do |day| %>
+      <% height = max_events > 0 ? (day[:events].to_f / max_events * 100).round : 0 %>
+      <div class="flex-1 group relative">
+        <div class="bg-zinc-700 dark:bg-zinc-500 rounded-t-sm transition-colors group-hover:bg-zinc-500 dark:group-hover:bg-zinc-300"
+             style="height: <%= [height, 2].max %>%; min-height: 2px;">
+        </div>
+        <div class="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs app-surface rounded shadow app-text whitespace-nowrap border app-border z-10">
+          <%= day[:date] %><br><%= day[:events] %> events / <%= day[:users] %> users
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

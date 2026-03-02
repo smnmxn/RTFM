@@ -4,6 +4,7 @@ class RecommendationsController < ApplicationController
 
   def reject
     @recommendation.reject!
+    track_event("recommendation.rejected", recommendation_id: @recommendation.id)
 
     respond_to do |format|
       format.turbo_stream { render turbo_stream: turbo_stream.remove(@recommendation) }
@@ -27,6 +28,7 @@ class RecommendationsController < ApplicationController
 
     # Enqueue background job
     GenerateArticleJob.perform_later(article_id: @article.id)
+    track_event("recommendation.accepted", recommendation_id: @recommendation.id)
 
     respond_to do |format|
       format.turbo_stream {

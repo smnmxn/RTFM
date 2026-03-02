@@ -1,4 +1,6 @@
 class CheckCustomDomainStatusJob < ApplicationJob
+  include ProductEventTracker
+
   queue_as :default
 
   MAX_RETRIES = 120 # Check for up to 1 hour (30 second intervals)
@@ -25,6 +27,7 @@ class CheckCustomDomainStatusJob < ApplicationJob
         custom_domain_ssl_status: result[:ssl_status],
         custom_domain_verified_at: Time.current
       )
+      track_product_event("settings.custom_domain_verified", user: project.user, project: project, domain: project.custom_domain)
       Rails.logger.info "[CheckCustomDomainStatusJob] Domain #{project.custom_domain} is now active"
 
     when "pending", "pending_validation", "pending_issuance", "pending_deployment"

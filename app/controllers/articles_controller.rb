@@ -55,6 +55,8 @@ class ArticlesController < ApplicationController
       review_status: :approved
     )
 
+    track_event("article.created_manually", article_id: @article.id)
+
     respond_to do |format|
       format.json { render json: { redirect_url: project_path(@project, article: @article.id) } }
       format.html { redirect_to project_path(@project, article: @article.id), notice: "Article created" }
@@ -107,6 +109,7 @@ class ArticlesController < ApplicationController
       regeneration_guidance: guidance.presence
     )
     GenerateArticleJob.perform_later(article_id: @article.id)
+    track_event("article.regenerated", article_id: @article.id)
 
     respond_to do |format|
       format.json { render json: { redirect_url: project_path(@article.project, article: @article.id) } }
@@ -117,6 +120,8 @@ class ArticlesController < ApplicationController
   def update_field
     field_path = params[:field]
     new_value = params[:value]
+
+    track_event("article.edited", article_id: @article.id, field: field_path)
 
     # Handle direct article attributes
     if field_path == "title"
@@ -158,6 +163,7 @@ class ArticlesController < ApplicationController
 
   def add_array_item
     field = params[:field]
+    track_event("article.edited", article_id: @article.id, field: field, action: "add_item")
 
     updated_content = (@article.structured_content || {}).deep_dup
     updated_content[field] ||= []
@@ -185,6 +191,7 @@ class ArticlesController < ApplicationController
   def remove_array_item
     field = params[:field]
     index = params[:index].to_i
+    track_event("article.edited", article_id: @article.id, field: field, action: "remove_item")
 
     updated_content = (@article.structured_content || {}).deep_dup
     updated_content[field]&.delete_at(index)
@@ -205,6 +212,7 @@ class ArticlesController < ApplicationController
     field = params[:field]
     old_index = params[:old_index].to_i
     new_index = params[:new_index].to_i
+    track_event("article.edited", article_id: @article.id, field: field, action: "reorder")
 
     updated_content = (@article.structured_content || {}).deep_dup
     array = updated_content[field]
@@ -234,6 +242,7 @@ class ArticlesController < ApplicationController
     if @article.generation_completed?
       @article.approve! unless @article.approved?
       @article.publish!
+      track_event("article.published", article_id: @article.id)
       respond_to do |format|
         format.turbo_stream
         format.html { redirect_to project_path(@article.project, article: @article.id), notice: "Article published." }
@@ -245,6 +254,7 @@ class ArticlesController < ApplicationController
 
   def unpublish
     @article.unpublish!
+    track_event("article.unpublished", article_id: @article.id)
     respond_to do |format|
       format.turbo_stream
       format.html { redirect_to project_path(@article.project, article: @article.id), notice: "Article unpublished." }
@@ -257,6 +267,7 @@ class ArticlesController < ApplicationController
     old_section = @article.section
 
     @article.move_to_section!(new_section)
+    track_event("article.moved", article_id: @article.id, from_section_id: old_section&.id, to_section_id: new_section&.id)
 
     @old_section_id = old_section&.id || "uncategorized"
     @new_section_id = new_section&.id || "uncategorized"
@@ -293,6 +304,7 @@ class ArticlesController < ApplicationController
 
   def duplicate
     @new_article = @article.duplicate!
+    track_event("article.duplicated", article_id: @article.id, new_article_id: @new_article.id)
     @section_id = @new_article.section_id || "uncategorized"
 
     respond_to do |format|
@@ -347,6 +359,7 @@ class ArticlesController < ApplicationController
   def destroy
     section_id = @article.section_id || "uncategorized"
     project = @article.project
+    track_event("article.deleted", article_id: @article.id)
     @article.destroy!
 
     respond_to do |format|
