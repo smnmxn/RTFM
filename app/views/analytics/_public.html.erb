@@ -18,23 +18,29 @@
   </div>
 </div>
 
-<!-- Daily views chart -->
+<!-- Page views chart -->
 <div class="mt-6 app-surface rounded-xl border app-border p-5">
-  <h2 class="text-sm font-semibold app-text mb-4">Daily Page Views</h2>
+  <h2 class="text-sm font-semibold app-text mb-4"><%= @period == "24h" ? "Hourly" : "Daily" %> Page Views</h2>
   <% max_views = @data[:daily_views].map { |d| d[:views] }.max || 1 %>
   <div class="flex items-end gap-px h-40">
-    <% @data[:daily_views].each do |day| %>
-      <% height = max_views > 0 ? (day[:views].to_f / max_views * 100).round : 0 %>
+    <% @data[:daily_views].each do |datapoint| %>
+      <% height = max_views > 0 ? (datapoint[:views].to_f / max_views * 100).round : 0 %>
       <div class="flex-1 group relative">
         <div class="bg-zinc-700 dark:bg-zinc-500 rounded-t-sm transition-colors group-hover:bg-zinc-500 dark:group-hover:bg-zinc-300"
              style="height: <%= [height, 2].max %>%; min-height: 2px;">
         </div>
         <div class="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs app-surface rounded shadow app-text whitespace-nowrap border app-border z-10">
-          <%= day[:date] %><br><%= day[:views] %> views / <%= day[:uniques] %> unique
+          <%= datapoint[:date] %><br><%= datapoint[:views] %> views / <%= datapoint[:uniques] %> unique
         </div>
       </div>
     <% end %>
   </div>
+  <% if @period == "24h" %>
+    <div class="flex justify-between mt-2 text-xs app-text-muted">
+      <span><%= @data[:daily_views].first[:date] rescue "" %></span>
+      <span><%= @data[:daily_views].last[:date] rescue "" %></span>
+    </div>
+  <% end %>
 </div>
 
 <!-- Engagement section -->
@@ -172,8 +178,8 @@
   </div>
 <% end %>
 
-<!-- Two-column: UTM Sources + Devices -->
-<div class="mt-6 grid lg:grid-cols-2 gap-6">
+<!-- Three-column: UTM Sources + UTM Content + Devices -->
+<div class="mt-6 grid lg:grid-cols-3 gap-6">
   <div class="app-surface rounded-xl border app-border p-5">
     <h2 class="text-sm font-semibold app-text mb-4">UTM Sources</h2>
     <% if @data[:utm_breakdown].any? %>
@@ -187,6 +193,22 @@
       </div>
     <% else %>
       <p class="text-sm app-text-muted">No UTM data yet</p>
+    <% end %>
+  </div>
+
+  <div class="app-surface rounded-xl border app-border p-5">
+    <h2 class="text-sm font-semibold app-text mb-4">UTM Content</h2>
+    <% if @data[:utm_content_breakdown].any? %>
+      <div class="space-y-2">
+        <% @data[:utm_content_breakdown].each do |utm| %>
+          <div class="flex justify-between items-center text-sm">
+            <span class="app-text truncate mr-2"><%= utm[:content] %></span>
+            <span class="app-text-muted flex-shrink-0"><%= number_with_delimiter(utm[:views]) %></span>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-sm app-text-muted">No UTM content yet</p>
     <% end %>
   </div>
 

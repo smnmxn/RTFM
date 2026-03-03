@@ -22,7 +22,7 @@ class AnalyticsController < ApplicationController
       service = ProductAnalyticsSummaryService.new(start_date, end_date)
       @data = service.call
     else
-      service = AnalyticsSummaryService.new(start_date, end_date)
+      service = AnalyticsSummaryService.new(start_date, end_date, @period)
       @data = service.call
     end
   end

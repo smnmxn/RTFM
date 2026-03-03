@@ -1,7 +1,8 @@
 class AnalyticsSummaryService
-  def initialize(start_date, end_date)
+  def initialize(start_date, end_date, period = "30d")
     @start_date = start_date
     @end_date = end_date
+    @period = period
     @events = AnalyticsEvent.between(@start_date, @end_date)
   end
 
@@ -12,6 +13,7 @@ class AnalyticsSummaryService
       top_pages: top_pages,
       top_referrers: top_referrers,
       utm_breakdown: utm_breakdown,
+      utm_content_breakdown: utm_content_breakdown,
       prospect_tracking: prospect_tracking,
       device_breakdown: device_breakdown,
       browser_breakdown: browser_breakdown,
@@ -34,22 +36,52 @@ class AnalyticsSummaryService
   def daily_views
     page_views = @events.page_views
 
-    views_by_date = page_views
-      .group("date(created_at)")
-      .count
+    # For 24h view, group by hour; otherwise group by day
+    if @period == "24h"
+      # Hourly breakdown for last 24 hours
+      views_by_hour = page_views
+        .group("strftime('%Y-%m-%d %H:00:00', created_at)")
+        .count
 
-    uniques_by_date = page_views
-      .group("date(created_at)")
-      .distinct
-      .count(:visitor_id)
+      uniques_by_hour = page_views
+        .group("strftime('%Y-%m-%d %H:00:00', created_at)")
+        .distinct
+        .count(:visitor_id)
 
-    (@start_date.to_date..@end_date.to_date).map do |date|
-      key = date.to_s
-      {
-        date: key,
-        views: views_by_date[key] || 0,
-        uniques: uniques_by_date[key] || 0
-      }
+      # Generate array of hours from start to end
+      current = @start_date.beginning_of_hour
+      result = []
+      while current <= @end_date
+        key = current.strftime("%Y-%m-%d %H:00:00")
+        result << {
+          date: current.strftime("%H:%M"),
+          full_date: current,
+          views: views_by_hour[key] || 0,
+          uniques: uniques_by_hour[key] || 0
+        }
+        current += 1.hour
+      end
+      result
+    else
+      # Daily breakdown for 7d, 30d, 90d
+      views_by_date = page_views
+        .group("date(created_at)")
+        .count
+
+      uniques_by_date = page_views
+        .group("date(created_at)")
+        .distinct
+        .count(:visitor_id)
+
+      (@start_date.to_date..@end_date.to_date).map do |date|
+        key = date.to_s
+        {
+          date: date.strftime("%b %d"),
+          full_date: date,
+          views: views_by_date[key] || 0,
+          uniques: uniques_by_date[key] || 0
+        }
+      end
     end
   end
 
@@ -80,6 +112,16 @@ class AnalyticsSummaryService
       .limit(10)
       .count
       .map { |source, count| { source: source, views: count } }
+  end
+
+  def utm_content_breakdown
+    @events.page_views
+      .where.not(utm_content: [ nil, "" ])
+      .group(:utm_content)
+      .order(Arel.sql("count(*) DESC"))
+      .limit(10)
+      .count
+      .map { |content, count| { content: content, views: count } }
   end
 
   def prospect_tracking
