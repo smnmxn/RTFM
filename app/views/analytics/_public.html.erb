@@ -21,24 +21,111 @@
 <!-- Page views chart -->
 <div class="mt-6 app-surface rounded-xl border app-border p-5">
   <h2 class="text-sm font-semibold app-text mb-4"><%= @period == "24h" ? "Hourly" : "Daily" %> Page Views</h2>
-  <% max_views = @data[:daily_views].map { |d| d[:views] }.max || 1 %>
-  <div class="flex items-end gap-px h-40">
-    <% @data[:daily_views].each do |datapoint| %>
-      <% height = max_views > 0 ? (datapoint[:views].to_f / max_views * 100).round : 0 %>
-      <div class="flex-1 group relative">
-        <div class="bg-zinc-700 dark:bg-zinc-500 rounded-t-sm transition-colors group-hover:bg-zinc-500 dark:group-hover:bg-zinc-300"
-             style="height: <%= [height, 2].max %>%; min-height: 2px;">
-        </div>
-        <div class="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs app-surface rounded shadow app-text whitespace-nowrap border app-border z-10">
-          <%= datapoint[:date] %><br><%= datapoint[:views] %> views / <%= datapoint[:uniques] %> unique
-        </div>
-      </div>
-    <% end %>
-  </div>
-  <% if @period == "24h" %>
-    <div class="flex justify-between mt-2 text-xs app-text-muted">
-      <span><%= @data[:daily_views].first[:date] rescue "" %></span>
-      <span><%= @data[:daily_views].last[:date] rescue "" %></span>
+  <% if @data[:daily_views].any? %>
+    <div style="height: 200px;">
+      <canvas id="pageViewsChart"></canvas>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+      (function() {
+        const isDark = document.documentElement.classList.contains('dark');
+        const ctx = document.getElementById('pageViewsChart');
+
+        const data = {
+          labels: <%= raw @data[:daily_views].map { |d| d[:date] }.to_json %>,
+          datasets: [
+            {
+              label: 'Views',
+              data: <%= raw @data[:daily_views].map { |d| d[:views] }.to_json %>,
+              borderColor: isDark ? 'rgb(161, 161, 170)' : 'rgb(63, 63, 70)',
+              backgroundColor: isDark ? 'rgba(161, 161, 170, 0.1)' : 'rgba(63, 63, 70, 0.1)',
+              tension: 0.4,
+              fill: true
+            },
+            {
+              label: 'Unique Visitors',
+              data: <%= raw @data[:daily_views].map { |d| d[:uniques] }.to_json %>,
+              borderColor: isDark ? 'rgb(212, 212, 216)' : 'rgb(113, 113, 122)',
+              backgroundColor: isDark ? 'rgba(212, 212, 216, 0.1)' : 'rgba(113, 113, 122, 0.1)',
+              tension: 0.4,
+              fill: true
+            }
+          ]
+        };
+
+        new Chart(ctx, {
+          type: 'line',
+          data: data,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              mode: 'index',
+              intersect: false,
+            },
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+                align: 'end',
+                labels: {
+                  color: isDark ? 'rgb(161, 161, 170)' : 'rgb(63, 63, 70)',
+                  usePointStyle: true,
+                  padding: 15,
+                  font: {
+                    size: 11
+                  }
+                }
+              },
+              tooltip: {
+                backgroundColor: isDark ? 'rgb(39, 39, 42)' : 'rgb(255, 255, 255)',
+                titleColor: isDark ? 'rgb(244, 244, 245)' : 'rgb(24, 24, 27)',
+                bodyColor: isDark ? 'rgb(161, 161, 170)' : 'rgb(63, 63, 70)',
+                borderColor: isDark ? 'rgb(63, 63, 70)' : 'rgb(228, 228, 231)',
+                borderWidth: 1,
+                padding: 12,
+                displayColors: true,
+                callbacks: {
+                  label: function(context) {
+                    return context.dataset.label + ': ' + context.parsed.y;
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: isDark ? 'rgb(113, 113, 122)' : 'rgb(161, 161, 170)',
+                  font: { size: 11 },
+                  precision: 0
+                },
+                grid: {
+                  color: isDark ? 'rgba(63, 63, 70, 0.3)' : 'rgba(228, 228, 231, 0.5)',
+                  drawBorder: false
+                }
+              },
+              x: {
+                ticks: {
+                  color: isDark ? 'rgb(113, 113, 122)' : 'rgb(161, 161, 170)',
+                  font: { size: 11 },
+                  maxRotation: 0,
+                  autoSkip: true,
+                  maxTicksLimit: <%= @period == "24h" ? 12 : 10 %>
+                },
+                grid: {
+                  display: false,
+                  drawBorder: false
+                }
+              }
+            }
+          }
+        });
+      })();
+    </script>
+  <% else %>
+    <div class="flex items-center justify-center h-40 text-sm app-text-muted">
+      No page view data for this period
     </div>
   <% end %>
 </div>

@@ -34,78 +34,42 @@ class AnalyticsSummaryService
   end
 
   def daily_views
-    page_views = @events.page_views
+    page_views = @events.page_views.to_a
 
     # For 24h view, group by hour; otherwise group by day
     if @period == "24h"
-      # Hourly breakdown for last 24 hours
-      # Database-agnostic: use date_trunc for PostgreSQL, strftime for SQLite
-      hour_sql = if ActiveRecord::Base.connection.adapter_name == "PostgreSQL"
-        "date_trunc('hour', created_at)"
-      else
-        "strftime('%Y-%m-%d %H:00:00', created_at)"
-      end
-
-      views_by_hour = page_views
-        .group(Arel.sql(hour_sql))
-        .count
-
-      uniques_by_hour = page_views
-        .group(Arel.sql(hour_sql))
-        .distinct
-        .count(:visitor_id)
+      # Hourly breakdown - group in Ruby for reliability
+      views_by_hour = page_views.group_by { |e| e.created_at.beginning_of_hour }
+      uniques_by_hour = page_views.group_by { |e| e.created_at.beginning_of_hour }
+        .transform_values { |events| events.map(&:visitor_id).uniq.count }
 
       # Generate array of hours from start to end
       current = @start_date.beginning_of_hour
       result = []
       while current <= @end_date
-        # For PostgreSQL, the key is a Time object; for SQLite it's a string
-        key = if ActiveRecord::Base.connection.adapter_name == "PostgreSQL"
-          current
-        else
-          current.strftime("%Y-%m-%d %H:00:00")
-        end
-
+        events = views_by_hour[current] || []
         result << {
           date: current.strftime("%H:%M"),
           full_date: current,
-          views: views_by_hour[key] || 0,
-          uniques: uniques_by_hour[key] || 0
+          views: events.count,
+          uniques: uniques_by_hour[current] || 0
         }
         current += 1.hour
       end
       result
     else
-      # Daily breakdown for 7d, 30d, 90d
-      # Database-agnostic: use date_trunc for PostgreSQL, date() for SQLite
-      date_sql = if ActiveRecord::Base.connection.adapter_name == "PostgreSQL"
-        "date_trunc('day', created_at)::date"
-      else
-        "date(created_at)"
-      end
-
-      views_by_date = page_views
-        .group(Arel.sql(date_sql))
-        .count
-
-      uniques_by_date = page_views
-        .group(Arel.sql(date_sql))
-        .distinct
-        .count(:visitor_id)
+      # Daily breakdown - group in Ruby for reliability
+      views_by_date = page_views.group_by { |e| e.created_at.to_date }
+      uniques_by_date = page_views.group_by { |e| e.created_at.to_date }
+        .transform_values { |events| events.map(&:visitor_id).uniq.count }
 
       (@start_date.to_date..@end_date.to_date).map do |date|
-        # For PostgreSQL, the key is a Date object; for SQLite it's a string
-        key = if ActiveRecord::Base.connection.adapter_name == "PostgreSQL"
-          date
-        else
-          date.to_s
-        end
-
+        events = views_by_date[date] || []
         {
           date: date.strftime("%b %d"),
           full_date: date,
-          views: views_by_date[key] || 0,
-          uniques: uniques_by_date[key] || 0
+          views: events.count,
+          uniques: uniques_by_date[date] || 0
         }
       end
     end
