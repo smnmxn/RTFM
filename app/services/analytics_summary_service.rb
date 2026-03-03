@@ -39,12 +39,19 @@ class AnalyticsSummaryService
     # For 24h view, group by hour; otherwise group by day
     if @period == "24h"
       # Hourly breakdown for last 24 hours
+      # Database-agnostic: use date_trunc for PostgreSQL, strftime for SQLite
+      hour_sql = if ActiveRecord::Base.connection.adapter_name == "PostgreSQL"
+        "date_trunc('hour', created_at)"
+      else
+        "strftime('%Y-%m-%d %H:00:00', created_at)"
+      end
+
       views_by_hour = page_views
-        .group("strftime('%Y-%m-%d %H:00:00', created_at)")
+        .group(Arel.sql(hour_sql))
         .count
 
       uniques_by_hour = page_views
-        .group("strftime('%Y-%m-%d %H:00:00', created_at)")
+        .group(Arel.sql(hour_sql))
         .distinct
         .count(:visitor_id)
 
@@ -52,7 +59,13 @@ class AnalyticsSummaryService
       current = @start_date.beginning_of_hour
       result = []
       while current <= @end_date
-        key = current.strftime("%Y-%m-%d %H:00:00")
+        # For PostgreSQL, the key is a Time object; for SQLite it's a string
+        key = if ActiveRecord::Base.connection.adapter_name == "PostgreSQL"
+          current
+        else
+          current.strftime("%Y-%m-%d %H:00:00")
+        end
+
         result << {
           date: current.strftime("%H:%M"),
           full_date: current,
@@ -64,17 +77,30 @@ class AnalyticsSummaryService
       result
     else
       # Daily breakdown for 7d, 30d, 90d
+      # Database-agnostic: use date_trunc for PostgreSQL, date() for SQLite
+      date_sql = if ActiveRecord::Base.connection.adapter_name == "PostgreSQL"
+        "date_trunc('day', created_at)::date"
+      else
+        "date(created_at)"
+      end
+
       views_by_date = page_views
-        .group("date(created_at)")
+        .group(Arel.sql(date_sql))
         .count
 
       uniques_by_date = page_views
-        .group("date(created_at)")
+        .group(Arel.sql(date_sql))
         .distinct
         .count(:visitor_id)
 
       (@start_date.to_date..@end_date.to_date).map do |date|
-        key = date.to_s
+        # For PostgreSQL, the key is a Date object; for SQLite it's a string
+        key = if ActiveRecord::Base.connection.adapter_name == "PostgreSQL"
+          date
+        else
+          date.to_s
+        end
+
         {
           date: date.strftime("%b %d"),
           full_date: date,
