@@ -35,6 +35,12 @@ Rails.application.routes.draw do
     get "/security", to: "legal#security", as: :security
   end
 
+  # Blog (bare domain, public)
+  scope "/blog" do
+    get "/", to: "blog#index", as: :blog
+    get "/:slug", to: "blog#show", as: :blog_post
+  end
+
   # How it works (bare domain, public)
   get "/how-it-works", to: "pages#how_it_works", as: :how_it_works
   get "/brand", to: "pages#brand", as: :brand

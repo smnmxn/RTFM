@@ -124,6 +124,7 @@ GEM
     ffi (1.17.2-x86_64-darwin)
     ffi (1.17.2-x86_64-linux-gnu)
     ffi (1.17.2-x86_64-linux-musl)
+    front_matter_parser (1.0.1)
     globalid (1.3.0)
       activesupport (>= 6.1)
     hashie (5.0.0)
@@ -483,6 +484,7 @@ DEPENDENCIES
   connection_pool (~> 2.4)
   debug
   dotenv
+  front_matter_parser
   heroicon
   image_processing (~> 1.2)
   importmap-rails

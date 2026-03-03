@@ -51,6 +51,7 @@ gem "jwt"
 
 # Markdown rendering
 gem "redcarpet"
+gem "front_matter_parser"
 
 # Email delivery (production)
 gem "postmark-rails"

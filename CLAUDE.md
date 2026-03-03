@@ -154,8 +154,59 @@ The application follows a **Webhook → Worker → Service** pattern:
 - `app/controllers/webhooks/` - Incoming API events from GitHub
 - `docker/claude-analyzer/` - Docker image with Claude Code CLI for codebase analysis and article generation
 - `docs/phases/` - Phase-by-phase implementation documentation
+- `docs/blog/` - Markdown blog posts with YAML frontmatter
+- `public/images/blog/` - Static blog images (served directly by web server)
 - `test/` - Test suite (Minitest + Playwright E2E)
 - `test/e2e/` - End-to-end browser tests with Playwright
+
+## Blog
+
+The application includes a markdown-based blog accessible at `/blog`. Blog posts are version-controlled markdown files stored in `docs/blog/`.
+
+### Adding New Blog Posts
+
+1. Create a markdown file in `docs/blog/` with date-prefixed filename: `YYYY-MM-DD-post-slug.md`
+2. Add YAML frontmatter with required fields (see format below)
+3. Add images to `public/images/blog/` (recommend 1200x630px for hero images)
+4. No code changes or server restarts required—new posts appear automatically
+
+### Blog Post Format
+
+```markdown
+---
+title: "Post Title (used in <title> and og:title)"
+date: 2026-03-03                                  # YYYY-MM-DD format
+author: "Author Name"                             # Optional
+excerpt: "Short preview for index page"           # Required
+description: "SEO meta description 150-160 chars" # Required (for search engines)
+keywords: "keyword1, keyword2, keyword3"          # Optional (comma-separated)
+published: true                                   # false = draft (hidden in production)
+image: "/images/blog/YYYY-MM-DD-hero.png"        # Required (featured image)
+---
+
+# Your markdown content here
+
+Use standard markdown syntax for content.
+```
+
+### SEO Features
+
+Blog posts are fully optimized for search engines and AI crawlers:
+- Meta description, keywords, and canonical URL tags
+- Open Graph tags (Facebook, LinkedIn, Discord)
+- Twitter Card tags for rich social sharing
+- JSON-LD structured data (Article schema)
+- Semantic HTML with proper heading hierarchy
+- Alt text for all images
+
+### Implementation Details
+
+- **Controller**: `BlogController` parses markdown files with Rails.cache for performance
+- **Layout**: Reuses `legal.html.erb` layout with dark theme
+- **Rendering**: Redcarpet gem converts markdown to HTML
+- **Caching**: Posts cached using file path + mtime as key (auto-invalidates on edit)
+- **Routes**: `/blog` (index), `/blog/:slug` (individual posts)
+- **Tests**: `test/controllers/blog_controller_test.rb`
 
 ## Environment Variables
 

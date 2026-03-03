@@ -1,0 +1,90 @@
+<% content_for :title, "#{@post[:title]} - Blog - supportpages.io" %>
+<% content_for :head do %>
+  <%= blog_meta_tags(@post) %>
+  <%= structured_data_for_article(@post) %>
+<% end %>
+
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <!-- Back link -->
+  <div class="mb-10">
+    <a href="<%= blog_path %>" class="inline-flex items-center text-sm font-medium text-zinc-500 hover:text-zinc-300 transition-colors group">
+      <svg class="mr-2 w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+      </svg>
+      Back to Blog
+    </a>
+  </div>
+
+  <article>
+    <!-- Hero image -->
+    <% if @post[:image].present? %>
+      <div class="aspect-[2/1] rounded-xl overflow-hidden bg-zinc-800 mb-10 border border-zinc-800/50">
+        <img src="<%= @post[:image] %>"
+             alt="<%= @post[:title] %>"
+             class="w-full h-full object-cover">
+      </div>
+    <% end %>
+
+    <!-- Post header -->
+    <header class="mb-12">
+      <!-- Post meta -->
+      <div class="flex items-center gap-3 text-sm mb-6">
+        <% if @post[:date].present? %>
+          <time datetime="<%= @post[:date].iso8601 %>" class="font-medium text-zinc-500">
+            <%= @post[:date].strftime("%B %d, %Y") %>
+          </time>
+        <% end %>
+        <% if @post[:author].present? %>
+          <span class="text-zinc-700">•</span>
+          <span class="text-zinc-500"><%= @post[:author] %></span>
+        <% end %>
+        <% if !@post[:published] && !Rails.env.production? %>
+          <span class="text-zinc-700">•</span>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
+            Draft
+          </span>
+        <% end %>
+      </div>
+
+      <!-- Post title -->
+      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight" style="font-family: 'Space Grotesk', sans-serif;">
+        <%= @post[:title] %>
+      </h1>
+
+      <!-- Post description -->
+      <% if @post[:description].present? && @post[:description] != @post[:excerpt] %>
+        <p class="text-xl text-zinc-400 leading-relaxed">
+          <%= @post[:description] %>
+        </p>
+      <% end %>
+    </header>
+
+    <!-- Post content -->
+    <div class="legal-content legal-content-dark">
+      <%= @post[:html_content] %>
+    </div>
+  </article>
+
+  <!-- Footer CTA -->
+  <div class="mt-20 pt-16 border-t border-zinc-800/50">
+    <div class="relative bg-gradient-to-br from-zinc-900/90 to-zinc-900/40 border border-zinc-800/50 rounded-2xl p-10 sm:p-12 text-center overflow-hidden">
+      <!-- Decorative gradient orb -->
+      <div class="absolute top-0 right-0 w-64 h-64 bg-zinc-700/20 rounded-full blur-3xl"></div>
+
+      <div class="relative">
+        <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4 leading-tight" style="font-family: 'Space Grotesk', sans-serif;">
+          Ready to automate your documentation?
+        </h2>
+        <p class="text-lg text-zinc-400 mb-8 max-w-2xl mx-auto leading-relaxed">
+          Transform your code changes into user-facing support articles automatically with supportpages.io.
+        </p>
+        <a href="/login" class="inline-flex items-center justify-center px-8 py-4 border border-zinc-700/50 text-base font-semibold rounded-lg text-white bg-zinc-800/80 hover:bg-zinc-700 hover:border-zinc-600 transition-all duration-300 shadow-lg shadow-zinc-900/50 hover:shadow-xl hover:shadow-zinc-900/50 hover:-translate-y-0.5">
+          Get Started
+          <svg class="ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

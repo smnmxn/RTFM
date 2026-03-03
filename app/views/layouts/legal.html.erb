@@ -16,6 +16,8 @@
 
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+
+    <%= yield :head %>
   </head>
 
   <body class="bg-zinc-950 min-h-screen text-zinc-300" style="font-family: 'Inter', system-ui, sans-serif;">
