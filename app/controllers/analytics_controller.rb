@@ -2,6 +2,7 @@ class AnalyticsController < ApplicationController
   before_action :require_admin
 
   PERIODS = {
+    "24h" => 1,
     "7d" => 7,
     "30d" => 30,
     "90d" => 90

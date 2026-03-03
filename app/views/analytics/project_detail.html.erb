@@ -26,7 +26,7 @@
 
     <!-- Period selector -->
     <div class="flex gap-2">
-      <% %w[7d 30d 90d].each do |period| %>
+      <% AnalyticsController::PERIODS.keys.each do |period| %>
         <%= link_to period,
             analytics_project_path(@project, period: period),
             class: "px-3 py-1.5 text-sm font-medium rounded-lg transition-colors #{@period == period ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'app-text-muted hover:app-text app-surface-alt'}" %>
