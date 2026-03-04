@@ -9,6 +9,7 @@ class AnalyticsSummaryService
   def call
     {
       summary: summary,
+      visitor_breakdown: visitor_breakdown,
       daily_views: daily_views,
       top_pages: top_pages,
       top_referrers: top_referrers,
@@ -30,6 +31,21 @@ class AnalyticsSummaryService
       total_page_views: page_views.count,
       unique_visitors: page_views.distinct.count(:visitor_id),
       total_engagement: @events.engagement.count
+    }
+  end
+
+  def visitor_breakdown
+    visitor_ids = @events.distinct.pluck(:visitor_id)
+    visitors = Visitor.where(visitor_id: visitor_ids)
+
+    {
+      total_visitors: visitors.count,
+      new_visitors: visitors.where(total_page_views: 1).count,
+      returning_visitors: visitors.where("total_page_views > 1").count,
+      identified_visitors: visitors.identified.count,
+      anonymous_visitors: visitors.anonymous.count,
+      converted_visitors: visitors.where.not(user_id: nil).count,
+      avg_pages_per_visitor: visitors.average(:total_page_views).to_f.round(1)
     }
   end
 
@@ -95,23 +111,25 @@ class AnalyticsSummaryService
   end
 
   def utm_breakdown
-    @events.page_views
-      .where.not(utm_source: [ nil, "" ])
-      .group(:utm_source)
-      .order(Arel.sql("count(*) DESC"))
-      .limit(10)
-      .count
-      .map { |source, count| { source: source, views: count } }
+    visitor_ids = @events.page_views.distinct.pluck(:visitor_id)
+    Visitor.where(visitor_id: visitor_ids)
+           .where.not(utm_source: [ nil, "" ])
+           .group(:utm_source)
+           .order(Arel.sql("count(*) DESC"))
+           .limit(10)
+           .count
+           .map { |source, count| { source: source, visitors: count } }
   end
 
   def utm_content_breakdown
-    @events.page_views
-      .where.not(utm_content: [ nil, "" ])
-      .group(:utm_content)
-      .order(Arel.sql("count(*) DESC"))
-      .limit(10)
-      .count
-      .map { |content, count| { content: content, views: count } }
+    visitor_ids = @events.page_views.distinct.pluck(:visitor_id)
+    Visitor.where(visitor_id: visitor_ids)
+           .where.not(utm_content: [ nil, "" ])
+           .group(:utm_content)
+           .order(Arel.sql("count(*) DESC"))
+           .limit(10)
+           .count
+           .map { |content, count| { content: content, visitors: count } }
   end
 
   def prospect_tracking
@@ -141,17 +159,19 @@ class AnalyticsSummaryService
   end
 
   def device_breakdown
-    @events.page_views
-      .where.not(device_type: [ nil, "" ])
-      .group(:device_type)
-      .count
+    visitor_ids = @events.page_views.distinct.pluck(:visitor_id)
+    Visitor.where(visitor_id: visitor_ids)
+           .where.not(device_type: [ nil, "" ])
+           .group(:device_type)
+           .count
   end
 
   def browser_breakdown
-    @events.page_views
-      .where.not(browser_family: [ nil, "" ])
-      .group(:browser_family)
-      .count
+    visitor_ids = @events.page_views.distinct.pluck(:visitor_id)
+    Visitor.where(visitor_id: visitor_ids)
+           .where.not(browser_family: [ nil, "" ])
+           .group(:browser_family)
+           .count
   end
 
   def engagement

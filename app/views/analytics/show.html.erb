@@ -5,12 +5,12 @@
 
   <div class="mt-6">
     <h1 class="text-2xl font-bold app-text" style="font-family: var(--app-font-display);">Analytics</h1>
-    <p class="mt-1 text-sm app-text-muted"><%= @tab == "product" ? "Internal product usage" : @tab == "projects" ? "Per-project health and engagement" : "Public page visitor engagement" %></p>
+    <p class="mt-1 text-sm app-text-muted"><%= @tab == "product" ? "Internal product usage" : @tab == "projects" ? "Per-project health and engagement" : @tab == "visitors" ? "Individual visitor tracking and journeys" : "Public page visitor engagement" %></p>
   </div>
 
   <!-- Tab switcher -->
   <div class="mt-4 flex gap-2">
-    <% %w[public product projects].each do |tab| %>
+    <% %w[public visitors product projects].each do |tab| %>
       <%= link_to tab.capitalize,
           analytics_path(tab: tab, period: @period),
           class: "px-3 py-1.5 text-sm font-medium rounded-lg transition-colors #{@tab == tab ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'app-text-muted hover:app-text app-surface-alt'}" %>
@@ -25,7 +25,9 @@
     </div>
   </div>
 
-  <% if @tab == "product" %>
+  <% if @tab == "visitors" %>
+    <%= render "visitors" %>
+  <% elsif @tab == "product" %>
     <%= render "product" %>
   <% elsif @tab == "projects" %>
     <%= render "projects" %>

@@ -41,6 +41,7 @@ module Trackable
       visitor_id: visitor_id,
       event_type: "page_view",
       page_path: request.path,
+      ip_address: request.remote_ip,
       referrer_url: request.referer,
       user_agent: request.user_agent,
       utm_source: params[:utm_source],

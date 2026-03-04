@@ -1,0 +1,125 @@
+<!-- Visitors List -->
+<div class="mt-6">
+  <% if @visitors.any? %>
+    <div class="app-surface rounded-xl border app-border overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="border-b app-border bg-zinc-50 dark:bg-zinc-800/50">
+            <tr>
+              <th class="text-left py-3 px-4 app-text font-semibold">Visitor</th>
+              <th class="text-left py-3 px-4 app-text font-semibold">Identity</th>
+              <th class="text-right py-3 px-4 app-text font-semibold">Page Views</th>
+              <th class="text-right py-3 px-4 app-text font-semibold">Events</th>
+              <th class="text-left py-3 px-4 app-text font-semibold">Source</th>
+              <th class="text-left py-3 px-4 app-text font-semibold">Device</th>
+              <th class="text-right py-3 px-4 app-text font-semibold">First Seen</th>
+              <th class="text-right py-3 px-4 app-text font-semibold">Last Seen</th>
+              <th class="text-center py-3 px-4 app-text font-semibold"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @visitors.each do |visitor| %>
+              <tr class="border-b app-border hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors">
+                <td class="py-3 px-4">
+                  <div class="flex flex-col">
+                    <span class="text-xs font-mono app-text-muted"><%= visitor.visitor_id[0..7] %>...</span>
+                    <% if visitor.returning_visitor? %>
+                      <span class="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 w-fit">
+                        Returning
+                      </span>
+                    <% else %>
+                      <span class="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 w-fit">
+                        New
+                      </span>
+                    <% end %>
+                  </div>
+                </td>
+                <td class="py-3 px-4">
+                  <% if visitor.identified? %>
+                    <div class="flex flex-col">
+                      <span class="font-medium app-text"><%= visitor.email %></span>
+                      <% if visitor.name.present? %>
+                        <span class="text-xs app-text-muted"><%= visitor.name %></span>
+                      <% end %>
+                      <% if visitor.converted? %>
+                        <span class="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 w-fit">
+                          Converted
+                        </span>
+                      <% end %>
+                    </div>
+                  <% else %>
+                    <span class="text-xs app-text-muted italic">Anonymous</span>
+                  <% end %>
+                </td>
+                <td class="text-right py-3 px-4 app-text font-medium">
+                  <%= number_with_delimiter(visitor.total_page_views) %>
+                </td>
+                <td class="text-right py-3 px-4 app-text">
+                  <%= number_with_delimiter(visitor.total_events) %>
+                </td>
+                <td class="py-3 px-4">
+                  <% if visitor.utm_source.present? %>
+                    <div class="flex flex-col">
+                      <span class="text-xs font-medium app-text"><%= visitor.utm_source %></span>
+                      <% if visitor.utm_medium.present? %>
+                        <span class="text-xs app-text-muted"><%= visitor.utm_medium %></span>
+                      <% end %>
+                      <% if visitor.utm_campaign.present? %>
+                        <span class="text-xs app-text-muted truncate max-w-[120px]" title="<%= visitor.utm_campaign %>">
+                          <%= visitor.utm_campaign %>
+                        </span>
+                      <% end %>
+                    </div>
+                  <% else %>
+                    <span class="text-xs app-text-muted">—</span>
+                  <% end %>
+                </td>
+                <td class="py-3 px-4">
+                  <div class="flex flex-col">
+                    <% if visitor.device_type.present? %>
+                      <span class="text-xs app-text capitalize"><%= visitor.device_type %></span>
+                    <% end %>
+                    <% if visitor.browser_family.present? %>
+                      <span class="text-xs app-text-muted"><%= visitor.browser_family %></span>
+                    <% end %>
+                    <% if visitor.os_family.present? %>
+                      <span class="text-xs app-text-muted"><%= visitor.os_family %></span>
+                    <% end %>
+                  </div>
+                </td>
+                <td class="text-right py-3 px-4">
+                  <div class="flex flex-col items-end">
+                    <span class="text-xs app-text"><%= visitor.first_seen_at.strftime("%b %d") %></span>
+                    <span class="text-xs app-text-muted"><%= visitor.first_seen_at.strftime("%H:%M") %></span>
+                  </div>
+                </td>
+                <td class="text-right py-3 px-4">
+                  <div class="flex flex-col items-end">
+                    <span class="text-xs app-text"><%= visitor.last_seen_at.strftime("%b %d") %></span>
+                    <span class="text-xs app-text-muted"><%= time_ago_in_words(visitor.last_seen_at) %> ago</span>
+                  </div>
+                </td>
+                <td class="text-center py-3 px-4">
+                  <%= link_to "View",
+                      analytics_visitor_path(visitor),
+                      class: "inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded-lg app-text hover:app-surface-alt transition-colors" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <% if @visitors.total_pages > 1 %>
+      <div class="mt-4 flex justify-center">
+        <%= paginate @visitors %>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="app-surface rounded-xl border app-border p-12 text-center">
+      <p class="text-sm app-text-muted">No visitors found in this time period.</p>
+    </div>
+  <% end %>
+</div>

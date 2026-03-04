@@ -90,6 +90,7 @@ Rails.application.routes.draw do
     # Analytics dashboard
     get "/analytics", to: "analytics#show", as: :analytics
     get "/analytics/projects/:id", to: "analytics#project_detail", as: :analytics_project
+    get "/analytics/visitors/:id", to: "analytics#visitor_detail", as: :analytics_visitor
 
     # GitHub App installation
     get "/github_app/install", to: "github_app#install", as: :github_app_install

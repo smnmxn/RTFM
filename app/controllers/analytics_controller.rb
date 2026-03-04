@@ -10,13 +10,18 @@ class AnalyticsController < ApplicationController
 
   def show
     @period = PERIODS.key?(params[:period]) ? params[:period] : "30d"
-    @tab = %w[public product projects].include?(params[:tab]) ? params[:tab] : "public"
+    @tab = %w[public product projects visitors].include?(params[:tab]) ? params[:tab] : "public"
     days = PERIODS[@period]
 
     end_date = Time.current
     start_date = days.days.ago
 
-    if @tab == "projects"
+    if @tab == "visitors"
+      @visitors = Visitor.where("last_seen_at >= ?", start_date)
+                         .order(last_seen_at: :desc)
+                         .page(params[:page])
+                         .per(50)
+    elsif @tab == "projects"
       @projects = AccountAnalyticsService.new(start_date, end_date).call
     elsif @tab == "product"
       service = ProductAnalyticsSummaryService.new(start_date, end_date)
@@ -36,5 +41,21 @@ class AnalyticsController < ApplicationController
     @project = Project.find(params[:id])
     @user = @project.user
     @detail = AccountAnalyticsService.new(start_date, end_date).project_detail(@project)
+  end
+
+  def visitor_detail
+    @visitor = Visitor.find(params[:id])
+    @events = @visitor.analytics_events.order(created_at: :desc).limit(100)
+
+    # Group events by type for summary
+    @event_summary = @events.group_by(&:event_type).transform_values(&:count)
+
+    # Get daily activity for the last 30 days
+    @daily_activity = @visitor.analytics_events
+                               .where("created_at >= ?", 30.days.ago)
+                               .group_by { |e| e.created_at.to_date }
+                               .transform_values(&:count)
+                               .sort
+                               .to_h
   end
 end

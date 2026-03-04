@@ -2,12 +2,33 @@ class RecordAnalyticsEventJob < ApplicationJob
   queue_as :low
   discard_on StandardError
 
-  def perform(visitor_id:, event_type:, page_path:, referrer_url: nil, user_agent: nil,
+  def perform(visitor_id:, event_type:, page_path:, ip_address: nil, referrer_url: nil, user_agent: nil,
               utm_source: nil, utm_medium: nil, utm_campaign: nil, utm_term: nil, utm_content: nil,
               event_data: nil)
     device_type, browser_family, os_family = parse_user_agent(user_agent)
     referrer_host = extract_host(referrer_url)
 
+    # Find or create visitor record
+    visitor = Visitor.find_or_create_by!(visitor_id: visitor_id) do |v|
+      # First-touch attribution
+      v.utm_source = utm_source
+      v.utm_medium = utm_medium
+      v.utm_campaign = utm_campaign
+      v.utm_term = utm_term
+      v.utm_content = utm_content
+      v.initial_referrer_url = referrer_url
+      v.initial_referrer_host = referrer_host
+      v.initial_landing_page = page_path
+      v.first_seen_at = Time.current
+      v.last_seen_at = Time.current
+      v.last_ip_address = ip_address
+      v.last_user_agent = user_agent
+      v.device_type = device_type
+      v.browser_family = browser_family
+      v.os_family = os_family
+    end
+
+    # Create analytics event (simplified - no visitor metadata)
     AnalyticsEvent.create!(
       visitor_id: visitor_id,
       event_type: event_type,
@@ -24,6 +45,19 @@ class RecordAnalyticsEventJob < ApplicationJob
       browser_family: browser_family,
       os_family: os_family
     )
+
+    # Update visitor activity counters and last-seen metadata
+    visitor.record_activity!(
+      event_type: event_type,
+      ip_address: ip_address,
+      user_agent: user_agent,
+      device_type: device_type,
+      browser_family: browser_family,
+      os_family: os_family
+    )
+  rescue ActiveRecord::RecordNotUnique
+    # Race condition - retry
+    retry
   end
 
   private

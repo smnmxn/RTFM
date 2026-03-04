@@ -22,6 +22,10 @@ class SessionsController < ApplicationController
       )
       session[:user_id] = user.id
       session.delete(:invite_token)
+
+      # Identify the visitor
+      identify_visitor(user)
+
       redirect_to app_subdomain_url(default_landing_path(user)), allow_other_host: true, notice: "Welcome back, #{user.name || user.github_username}!"
     else
       # New user - require valid invite
@@ -44,6 +48,9 @@ class SessionsController < ApplicationController
       session.delete(:invite_token)
       session[:user_id] = user.id
 
+      # Identify the visitor
+      identify_visitor(user)
+
       redirect_to app_subdomain_url(default_landing_path(user)), allow_other_host: true, notice: "Welcome, #{user.name || user.github_username}!"
     end
   rescue ActiveRecord::RecordInvalid => e
@@ -61,6 +68,17 @@ class SessionsController < ApplicationController
   end
 
   private
+
+  def identify_visitor(user)
+    return unless cookies[:_sp_vid].present?
+
+    visitor = Visitor.find_by(visitor_id: cookies[:_sp_vid])
+    visitor&.identify!(
+      email: user.email,
+      name: user.name,
+      user_id: user.id
+    )
+  end
 
   def default_landing_path(user = current_user)
     # Resume incomplete onboarding if no completed projects

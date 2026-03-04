@@ -18,6 +18,31 @@
   </div>
 </div>
 
+<!-- Visitor Breakdown -->
+<% if @data[:visitor_breakdown] %>
+  <div class="mt-6 app-surface rounded-xl border app-border p-5">
+    <h2 class="text-sm font-semibold app-text mb-4">Visitor Insights</h2>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div>
+        <p class="text-xs app-text-muted">New Visitors</p>
+        <p class="text-lg font-semibold app-text"><%= number_with_delimiter(@data[:visitor_breakdown][:new_visitors]) %></p>
+      </div>
+      <div>
+        <p class="text-xs app-text-muted">Returning Visitors</p>
+        <p class="text-lg font-semibold app-text"><%= number_with_delimiter(@data[:visitor_breakdown][:returning_visitors]) %></p>
+      </div>
+      <div>
+        <p class="text-xs app-text-muted">Identified</p>
+        <p class="text-lg font-semibold app-text"><%= number_with_delimiter(@data[:visitor_breakdown][:identified_visitors]) %></p>
+      </div>
+      <div>
+        <p class="text-xs app-text-muted">Avg Pages/Visitor</p>
+        <p class="text-lg font-semibold app-text"><%= @data[:visitor_breakdown][:avg_pages_per_visitor] %></p>
+      </div>
+    </div>
+  </div>
+<% end %>
+
 <!-- Page views chart -->
 <div class="mt-6 app-surface rounded-xl border app-border p-5">
   <h2 class="text-sm font-semibold app-text mb-4"><%= @period == "24h" ? "Hourly" : "Daily" %> Page Views</h2>
@@ -274,7 +299,7 @@
         <% @data[:utm_breakdown].each do |utm| %>
           <div class="flex justify-between items-center text-sm">
             <span class="app-text truncate mr-2"><%= utm[:source] %></span>
-            <span class="app-text-muted flex-shrink-0"><%= number_with_delimiter(utm[:views]) %></span>
+            <span class="app-text-muted flex-shrink-0"><%= number_with_delimiter(utm[:visitors]) %></span>
           </div>
         <% end %>
       </div>
@@ -290,7 +315,7 @@
         <% @data[:utm_content_breakdown].each do |utm| %>
           <div class="flex justify-between items-center text-sm">
             <span class="app-text truncate mr-2"><%= utm[:content] %></span>
-            <span class="app-text-muted flex-shrink-0"><%= number_with_delimiter(utm[:views]) %></span>
+            <span class="app-text-muted flex-shrink-0"><%= number_with_delimiter(utm[:visitors]) %></span>
           </div>
         <% end %>
       </div>

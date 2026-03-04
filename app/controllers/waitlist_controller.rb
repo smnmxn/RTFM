@@ -7,16 +7,28 @@ class WaitlistController < ApplicationController
 
     if entry.new_record?
       if entry.save
+        # Identify the visitor with email
+        identify_visitor_with_email(email)
         redirect_to waitlist_questions_path(entry.token)
       else
         redirect_to login_path, alert: "Please enter a valid email address."
       end
     elsif entry.questions_completed_at.nil?
       # Existing entry without completed questions - continue flow
+      identify_visitor_with_email(email)
       redirect_to waitlist_questions_path(entry.token)
     else
       # Already completed
       redirect_to login_path, notice: "You're already on the waitlist. We'll be in touch!"
     end
+  end
+
+  private
+
+  def identify_visitor_with_email(email)
+    return unless cookies[:_sp_vid].present?
+
+    visitor = Visitor.find_by(visitor_id: cookies[:_sp_vid])
+    visitor&.identify!(email: email)
   end
 end
