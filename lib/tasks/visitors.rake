@@ -49,8 +49,14 @@ namespace :visitors do
       puts "  - #{v.visitor_id[0..11]}... | #{v.last_user_agent&.truncate(60) || '(no user agent)'}"
     end
 
-    print "\n⚠️  Delete these #{all_suspects.count} visitors and their events? (y/N): "
-    confirmation = STDIN.gets.chomp.downcase
+    # Check for CONFIRM environment variable (for non-interactive use)
+    if ENV['CONFIRM'] == 'yes'
+      confirmation = 'y'
+      puts "\n✓ Auto-confirmed via CONFIRM=yes"
+    else
+      print "\n⚠️  Delete these #{all_suspects.count} visitors and their events? (y/N): "
+      confirmation = STDIN.gets&.chomp&.downcase
+    end
 
     if confirmation == 'y'
       # Delete analytics events first (foreign key constraint)
