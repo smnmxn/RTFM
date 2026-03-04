@@ -1,7 +1,20 @@
 module Trackable
   extend ActiveSupport::Concern
 
-  BOT_PATTERNS = /bot|crawl|spider|slurp|mediapartners|facebookexternalhit|bingpreview|lighthouse|pingdom|uptimerobot|headlesschrome|phantomjs/i
+  # Comprehensive bot detection patterns
+  BOT_PATTERNS = /
+    bot|crawl|spider|slurp|scrape|
+    mediapartners|facebookexternalhit|bingpreview|
+    lighthouse|pingdom|uptimerobot|statuscake|
+    headlesschrome|phantomjs|selenium|webdriver|
+    curl|wget|python|java|go-http|axios|
+    postman|insomnia|httpie|
+    ahrefsbot|semrushbot|mj12bot|dotbot|
+    baidu|yandex|duckduckgo|
+    monitoring|check_http|nagios|
+    prerender|archive\.org|
+    ia_archiver|wayback
+  /ix
 
   included do
     after_action :track_page_view, if: :should_track?
@@ -31,7 +44,28 @@ module Trackable
 
   def bot_request?
     ua = request.user_agent.to_s
-    ua.blank? || ua.match?(BOT_PATTERNS)
+    return true if ua.blank?
+    return true if ua.match?(BOT_PATTERNS)
+    return true if suspicious_user_agent?(ua)
+    false
+  end
+
+  def suspicious_user_agent?(ua)
+    # Catch generic/suspicious patterns that bots often use
+    return true if ua.length < 10  # Too short to be real browser
+    return true if ua.match?(/^(Mozilla\/5\.0)?$/)  # Just "Mozilla/5.0" with nothing else
+
+    # Must have at least one known browser identifier
+    has_browser = ua.match?(/Chrome|Safari|Firefox|Edge|Opera|MSIE|Trident/i)
+    # Must have OS/platform identifier
+    has_platform = ua.match?(/Windows|Macintosh|Linux|Android|iPhone|iPad/i)
+    # Must have AppleWebKit, Gecko, or similar rendering engine
+    has_engine = ua.match?(/AppleWebKit|Gecko|Trident|Presto/i)
+
+    # Real browsers have all three components
+    return true unless has_browser && (has_platform || has_engine)
+
+    false
   end
 
   def track_page_view
