@@ -6,14 +6,46 @@
         <table class="w-full text-sm">
           <thead class="border-b app-border bg-zinc-50 dark:bg-zinc-800/50">
             <tr>
-              <th class="text-left py-3 px-4 app-text font-semibold">Visitor</th>
-              <th class="text-left py-3 px-4 app-text font-semibold">Identity</th>
-              <th class="text-right py-3 px-4 app-text font-semibold">Page Views</th>
-              <th class="text-right py-3 px-4 app-text font-semibold">Events</th>
-              <th class="text-left py-3 px-4 app-text font-semibold">Source</th>
-              <th class="text-left py-3 px-4 app-text font-semibold">Device</th>
-              <th class="text-right py-3 px-4 app-text font-semibold">First Seen</th>
-              <th class="text-right py-3 px-4 app-text font-semibold">Last Seen</th>
+              <th class="text-left py-3 px-4 app-text font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-700/50 cursor-pointer transition-colors">
+                <%= link_to "Visitor #{@sort_column == 'visitor_id' ? (@sort_direction == 'asc' ? '↑' : '↓') : ''}",
+                    analytics_path(tab: "visitors", period: @period, sort: "visitor_id", direction: @sort_column == 'visitor_id' && @sort_direction == 'asc' ? 'desc' : 'asc'),
+                    class: "block" %>
+              </th>
+              <th class="text-left py-3 px-4 app-text font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-700/50 cursor-pointer transition-colors">
+                <%= link_to "Identity #{@sort_column == 'email' ? (@sort_direction == 'asc' ? '↑' : '↓') : ''}",
+                    analytics_path(tab: "visitors", period: @period, sort: "email", direction: @sort_column == 'email' && @sort_direction == 'asc' ? 'desc' : 'asc'),
+                    class: "block" %>
+              </th>
+              <th class="text-right py-3 px-4 app-text font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-700/50 cursor-pointer transition-colors">
+                <%= link_to "Page Views #{@sort_column == 'total_page_views' ? (@sort_direction == 'asc' ? '↑' : '↓') : ''}",
+                    analytics_path(tab: "visitors", period: @period, sort: "total_page_views", direction: @sort_column == 'total_page_views' && @sort_direction == 'asc' ? 'desc' : 'asc'),
+                    class: "block text-right" %>
+              </th>
+              <th class="text-right py-3 px-4 app-text font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-700/50 cursor-pointer transition-colors">
+                <%= link_to "Events #{@sort_column == 'total_events' ? (@sort_direction == 'asc' ? '↑' : '↓') : ''}",
+                    analytics_path(tab: "visitors", period: @period, sort: "total_events", direction: @sort_column == 'total_events' && @sort_direction == 'asc' ? 'desc' : 'asc'),
+                    class: "block text-right" %>
+              </th>
+              <th class="text-left py-3 px-4 app-text font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-700/50 cursor-pointer transition-colors">
+                <%= link_to "Source #{@sort_column == 'utm_source' ? (@sort_direction == 'asc' ? '↑' : '↓') : ''}",
+                    analytics_path(tab: "visitors", period: @period, sort: "utm_source", direction: @sort_column == 'utm_source' && @sort_direction == 'asc' ? 'desc' : 'asc'),
+                    class: "block" %>
+              </th>
+              <th class="text-left py-3 px-4 app-text font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-700/50 cursor-pointer transition-colors">
+                <%= link_to "Device #{@sort_column == 'device_type' ? (@sort_direction == 'asc' ? '↑' : '↓') : ''}",
+                    analytics_path(tab: "visitors", period: @period, sort: "device_type", direction: @sort_column == 'device_type' && @sort_direction == 'asc' ? 'desc' : 'asc'),
+                    class: "block" %>
+              </th>
+              <th class="text-right py-3 px-4 app-text font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-700/50 cursor-pointer transition-colors">
+                <%= link_to "First Seen #{@sort_column == 'first_seen_at' ? (@sort_direction == 'asc' ? '↑' : '↓') : ''}",
+                    analytics_path(tab: "visitors", period: @period, sort: "first_seen_at", direction: @sort_column == 'first_seen_at' && @sort_direction == 'asc' ? 'desc' : 'asc'),
+                    class: "block text-right" %>
+              </th>
+              <th class="text-right py-3 px-4 app-text font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-700/50 cursor-pointer transition-colors">
+                <%= link_to "Last Seen #{@sort_column == 'last_seen_at' ? (@sort_direction == 'asc' ? '↑' : '↓') : ''}",
+                    analytics_path(tab: "visitors", period: @period, sort: "last_seen_at", direction: @sort_column == 'last_seen_at' && @sort_direction == 'asc' ? 'desc' : 'asc'),
+                    class: "block text-right" %>
+              </th>
               <th class="text-center py-3 px-4 app-text font-semibold"></th>
             </tr>
           </thead>

@@ -68,6 +68,14 @@ module Trackable
     false
   end
 
+  def visitor_ip_address
+    # Get real visitor IP from Cloudflare headers (or other proxies)
+    # Cloudflare sends the real IP in CF-Connecting-IP header
+    request.headers['CF-Connecting-IP'] ||
+      request.headers['X-Forwarded-For']&.split(',')&.first&.strip ||
+      request.remote_ip
+  end
+
   def track_page_view
     visitor_id = ensure_visitor_id
 
@@ -75,7 +83,7 @@ module Trackable
       visitor_id: visitor_id,
       event_type: "page_view",
       page_path: request.path,
-      ip_address: request.remote_ip,
+      ip_address: visitor_ip_address,
       referrer_url: request.referer,
       user_agent: request.user_agent,
       utm_source: params[:utm_source],

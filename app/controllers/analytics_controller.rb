@@ -17,10 +17,17 @@ class AnalyticsController < ApplicationController
     start_date = days.days.ago
 
     if @tab == "visitors"
+      # Sorting
+      sort_column = params[:sort].presence_in(%w[visitor_id email total_page_views total_events utm_source device_type first_seen_at last_seen_at]) || "last_seen_at"
+      sort_direction = params[:direction].presence_in(%w[asc desc]) || "desc"
+
       @visitors = Visitor.where("last_seen_at >= ?", start_date)
-                         .order(last_seen_at: :desc)
+                         .order("#{sort_column} #{sort_direction}")
                          .page(params[:page])
                          .per(50)
+
+      @sort_column = sort_column
+      @sort_direction = sort_direction
     elsif @tab == "projects"
       @projects = AccountAnalyticsService.new(start_date, end_date).call
     elsif @tab == "product"
