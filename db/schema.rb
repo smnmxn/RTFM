@@ -11,6 +11,9 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_catalog.plpgsql"
+
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -64,7 +67,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
     t.string "base_commit_sha"
     t.datetime "completed_at"
     t.datetime "created_at", null: false
-    t.integer "project_id", null: false
+    t.bigint "project_id", null: false
     t.json "results"
     t.datetime "started_at"
     t.string "status", default: "pending", null: false
@@ -76,8 +79,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
 
   create_table "article_update_suggestions", force: :cascade do |t|
     t.json "affected_files"
-    t.integer "article_id"
-    t.integer "article_update_check_id", null: false
+    t.bigint "article_id"
+    t.bigint "article_update_check_id", null: false
     t.datetime "created_at", null: false
     t.string "priority", default: "medium", null: false
     t.text "reason"
@@ -130,7 +133,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
     t.json "metadata"
     t.integer "num_turns"
     t.integer "output_tokens", default: 0, null: false
-    t.integer "project_id"
+    t.bigint "project_id"
     t.string "service_tier"
     t.string "session_id"
     t.boolean "success", default: true, null: false
@@ -150,7 +153,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
     t.bigint "github_installation_id", null: false
     t.datetime "suspended_at"
     t.datetime "updated_at", null: false
-    t.integer "user_id"
+    t.bigint "user_id"
     t.index ["account_login"], name: "index_github_app_installations_on_account_login"
     t.index ["github_installation_id"], name: "index_github_app_installations_on_github_installation_id", unique: true
     t.index ["user_id"], name: "index_github_app_installations_on_user_id"
@@ -163,7 +166,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
     t.string "token", null: false
     t.datetime "updated_at", null: false
     t.datetime "used_at"
-    t.integer "user_id"
+    t.bigint "user_id"
     t.index ["token"], name: "index_invites_on_token", unique: true
     t.index ["user_id"], name: "index_invites_on_user_id"
   end
@@ -174,10 +177,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
     t.string "event_type", null: false
     t.string "message"
     t.json "metadata"
-    t.integer "project_id", null: false
+    t.bigint "project_id", null: false
     t.string "status", null: false
     t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
+    t.bigint "user_id", null: false
     t.index ["project_id"], name: "index_pending_notifications_on_project_id"
     t.index ["user_id"], name: "index_pending_notifications_on_user_id"
   end
@@ -195,41 +198,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
     t.index ["user_id", "created_at"], name: "index_product_events_on_user_id_and_created_at"
   end
 
-  create_table "project_invitations", force: :cascade do |t|
-    t.datetime "accepted_at"
-    t.datetime "created_at", null: false
-    t.string "email", null: false
-    t.datetime "expires_at"
-    t.integer "invited_by_id", null: false
-    t.integer "project_id", null: false
-    t.string "role", default: "editor", null: false
-    t.string "status", default: "pending", null: false
-    t.string "token", null: false
-    t.datetime "updated_at", null: false
-    t.index ["invited_by_id"], name: "index_project_invitations_on_invited_by_id"
-    t.index ["project_id", "email"], name: "index_project_invitations_pending_unique", unique: true, where: "status = 'pending'"
-    t.index ["project_id"], name: "index_project_invitations_on_project_id"
-    t.index ["token"], name: "index_project_invitations_on_token", unique: true
-  end
-
-  create_table "project_memberships", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.integer "project_id", null: false
-    t.string "role", default: "editor", null: false
-    t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
-    t.index ["project_id", "user_id"], name: "index_project_memberships_on_project_id_and_user_id", unique: true
-    t.index ["project_id"], name: "index_project_memberships_on_project_id"
-    t.index ["user_id"], name: "index_project_memberships_on_user_id"
-  end
-
   create_table "project_repositories", force: :cascade do |t|
     t.string "branch"
     t.datetime "created_at", null: false
     t.bigint "github_installation_id", null: false
     t.string "github_repo", null: false
     t.boolean "is_primary", default: false, null: false
-    t.integer "project_id", null: false
+    t.bigint "project_id", null: false
     t.datetime "updated_at", null: false
     t.index ["github_repo"], name: "index_project_repositories_on_github_repo", unique: true
     t.index ["project_id"], name: "index_project_repositories_on_project_id"
@@ -251,7 +226,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
     t.string "custom_domain_ssl_status"
     t.string "custom_domain_status", default: "pending"
     t.datetime "custom_domain_verified_at"
-    t.integer "github_app_installation_id"
+    t.bigint "github_app_installation_id"
     t.string "github_repo"
     t.integer "help_centre_cache_version", default: 0, null: false
     t.integer "help_centre_daily_limit", default: 100, null: false
@@ -268,11 +243,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
     t.json "user_context"
     t.integer "user_id", null: false
     t.string "website_url"
-    t.index ["custom_domain"], name: "index_projects_on_custom_domain", unique: true, where: "custom_domain IS NOT NULL"
+    t.index ["custom_domain"], name: "index_projects_on_custom_domain", unique: true, where: "(custom_domain IS NOT NULL)"
     t.index ["github_app_installation_id"], name: "index_projects_on_github_app_installation_id"
     t.index ["onboarding_step"], name: "index_projects_on_onboarding_step"
     t.index ["slug"], name: "index_projects_on_slug", unique: true
-    t.index ["subdomain"], name: "index_projects_on_subdomain", unique: true, where: "subdomain IS NOT NULL"
+    t.index ["subdomain"], name: "index_projects_on_subdomain", unique: true, where: "(subdomain IS NOT NULL)"
     t.index ["user_id"], name: "index_projects_on_user_id"
   end
 
@@ -313,7 +288,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
   end
 
   create_table "step_images", force: :cascade do |t|
-    t.integer "article_id", null: false
+    t.bigint "article_id", null: false
     t.datetime "created_at", null: false
     t.integer "render_attempts", default: 0
     t.json "render_metadata"
@@ -355,7 +330,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
     t.string "github_username"
     t.string "name"
     t.json "notification_preferences"
-    t.string "password_digest"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["github_uid"], name: "index_users_on_github_uid", unique: true
@@ -426,10 +400,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
   add_foreign_key "pending_notifications", "users"
   add_foreign_key "product_events", "projects"
   add_foreign_key "product_events", "users"
-  add_foreign_key "project_invitations", "projects"
-  add_foreign_key "project_invitations", "users", column: "invited_by_id"
-  add_foreign_key "project_memberships", "projects"
-  add_foreign_key "project_memberships", "users"
   add_foreign_key "project_repositories", "projects"
   add_foreign_key "projects", "github_app_installations"
   add_foreign_key "projects", "users"

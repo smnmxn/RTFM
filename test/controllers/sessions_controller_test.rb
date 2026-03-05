@@ -54,15 +54,63 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
-  test "successful OAuth without invite rejects new user" do
+  test "successful OAuth without invite adds user to waitlist and redirects to questions" do
     use_app_subdomain
 
+    # Ensure no existing entry (in case tests run in different order)
+    WaitlistEntry.where(email: "newuser@example.com").destroy_all
+
     assert_no_difference "User.count" do
+      post "/auth/github"
+      # Follow OAuth callback redirect to trigger SessionsController#create
+      follow_redirect!
+    end
+
+    # Verify waitlist entry was created with correct data
+    waitlist_entry = WaitlistEntry.find_by(email: "newuser@example.com")
+    assert_not_nil waitlist_entry, "Waitlist entry should be created"
+    assert_equal "New User", waitlist_entry.name
+    assert_nil waitlist_entry.questions_completed_at, "Questions should not be completed yet"
+
+    # Should redirect to questions page
+    assert_redirected_to waitlist_questions_path(waitlist_entry.token)
+    assert_match /tell us a bit more/, flash[:notice]
+  end
+
+  test "successful OAuth without invite for existing waitlist entry with incomplete questions" do
+    use_app_subdomain
+
+    # Create existing waitlist entry (no questions completed)
+    existing_entry = WaitlistEntry.create!(email: "newuser@example.com", name: "Old Name")
+
+    assert_no_difference "WaitlistEntry.count" do
       post "/auth/github"
       follow_redirect!
     end
 
-    assert_response :redirect
+    # Should redirect to questions page
+    assert_redirected_to waitlist_questions_path(existing_entry.token)
+    assert_match /tell us a bit more/, flash[:notice]
+  end
+
+  test "successful OAuth without invite for existing waitlist entry with completed questions" do
+    use_app_subdomain
+
+    # Create existing waitlist entry with completed questions
+    existing_entry = WaitlistEntry.create!(
+      email: "newuser@example.com",
+      name: "Existing User",
+      questions_completed_at: 1.day.ago
+    )
+
+    assert_no_difference "WaitlistEntry.count" do
+      post "/auth/github"
+      follow_redirect!
+    end
+
+    # Should redirect to login page (questions already completed)
+    assert_redirected_to login_path
+    assert_match /already on the waitlist/, flash[:notice]
   end
 
   test "successful OAuth for existing user updates credentials" do

@@ -1,5 +1,5 @@
 class Visitor < ApplicationRecord
-  has_many :analytics_events, primary_key: :visitor_id, foreign_key: :visitor_id
+  has_many :analytics_events, primary_key: :visitor_id, foreign_key: :visitor_id, dependent: :delete_all
 
   validates :visitor_id, presence: true, uniqueness: true
   validates :first_seen_at, presence: true

@@ -32,7 +32,25 @@ class SessionsController < ApplicationController
       invite = Invite.available.find_by(token: session[:invite_token])
 
       if invite.nil?
-        redirect_to login_path, alert: "Signup requires an invite. Please use an invite link to create an account."
+        # Add them to the waitlist
+        email = auth.info.email
+        name = auth.info.name || auth.info.nickname
+
+        waitlist_entry = WaitlistEntry.find_or_initialize_by(email: email)
+        if waitlist_entry.new_record?
+          waitlist_entry.name = name
+          waitlist_entry.save!
+        end
+
+        # Identify the visitor
+        identify_visitor_with_email(email)
+
+        # Redirect to questions if not yet completed
+        if waitlist_entry.questions_completed_at.nil?
+          redirect_to waitlist_questions_path(waitlist_entry.token), notice: "Thanks for your interest! Please tell us a bit more about your project."
+        else
+          redirect_to login_path, notice: "You're already on the waitlist. We'll be in touch soon!"
+        end
         return
       end
 
@@ -78,6 +96,13 @@ class SessionsController < ApplicationController
       name: user.name,
       user_id: user.id
     )
+  end
+
+  def identify_visitor_with_email(email)
+    return unless cookies[:_sp_vid].present?
+
+    visitor = Visitor.find_by(visitor_id: cookies[:_sp_vid])
+    visitor&.identify!(email: email)
   end
 
   def default_landing_path(user = current_user)
