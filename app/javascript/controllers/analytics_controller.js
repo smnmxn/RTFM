@@ -53,6 +53,11 @@ export default class extends Controller {
           current_time: Math.round(video.duration),
           duration: Math.round(video.duration)
         })
+
+        // Dispatch custom event for beta modal trigger
+        window.dispatchEvent(new CustomEvent("video-complete", {
+          detail: { duration: Math.round(video.duration) }
+        }))
       }
     })
   }
