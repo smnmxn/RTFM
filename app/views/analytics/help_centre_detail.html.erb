@@ -1,0 +1,220 @@
+<% content_for(:title) { "#{@project.name} - Help Centre Analytics" } %>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <%= render "shared/app_header" %>
+
+  <!-- Back link -->
+  <div class="mt-6">
+    <%= link_to analytics_path(tab: "help_centres", period: @period), class: "text-sm app-text-muted hover:app-text transition-colors" do %>
+      &larr; Back to Help Centres
+    <% end %>
+  </div>
+
+  <!-- Header -->
+  <div class="mt-4 flex items-start justify-between">
+    <div>
+      <h1 class="text-2xl font-bold app-text" style="font-family: var(--app-font-display);"><%= @project.name %></h1>
+      <div class="mt-1 flex items-center gap-3 text-sm app-text-muted">
+        <span><%= @project.slug %></span>
+        <span><%= @user&.name || @user&.github_username || @user&.email %></span>
+        <% if @project.custom_domain_active? %>
+          <span><%= @project.custom_domain %></span>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Period selector -->
+    <div class="flex gap-2">
+      <% AnalyticsController::PERIODS.keys.each do |period| %>
+        <%= link_to period,
+            analytics_help_centre_path(@project, period: period),
+            class: "px-3 py-1.5 text-sm font-medium rounded-lg transition-colors #{@period == period ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'app-text-muted hover:app-text app-surface-alt'}" %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Key Metrics -->
+  <div class="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="app-surface rounded-xl border app-border p-5">
+      <p class="text-sm app-text-muted">Page Views</p>
+      <p class="mt-1 text-3xl font-bold app-text"><%= number_with_delimiter(@detail[:total_page_views]) %></p>
+    </div>
+    <div class="app-surface rounded-xl border app-border p-5">
+      <p class="text-sm app-text-muted">Unique Visitors</p>
+      <p class="mt-1 text-3xl font-bold app-text"><%= number_with_delimiter(@detail[:unique_visitors]) %></p>
+    </div>
+    <div class="app-surface rounded-xl border app-border p-5">
+      <p class="text-sm app-text-muted">Avg Pages/Visitor</p>
+      <p class="mt-1 text-3xl font-bold app-text"><%= @detail[:avg_pages_per_visitor] %></p>
+    </div>
+    <div class="app-surface rounded-xl border app-border p-5">
+      <p class="text-sm app-text-muted">Published Articles</p>
+      <p class="mt-1 text-3xl font-bold app-text"><%= @detail[:articles_published] %></p>
+    </div>
+  </div>
+
+  <!-- Daily Views Chart -->
+  <div class="mt-6 app-surface rounded-xl border app-border p-5">
+    <h2 class="text-sm font-semibold app-text mb-4"><%= @period == "24h" ? "Hourly" : "Daily" %> Page Views</h2>
+    <% if @detail[:daily_views].any? %>
+      <div style="height: 200px;">
+        <canvas id="helpCentreViewsChart"></canvas>
+      </div>
+      <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+      <script>
+        (function() {
+          const isDark = document.documentElement.classList.contains('dark');
+          const ctx = document.getElementById('helpCentreViewsChart');
+
+          const data = {
+            labels: <%= raw @detail[:daily_views].map { |d| d[:date] }.to_json %>,
+            datasets: [
+              {
+                label: 'Views',
+                data: <%= raw @detail[:daily_views].map { |d| d[:views] }.to_json %>,
+                borderColor: isDark ? 'rgb(161, 161, 170)' : 'rgb(63, 63, 70)',
+                backgroundColor: isDark ? 'rgba(161, 161, 170, 0.1)' : 'rgba(63, 63, 70, 0.1)',
+                tension: 0.4,
+                fill: true
+              },
+              {
+                label: 'Unique Visitors',
+                data: <%= raw @detail[:daily_views].map { |d| d[:uniques] }.to_json %>,
+                borderColor: isDark ? 'rgb(212, 212, 216)' : 'rgb(113, 113, 122)',
+                backgroundColor: isDark ? 'rgba(212, 212, 216, 0.1)' : 'rgba(113, 113, 122, 0.1)',
+                tension: 0.4,
+                fill: true
+              }
+            ]
+          };
+
+          new Chart(ctx, {
+            type: 'line',
+            data: data,
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: { mode: 'index', intersect: false },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  align: 'end',
+                  labels: {
+                    color: isDark ? 'rgb(161, 161, 170)' : 'rgb(63, 63, 70)',
+                    usePointStyle: true,
+                    padding: 15,
+                    font: { size: 11 }
+                  }
+                },
+                tooltip: {
+                  backgroundColor: isDark ? 'rgb(39, 39, 42)' : 'rgb(255, 255, 255)',
+                  titleColor: isDark ? 'rgb(244, 244, 245)' : 'rgb(24, 24, 27)',
+                  bodyColor: isDark ? 'rgb(161, 161, 170)' : 'rgb(63, 63, 70)',
+                  borderColor: isDark ? 'rgb(63, 63, 70)' : 'rgb(228, 228, 231)',
+                  borderWidth: 1,
+                  padding: 12,
+                  displayColors: true
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    color: isDark ? 'rgb(113, 113, 122)' : 'rgb(161, 161, 170)',
+                    font: { size: 11 },
+                    precision: 0
+                  },
+                  grid: {
+                    color: isDark ? 'rgba(63, 63, 70, 0.3)' : 'rgba(228, 228, 231, 0.5)',
+                    drawBorder: false
+                  }
+                },
+                x: {
+                  ticks: {
+                    color: isDark ? 'rgb(113, 113, 122)' : 'rgb(161, 161, 170)',
+                    font: { size: 11 },
+                    maxRotation: 0,
+                    autoSkip: true,
+                    maxTicksLimit: <%= @period == "24h" ? 12 : 10 %>
+                  },
+                  grid: { display: false, drawBorder: false }
+                }
+              }
+            }
+          });
+        })();
+      </script>
+    <% else %>
+      <div class="flex items-center justify-center h-40 text-sm app-text-muted">
+        No page view data for this period
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Two-column: Top Pages + Top Referrers -->
+  <div class="mt-6 grid lg:grid-cols-2 gap-6">
+    <div class="app-surface rounded-xl border app-border p-5">
+      <h2 class="text-sm font-semibold app-text mb-4">Top Pages</h2>
+      <% if @detail[:top_pages].any? %>
+        <div class="space-y-2">
+          <% @detail[:top_pages].each do |page| %>
+            <div class="flex justify-between items-center text-sm">
+              <span class="app-text truncate mr-2"><%= page[:path] %></span>
+              <span class="app-text-muted flex-shrink-0"><%= number_with_delimiter(page[:views]) %></span>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-sm app-text-muted">No data yet</p>
+      <% end %>
+    </div>
+
+    <div class="app-surface rounded-xl border app-border p-5">
+      <h2 class="text-sm font-semibold app-text mb-4">Top Referrers</h2>
+      <% if @detail[:top_referrers].any? %>
+        <div class="space-y-2">
+          <% @detail[:top_referrers].each do |ref| %>
+            <div class="flex justify-between items-center text-sm">
+              <span class="app-text truncate mr-2"><%= ref[:host] %></span>
+              <span class="app-text-muted flex-shrink-0"><%= number_with_delimiter(ref[:views]) %></span>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-sm app-text-muted">No referrer data yet</p>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Device + Browser breakdown -->
+  <div class="mt-6 grid lg:grid-cols-2 gap-6">
+    <div class="app-surface rounded-xl border app-border p-5">
+      <h2 class="text-sm font-semibold app-text mb-4">Device Breakdown</h2>
+      <% if @detail[:device_breakdown].any? %>
+        <% @detail[:device_breakdown].sort_by { |_, v| -v }.each do |device, count| %>
+          <div class="flex justify-between items-center text-sm mb-1">
+            <span class="app-text capitalize"><%= device %></span>
+            <span class="app-text-muted"><%= number_with_delimiter(count) %></span>
+          </div>
+        <% end %>
+      <% else %>
+        <p class="text-sm app-text-muted">No data</p>
+      <% end %>
+    </div>
+
+    <div class="app-surface rounded-xl border app-border p-5">
+      <h2 class="text-sm font-semibold app-text mb-4">Browser Breakdown</h2>
+      <% if @detail[:browser_breakdown].any? %>
+        <% @detail[:browser_breakdown].sort_by { |_, v| -v }.each do |browser, count| %>
+          <div class="flex justify-between items-center text-sm mb-1">
+            <span class="app-text"><%= browser %></span>
+            <span class="app-text-muted"><%= number_with_delimiter(count) %></span>
+          </div>
+        <% end %>
+      <% else %>
+        <p class="text-sm app-text-muted">No data</p>
+      <% end %>
+    </div>
+  </div>
+</div>

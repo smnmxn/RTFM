@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_10_095137) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -50,6 +50,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
     t.string "event_type", null: false
     t.string "os_family"
     t.string "page_path", null: false
+    t.bigint "project_id"
     t.string "referrer_host"
     t.string "referrer_url"
     t.string "utm_campaign"
@@ -60,7 +61,41 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
     t.string "visitor_id", limit: 36, null: false
     t.index ["created_at"], name: "index_analytics_events_on_created_at"
     t.index ["event_type", "created_at"], name: "index_analytics_events_on_event_type_and_created_at"
+    t.index ["project_id", "created_at"], name: "index_analytics_events_on_project_id_and_created_at"
+    t.index ["project_id", "event_type", "created_at"], name: "idx_analytics_events_project_event_created"
     t.index ["visitor_id"], name: "index_analytics_events_on_visitor_id"
+  end
+
+  create_table "announcement_images", force: :cascade do |t|
+    t.integer "announcement_id", null: false
+    t.datetime "created_at", null: false
+    t.string "image_type", default: "hero"
+    t.integer "render_attempts", default: 0
+    t.json "render_metadata"
+    t.string "render_status", default: "pending"
+    t.text "source_html"
+    t.datetime "updated_at", null: false
+    t.index ["announcement_id"], name: "index_announcement_images_on_announcement_id"
+  end
+
+  create_table "announcements", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "email_body_html"
+    t.string "generation_status", default: "pending", null: false
+    t.integer "project_id", null: false
+    t.integer "recommendation_id", null: false
+    t.text "regeneration_guidance"
+    t.datetime "sent_at"
+    t.string "slug"
+    t.string "source_commit_sha"
+    t.string "status", default: "draft", null: false
+    t.json "structured_content"
+    t.string "subject_line"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id", "status"], name: "index_announcements_on_project_id_and_status"
+    t.index ["recommendation_id"], name: "index_announcements_on_recommendation_id"
+    t.index ["slug"], name: "index_announcements_on_slug"
   end
 
   create_table "article_update_checks", force: :cascade do |t|
@@ -143,6 +178,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
     t.index ["project_id", "created_at"], name: "index_claude_usages_on_project_id_and_created_at"
     t.index ["project_id"], name: "index_claude_usages_on_project_id"
     t.index ["service_tier"], name: "index_claude_usages_on_service_tier"
+  end
+
+  create_table "flipper_features", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "key", null: false
+    t.datetime "updated_at", null: false
+    t.index ["key"], name: "index_flipper_features_on_key", unique: true
+  end
+
+  create_table "flipper_gates", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "feature_key", null: false
+    t.string "key", null: false
+    t.datetime "updated_at", null: false
+    t.text "value"
+    t.index ["feature_key", "key", "value"], name: "index_flipper_gates_on_feature_key_and_key_and_value", unique: true
   end
 
   create_table "github_app_installations", force: :cascade do |t|
@@ -256,6 +307,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
     t.text "description"
     t.text "justification"
     t.integer "project_id", null: false
+    t.string "recommendation_type", default: "article", null: false
     t.datetime "rejected_at"
     t.integer "section_id"
     t.integer "source_update_id"
@@ -387,6 +439,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_135415) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "announcement_images", "announcements"
+  add_foreign_key "announcements", "projects"
+  add_foreign_key "announcements", "recommendations"
   add_foreign_key "article_update_checks", "projects"
   add_foreign_key "article_update_suggestions", "article_update_checks"
   add_foreign_key "article_update_suggestions", "articles"

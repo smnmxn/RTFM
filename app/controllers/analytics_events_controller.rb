@@ -21,7 +21,8 @@ class AnalyticsEventsController < ApplicationController
       event_data: params[:event_data]&.to_unsafe_h,
       page_path: params[:page_path] || request.referer&.then { |r| URI.parse(r).path rescue "/" } || "/",
       referrer_url: request.referer,
-      user_agent: request.user_agent
+      user_agent: request.user_agent,
+      project_id: params[:project_id]
     )
 
     head :no_content

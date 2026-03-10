@@ -4,7 +4,7 @@ class RecordAnalyticsEventJob < ApplicationJob
 
   def perform(visitor_id:, event_type:, page_path:, ip_address: nil, referrer_url: nil, user_agent: nil,
               utm_source: nil, utm_medium: nil, utm_campaign: nil, utm_term: nil, utm_content: nil,
-              event_data: nil)
+              event_data: nil, project_id: nil)
     device_type, browser_family, os_family = parse_user_agent(user_agent)
     referrer_host = extract_host(referrer_url)
 
@@ -43,7 +43,8 @@ class RecordAnalyticsEventJob < ApplicationJob
       utm_content: utm_content,
       device_type: device_type,
       browser_family: browser_family,
-      os_family: os_family
+      os_family: os_family,
+      project_id: project_id
     )
 
     # Update visitor activity counters and last-seen metadata

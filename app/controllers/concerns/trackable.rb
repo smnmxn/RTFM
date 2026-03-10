@@ -90,7 +90,12 @@ module Trackable
       utm_medium: params[:utm_medium],
       utm_campaign: params[:utm_campaign],
       utm_term: params[:utm_term],
-      utm_content: params[:utm_content]
+      utm_content: params[:utm_content],
+      project_id: trackable_project_id
     )
+  end
+
+  def trackable_project_id
+    nil
   end
 end

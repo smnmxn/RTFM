@@ -1,5 +1,6 @@
 class HelpCentreController < ApplicationController
   skip_before_action :require_authentication
+  include Trackable
 
   before_action :set_project
   before_action :check_rate_limit, only: [ :ask ]
@@ -125,6 +126,10 @@ class HelpCentreController < ApplicationController
   end
 
   private
+
+  def trackable_project_id
+    @project&.id
+  end
 
   def check_rate_limit
     @rate_limiter = HelpCentreRateLimiter.new(@project)

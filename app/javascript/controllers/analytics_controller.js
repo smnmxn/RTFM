@@ -1,6 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
+  static values = { projectId: Number }
+
   connect() {
     this.milestonesReached = new Set()
   }
@@ -68,6 +70,7 @@ export default class extends Controller {
       page_path: window.location.pathname
     }
     if (eventData) body.event_data = eventData
+    if (this.hasProjectIdValue && this.projectIdValue) body.project_id = this.projectIdValue
 
     fetch("/t", {
       method: "POST",

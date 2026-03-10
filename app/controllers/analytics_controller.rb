@@ -10,7 +10,7 @@ class AnalyticsController < ApplicationController
 
   def show
     @period = PERIODS.key?(params[:period]) ? params[:period] : "30d"
-    @tab = %w[public product projects visitors].include?(params[:tab]) ? params[:tab] : "public"
+    @tab = %w[public product projects visitors help_centres].include?(params[:tab]) ? params[:tab] : "public"
     days = PERIODS[@period]
 
     end_date = Time.current
@@ -28,6 +28,8 @@ class AnalyticsController < ApplicationController
 
       @sort_column = sort_column
       @sort_direction = sort_direction
+    elsif @tab == "help_centres"
+      @help_centres = HelpCentreAnalyticsService.new(start_date, end_date, @period).call
     elsif @tab == "projects"
       @projects = AccountAnalyticsService.new(start_date, end_date).call
     elsif @tab == "product"
@@ -48,6 +50,17 @@ class AnalyticsController < ApplicationController
     @project = Project.find(params[:id])
     @user = @project.user
     @detail = AccountAnalyticsService.new(start_date, end_date).project_detail(@project)
+  end
+
+  def help_centre_detail
+    @period = PERIODS.key?(params[:period]) ? params[:period] : "30d"
+    days = PERIODS[@period]
+    end_date = Time.current
+    start_date = days.days.ago
+
+    @project = Project.find_by!(slug: params[:id])
+    @user = @project.user
+    @detail = HelpCentreAnalyticsService.new(start_date, end_date, @period).project_detail(@project)
   end
 
   def visitor_detail
