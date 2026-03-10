@@ -145,6 +145,98 @@
     </div>
   </div>
 
+  <!-- FAQ -->
+  <div class="mb-16" data-controller="accordion">
+    <h2 class="text-lg font-semibold text-white mb-4">Frequently Asked Questions</h2>
+    <div class="space-y-3">
+
+      <div class="bg-zinc-900/50 backdrop-blur-sm rounded-xl border border-zinc-800" data-accordion-target="item">
+        <button class="w-full flex items-center justify-between p-5 text-left" data-action="click->accordion#toggle">
+          <span class="font-medium text-white pr-4">Does SupportPages work with Azure DevOps, GitLab, or Bitbucket?</span>
+          <svg data-role="icon" class="w-5 h-5 text-zinc-400 flex-shrink-0 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div data-role="answer" class="overflow-hidden transition-all duration-200" style="max-height: 0px;">
+          <p class="px-5 pb-5 text-zinc-400 leading-relaxed">
+            Not yet. We support GitHub today, with GitLab, Bitbucket, and Azure DevOps on our roadmap. If one of these is important to you, let us know &mdash; it helps us prioritise.
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-zinc-900/50 backdrop-blur-sm rounded-xl border border-zinc-800" data-accordion-target="item">
+        <button class="w-full flex items-center justify-between p-5 text-left" data-action="click->accordion#toggle">
+          <span class="font-medium text-white pr-4">Is my source code secure? Do you store it?</span>
+          <svg data-role="icon" class="w-5 h-5 text-zinc-400 flex-shrink-0 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div data-role="answer" class="overflow-hidden transition-all duration-200" style="max-height: 0px;">
+          <p class="px-5 pb-5 text-zinc-400 leading-relaxed">
+            We never store your source code. Each analysis runs in an isolated sandbox that is destroyed immediately after processing. Only Anthropic sees the code under a strict data processing agreement. Read more on our <a href="/legal/security" class="text-white underline hover:text-zinc-300">security page</a>.
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-zinc-900/50 backdrop-blur-sm rounded-xl border border-zinc-800" data-accordion-target="item">
+        <button class="w-full flex items-center justify-between p-5 text-left" data-action="click->accordion#toggle">
+          <span class="font-medium text-white pr-4">Can SupportPages run inside our own infrastructure?</span>
+          <svg data-role="icon" class="w-5 h-5 text-zinc-400 flex-shrink-0 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div data-role="answer" class="overflow-hidden transition-all duration-200" style="max-height: 0px;">
+          <p class="px-5 pb-5 text-zinc-400 leading-relaxed">
+            Not currently, but we're exploring it. Our Docker-based architecture means the analysis container could run in your own environment. Get in touch if self-hosting is a hard requirement.
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-zinc-900/50 backdrop-blur-sm rounded-xl border border-zinc-800" data-accordion-target="item">
+        <button class="w-full flex items-center justify-between p-5 text-left" data-action="click->accordion#toggle">
+          <span class="font-medium text-white pr-4">Does it only generate customer-facing help docs, or can it do internal documentation too?</span>
+          <svg data-role="icon" class="w-5 h-5 text-zinc-400 flex-shrink-0 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div data-role="answer" class="overflow-hidden transition-all duration-200" style="max-height: 0px;">
+          <p class="px-5 pb-5 text-zinc-400 leading-relaxed">
+            Customer-facing help articles today. Internal documentation (runbooks, onboarding guides, architecture docs) is on our roadmap. Let us know if that's something you need.
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-zinc-900/50 backdrop-blur-sm rounded-xl border border-zinc-800" data-accordion-target="item">
+        <button class="w-full flex items-center justify-between p-5 text-left" data-action="click->accordion#toggle">
+          <span class="font-medium text-white pr-4">What if our team is sceptical about AI-generated content?</span>
+          <svg data-role="icon" class="w-5 h-5 text-zinc-400 flex-shrink-0 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div data-role="answer" class="overflow-hidden transition-all duration-200" style="max-height: 0px;">
+          <p class="px-5 pb-5 text-zinc-400 leading-relaxed">
+            Nothing publishes automatically. Every article lands in your inbox as a draft for human review and editing. Think of it as a first draft, not a finished product &mdash; your team stays in full control.
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-zinc-900/50 backdrop-blur-sm rounded-xl border border-zinc-800" data-accordion-target="item">
+        <button class="w-full flex items-center justify-between p-5 text-left" data-action="click->accordion#toggle">
+          <span class="font-medium text-white pr-4">How long does it take to get set up?</span>
+          <svg data-role="icon" class="w-5 h-5 text-zinc-400 flex-shrink-0 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div data-role="answer" class="overflow-hidden transition-all duration-200" style="max-height: 0px;">
+          <p class="px-5 pb-5 text-zinc-400 leading-relaxed">
+            About 30 minutes. Connect your repo, point it at your help centre, and it analyses your codebase. After that, drafts are generated automatically every time a PR is merged.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- CTA -->
   <div class="text-center" data-controller="analytics">
     <h2 class="text-2xl font-bold text-white mb-4" style="font-family: 'Space Grotesk', system-ui, sans-serif;">
