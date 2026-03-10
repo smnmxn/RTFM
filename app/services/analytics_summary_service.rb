@@ -3,7 +3,7 @@ class AnalyticsSummaryService
     @start_date = start_date
     @end_date = end_date
     @period = period
-    @events = AnalyticsEvent.between(@start_date, @end_date)
+    @events = AnalyticsEvent.where(project_id: nil).between(@start_date, @end_date)
   end
 
   def call

@@ -29,6 +29,7 @@ module Trackable
     cookies[:_sp_vid] = {
       value: vid,
       expires: 1.year.from_now,
+      domain: ".#{Rails.application.config.x.base_domain}",
       httponly: true,
       secure: Rails.env.production?,
       same_site: :lax
