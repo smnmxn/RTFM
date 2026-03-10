@@ -96,7 +96,11 @@
 
     <!-- Custom Domain Panel -->
     <div data-tabs-target="panel" data-tabs-name="custom-domain" class="hidden">
-      <%= render "projects/custom_domain_form", project: @project, saved: false %>
+      <% if current_user.pro_or_above? %>
+        <%= render "projects/custom_domain_form", project: @project, saved: false %>
+      <% else %>
+        <%= render "projects/custom_domain_upgrade", project: @project %>
+      <% end %>
     </div>
 
     <!-- Notifications Panel -->

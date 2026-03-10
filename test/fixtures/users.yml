@@ -4,6 +4,8 @@ one:
   github_uid: gh_12345
   github_username: alice
   github_token: token_abc123
+  plan: free
+  plan_status: active
 
 two:
   email: bob@example.com
@@ -11,3 +13,5 @@ two:
   github_uid: gh_67890
   github_username: bob
   github_token: token_def456
+  plan: free
+  plan_status: active

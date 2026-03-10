@@ -6,13 +6,22 @@
       <p class="text-sm app-text-secondary mt-1">Customize the look and feel of your public help centre.</p>
     </div>
 
+    <% unless current_user.pro_or_above? %>
+      <div class="px-4 py-3 bg-amber-50 border-b border-amber-200">
+        <p class="text-sm text-amber-800">
+          Custom branding (logo, colors) requires a Pro plan.
+          <%= link_to "Upgrade", billing_path(reason: "custom_branding"), data: { turbo_frame: "_top" }, class: "font-medium underline hover:no-underline" %>
+        </p>
+      </div>
+    <% end %>
+
     <%= form_with model: project,
                   url: update_branding_project_path(project),
                   method: :patch,
                   class: "divide-y divide-app-border" do |form| %>
 
       <!-- Logo Upload -->
-      <div class="p-4" data-controller="logo-upload"
+      <div class="p-4 <%= 'opacity-50 pointer-events-none' unless current_user.pro_or_above? %>" data-controller="logo-upload"
            data-logo-upload-upload-url-value="<%= upload_logo_project_path(project) %>"
            data-logo-upload-remove-url-value="<%= remove_logo_project_path(project) %>">
         <label class="block text-sm font-medium app-text mb-2">Logo</label>
@@ -112,7 +121,7 @@
       </div>
 
       <!-- Colors -->
-      <div class="p-4 space-y-4">
+      <div class="p-4 space-y-4 <%= 'opacity-50 pointer-events-none' unless current_user.pro_or_above? %>">
         <div class="grid grid-cols-3 gap-4">
           <div>
             <label class="block text-sm font-medium app-text mb-1">Primary Color</label>

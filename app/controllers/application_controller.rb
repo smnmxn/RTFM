@@ -37,6 +37,12 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def require_pro
+    unless current_user&.pro_or_above?
+      redirect_to billing_path, alert: "This feature requires a Pro plan."
+    end
+  end
+
   def base_domain
     Rails.application.config.x.base_domain
   end

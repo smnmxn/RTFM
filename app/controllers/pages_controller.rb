@@ -8,6 +8,10 @@ class PagesController < ApplicationController
     @nav_active = "how-it-works"
   end
 
+  def pricing
+    @nav_active = "pricing"
+  end
+
   def brand
   end
 end

@@ -1,4 +1,8 @@
 class User < ApplicationRecord
+  include Billable
+
+  pay_customer default_payment_processor: :stripe
+
   has_many :projects, dependent: :destroy
   has_many :github_app_installations, dependent: :nullify
   has_many :pending_notifications, dependent: :destroy

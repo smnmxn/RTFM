@@ -72,6 +72,7 @@ import MobileMenuController from "controllers/mobile_menu_controller"
 import AnalyticsTrackingController from "controllers/analytics_controller"
 import BetaWaitlistModalController from "controllers/beta_waitlist_modal_controller"
 import AccordionController from "controllers/accordion_controller"
+import BillingToggleController from "controllers/billing_toggle_controller"
 // Color picker — dev tool for experimenting with landing page themes.
 // To re-enable: uncomment the import + registration below, then add
 // data-controller="color-picker" to the landing page wrapper div.
@@ -121,4 +122,5 @@ application.register("mobile-menu", MobileMenuController)
 application.register("analytics", AnalyticsTrackingController)
 application.register("beta-waitlist-modal", BetaWaitlistModalController)
 application.register("accordion", AccordionController)
+application.register("billing-toggle", BillingToggleController)
 // application.register("color-picker", ColorPickerController)

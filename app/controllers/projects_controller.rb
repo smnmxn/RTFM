@@ -1,5 +1,6 @@
 class ProjectsController < ApplicationController
   before_action :set_project, except: [ :index, :new, :create, :repositories ]
+  before_action :require_pro_for_custom_domain, only: [ :update_custom_domain ]
 
   def index
     @projects = current_user.projects
@@ -875,6 +876,21 @@ class ProjectsController < ApplicationController
         action_url: action_url,
         metadata: data[:metadata]
       )
+    end
+  end
+
+  def require_pro_for_custom_domain
+    unless current_user.pro_or_above?
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            "custom_domain_form",
+            partial: "projects/custom_domain_upgrade",
+            locals: { project: @project }
+          )
+        end
+        format.html { redirect_to billing_path, alert: "Custom domains require a Pro plan." }
+      end
     end
   end
 

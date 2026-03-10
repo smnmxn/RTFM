@@ -8,6 +8,12 @@ module Onboarding
 
     # Step 0: Landing page to start onboarding
     def new
+      completed_count = current_user.projects.where(onboarding_step: nil).count
+      unless current_user.within_plan_limit?(:projects, completed_count)
+        redirect_to billing_path, alert: "You've reached your plan limit of #{current_user.plan_limit(:projects)} project(s). Upgrade to create more."
+        return
+      end
+
       # Clean up any incomplete onboarding projects so user starts fresh
       current_user.projects.onboarding_incomplete.destroy_all
 
@@ -15,6 +21,12 @@ module Onboarding
     end
 
     def create
+      completed_count = current_user.projects.where(onboarding_step: nil).count
+      unless current_user.within_plan_limit?(:projects, completed_count)
+        redirect_to billing_path, alert: "You've reached your plan limit of #{current_user.plan_limit(:projects)} project(s). Upgrade to create more."
+        return
+      end
+
       # Create a bare project with temporary values — name/subdomain collected in setup step
       @project = current_user.projects.build(
         name: "New Project",

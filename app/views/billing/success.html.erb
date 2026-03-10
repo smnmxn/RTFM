@@ -1,0 +1,23 @@
+<% content_for(:title) { "Welcome to Pro! - SupportPages" } %>
+
+<div class="app-bg min-h-screen">
+  <%= render "shared/app_header" %>
+
+  <main class="max-w-xl mx-auto px-4 py-24 sm:px-6 lg:px-8 text-center">
+    <div class="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-500/15 flex items-center justify-center mx-auto mb-6">
+      <svg class="w-8 h-8 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+    </div>
+
+    <h1 class="text-3xl font-bold app-text mb-4" style="font-family: var(--app-font-display);">Welcome to Pro!</h1>
+    <p class="text-lg app-text-secondary mb-8">
+      Your account has been upgraded. You now have access to unlimited projects, custom domains, and all Pro features.
+    </p>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+      <%= link_to "Go to Dashboard", app_root_path, class: "btn-primary-md" %>
+      <%= link_to "Manage Billing", billing_path, class: "btn-secondary-md" %>
+    </div>
+  </main>
+</div>

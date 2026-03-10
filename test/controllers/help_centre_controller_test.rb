@@ -156,6 +156,24 @@ class HelpCentreControllerTest < ActionDispatch::IntegrationTest
     assert_select 'meta[name="robots"]', count: 0
   end
 
+  # ========================================
+  # Powered-by badge (plan-based)
+  # ========================================
+
+  test "free user project shows powered-by badge" do
+    assert @project.user.free?
+    get "/"
+    assert_response :success
+    assert_includes response.body, "Powered by"
+  end
+
+  test "pro user project hides powered-by badge" do
+    @project.user.update!(plan: "pro")
+    get "/"
+    assert_response :success
+    assert_not_includes response.body, "Powered by"
+  end
+
   test "all pages are indexable when seo_indexing_enabled is nil (default)" do
     # Ensure seo_indexing_enabled is not set
     branding = @project.branding.except("seo_indexing_enabled")

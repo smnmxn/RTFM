@@ -1,0 +1,21 @@
+<%= turbo_frame_tag "custom_domain_form" do %>
+  <div class="space-y-6">
+    <div class="border app-border rounded-lg">
+      <div class="px-4 py-3 app-bg border-b app-border rounded-t-lg">
+        <h3 class="text-lg font-medium app-text">Custom Domain</h3>
+        <p class="text-sm app-text-secondary mt-1">Use your own domain for your Help Centre (e.g., help.yourcompany.com).</p>
+      </div>
+
+      <div class="p-6 text-center space-y-4">
+        <div class="mx-auto w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center">
+          <%= heroicon "lock-closed", options: { class: "w-6 h-6 text-amber-500" } %>
+        </div>
+        <div>
+          <p class="text-sm font-medium app-text">Custom domains require a Pro plan</p>
+          <p class="text-sm app-text-secondary mt-1">Upgrade to serve your help centre from your own domain like help.yourcompany.com</p>
+        </div>
+        <%= link_to "Upgrade to Pro", billing_path(reason: "custom_domain"), data: { turbo_frame: "_top" }, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white app-accent-bg hover:app-accent-bg cursor-pointer" %>
+      </div>
+    </div>
+  </div>
+<% end %>

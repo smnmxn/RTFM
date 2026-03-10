@@ -54,6 +54,11 @@
               Analytics
             <% end %>
           <% end %>
+          <%= link_to billing_path,
+              class: "flex items-center gap-2 px-3 py-2 text-sm app-text-secondary hover:app-text hover:app-surface-alt transition-colors" do %>
+            <%= heroicon "credit-card", options: { class: "w-4 h-4" } %>
+            Billing
+          <% end %>
           <%= link_to "https://help.supportpages.io", target: "_blank",
               class: "flex items-center gap-2 px-3 py-2 text-sm app-text-secondary hover:app-text hover:app-surface-alt transition-colors" do %>
             <%= heroicon "question-mark-circle", options: { class: "w-4 h-4" } %>

@@ -1,0 +1,321 @@
+<% content_for(:title) { "Pricing - supportpages.io" } %>
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <!-- Hero -->
+  <div class="text-center mb-16">
+    <h1 class="text-gradient-hero text-5xl sm:text-6xl md:text-7xl font-extrabold mb-5 leading-tight tracking-tight" style="font-family: 'Space Grotesk', system-ui, sans-serif;">
+      Simple, transparent pricing
+    </h1>
+    <p class="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+      Start free, upgrade when you're ready. Every plan includes AI-powered help article generation from your code changes.
+    </p>
+  </div>
+
+  <!-- Billing toggle + Pricing cards -->
+  <div data-controller="billing-toggle">
+    <div class="flex justify-center mb-10">
+      <div class="inline-flex items-center bg-zinc-800/50 rounded-full p-1">
+        <button data-billing-toggle-target="monthlyBtn"
+                data-action="click->billing-toggle#selectMonthly"
+                class="px-5 py-2 text-sm font-medium rounded-full transition-all duration-200 text-zinc-400">
+          Monthly
+        </button>
+        <button data-billing-toggle-target="annualBtn"
+                data-action="click->billing-toggle#selectAnnual"
+                class="px-5 py-2 text-sm font-medium rounded-full transition-all duration-200 bg-white text-zinc-900 shadow-sm">
+          Annual <span class="text-emerald-600 font-semibold">save 23%</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Pricing cards -->
+    <div class="grid md:grid-cols-3 gap-6 mb-16">
+
+    <!-- Free -->
+    <div class="bg-zinc-900/50 backdrop-blur-sm rounded-xl border border-zinc-800 p-6 flex flex-col">
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold text-white mb-1">Free</h3>
+        <p class="text-sm text-zinc-400 mb-4">For open source & hobby projects</p>
+        <div class="flex items-baseline gap-1">
+          <span class="text-4xl font-bold text-white" style="font-family: 'Space Grotesk', system-ui, sans-serif;">$0</span>
+          <span class="text-zinc-500">/month</span>
+        </div>
+      </div>
+
+      <ul class="space-y-3 mb-8 flex-1">
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">1 project</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Subdomain help centre</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">100 AI answers/month</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">1 team member</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Standard processing</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">SupportPages badge</span>
+        </li>
+      </ul>
+
+      <a href="/login" class="block text-center px-6 py-3 bg-zinc-800 text-zinc-200 font-medium rounded-xl hover:bg-zinc-700 transition-all duration-200 text-sm">
+        Get started
+      </a>
+    </div>
+
+    <!-- Pro (highlighted) -->
+    <div class="bg-zinc-900/50 backdrop-blur-sm rounded-xl border border-white/20 pt-8 px-6 pb-6 flex flex-col relative">
+      <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+        <span class="px-3 py-1 bg-white text-zinc-900 text-xs font-semibold rounded-full whitespace-nowrap">Most popular</span>
+      </div>
+
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold text-white mb-1">Pro</h3>
+        <p class="text-sm text-zinc-400 mb-4">For startups & growing teams</p>
+        <div data-billing-toggle-target="annual" class="flex items-baseline gap-1">
+          <span class="text-4xl font-bold text-white" style="font-family: 'Space Grotesk', system-ui, sans-serif;">$99</span>
+          <span class="text-zinc-500">/month</span>
+        </div>
+        <div data-billing-toggle-target="monthly" class="flex items-baseline gap-1 hidden">
+          <span class="text-4xl font-bold text-white" style="font-family: 'Space Grotesk', system-ui, sans-serif;">$129</span>
+          <span class="text-zinc-500">/month</span>
+        </div>
+      </div>
+
+      <ul class="space-y-3 mb-8 flex-1">
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Unlimited projects</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Custom domain</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Unlimited AI answers</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Full custom branding</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Up to 10 team members</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Priority processing</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Analytics & email notifications</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Email support</span>
+        </li>
+      </ul>
+
+      <a href="<%= app_subdomain_url('/billing') %>" class="block text-center px-6 py-3 bg-white text-zinc-900 font-semibold rounded-xl hover:bg-zinc-100 transition-all duration-200 text-sm">
+        Start free trial
+      </a>
+    </div>
+
+    <!-- Enterprise -->
+    <div class="bg-zinc-900/50 backdrop-blur-sm rounded-xl border border-zinc-800 p-6 flex flex-col">
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold text-white mb-1">Enterprise</h3>
+        <p class="text-sm text-zinc-400 mb-4">For teams with strict security requirements</p>
+        <div class="flex items-baseline gap-1">
+          <span class="text-4xl font-bold text-white" style="font-family: 'Space Grotesk', system-ui, sans-serif;">Custom</span>
+        </div>
+      </div>
+
+      <ul class="space-y-3 mb-8 flex-1">
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Unlimited projects</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Custom domain</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Unlimited AI answers</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Unlimited team members</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Self-hosted Docker container</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">SSO/SAML & audit log</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Dedicated support & SLA</span>
+        </li>
+      </ul>
+
+      <div class="bg-zinc-800/50 rounded-lg p-4 mb-6">
+        <div class="flex items-start gap-3">
+          <svg class="w-5 h-5 text-zinc-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+          </svg>
+          <p class="text-xs text-zinc-400 leading-relaxed">
+            Your code never leaves your infrastructure. Run the analysis container in your own CI/CD pipeline.
+          </p>
+        </div>
+      </div>
+
+      <a href="mailto:hello@supportpages.io" class="block text-center px-6 py-3 bg-zinc-800 text-zinc-200 font-medium rounded-xl hover:bg-zinc-700 transition-all duration-200 text-sm">
+        Talk to us
+      </a>
+    </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="mb-16" data-controller="accordion">
+    <h2 class="text-lg font-semibold text-white mb-4">Frequently Asked Questions</h2>
+    <div class="space-y-3">
+
+      <div class="bg-zinc-900/50 backdrop-blur-sm rounded-xl border border-zinc-800" data-accordion-target="item">
+        <button class="w-full flex items-center justify-between p-5 text-left" data-action="click->accordion#toggle">
+          <span class="font-medium text-white pr-4">Can I switch plans later?</span>
+          <svg data-role="icon" class="w-5 h-5 text-zinc-400 flex-shrink-0 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div data-role="answer" class="overflow-hidden transition-all duration-200" style="max-height: 0px;">
+          <p class="px-5 pb-5 text-zinc-400 leading-relaxed">
+            Yes. You can upgrade or downgrade at any time. When you upgrade, you get immediate access to the new features. When you downgrade, the change takes effect at the end of your billing cycle.
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-zinc-900/50 backdrop-blur-sm rounded-xl border border-zinc-800" data-accordion-target="item">
+        <button class="w-full flex items-center justify-between p-5 text-left" data-action="click->accordion#toggle">
+          <span class="font-medium text-white pr-4">Do you offer annual billing?</span>
+          <svg data-role="icon" class="w-5 h-5 text-zinc-400 flex-shrink-0 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div data-role="answer" class="overflow-hidden transition-all duration-200" style="max-height: 0px;">
+          <p class="px-5 pb-5 text-zinc-400 leading-relaxed">
+            Yes! Use the toggle above to see annual pricing. You save 23% compared to monthly billing. Annual plans are billed as a single payment for the year.
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-zinc-900/50 backdrop-blur-sm rounded-xl border border-zinc-800" data-accordion-target="item">
+        <button class="w-full flex items-center justify-between p-5 text-left" data-action="click->accordion#toggle">
+          <span class="font-medium text-white pr-4">What happens when I hit a plan limit?</span>
+          <svg data-role="icon" class="w-5 h-5 text-zinc-400 flex-shrink-0 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div data-role="answer" class="overflow-hidden transition-all duration-200" style="max-height: 0px;">
+          <p class="px-5 pb-5 text-zinc-400 leading-relaxed">
+            We'll let you know before you hit a limit and give you the option to upgrade. Your existing articles and help centre stay live &mdash; we never take published content offline because of plan limits.
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-zinc-900/50 backdrop-blur-sm rounded-xl border border-zinc-800" data-accordion-target="item">
+        <button class="w-full flex items-center justify-between p-5 text-left" data-action="click->accordion#toggle">
+          <span class="font-medium text-white pr-4">How does the Docker container work on Enterprise?</span>
+          <svg data-role="icon" class="w-5 h-5 text-zinc-400 flex-shrink-0 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div data-role="answer" class="overflow-hidden transition-all duration-200" style="max-height: 0px;">
+          <p class="px-5 pb-5 text-zinc-400 leading-relaxed">
+            On the Enterprise plan, we provide a Docker image you run in your own CI/CD pipeline (GitHub Actions, GitLab CI, Jenkins, etc.). The container analyses your code locally and sends only the generated article content back to SupportPages. Your source code never leaves your infrastructure.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="text-center" data-controller="analytics">
+    <h2 class="text-2xl font-bold text-white mb-4" style="font-family: 'Space Grotesk', system-ui, sans-serif;">
+      Ready to automate your docs?
+    </h2>
+    <p class="text-zinc-400 mb-8 max-w-lg mx-auto">
+      Join the waitlist for early access, or sign in if you already have an invite.
+    </p>
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+      <%= link_to login_path, class: "flex items-center justify-center gap-3 px-8 py-3.5 bg-white text-zinc-950 font-semibold rounded-xl hover:bg-zinc-100 transition-all duration-200 text-base", data: { action: "click->analytics#track", analytics_event: "cta_click", analytics_data: '{"cta":"github_signin_pricing"}' } do %>
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+        </svg>
+        Sign in with GitHub
+      <% end %>
+      <a href="/#waitlist" class="px-8 py-3.5 bg-zinc-800 text-zinc-200 font-medium rounded-xl hover:bg-zinc-700 transition-all duration-200 text-base" data-action="click->analytics#track" data-analytics-event="cta_click" data-analytics-data='{"cta":"waitlist_pricing"}'>
+        Join the waitlist
+      </a>
+    </div>
+  </div>
+</div>

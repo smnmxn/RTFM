@@ -9,6 +9,9 @@ Rails.application.routes.draw do
     post "github", to: "github#create"
   end
 
+  # Pay gem webhook endpoint (Stripe)
+  mount Pay::Engine, at: "/pay", as: :pay_engine
+
   # Authentication (bare domain)
   get  "/login",  to: "sessions#new",     as: :login
   get  "/logout", to: "sessions#destroy", as: :logout
@@ -43,6 +46,7 @@ Rails.application.routes.draw do
 
   # How it works (bare domain, public)
   get "/how-it-works", to: "pages#how_it_works", as: :how_it_works
+  get "/pricing", to: "pages#pricing", as: :pricing
   get "/brand", to: "pages#brand", as: :brand
 
   # OmniAuth callbacks (bare domain)
@@ -213,6 +217,13 @@ Rails.application.routes.draw do
           post :suggest_sections
         end
       end
+    end
+
+    # Billing
+    resource :billing, only: [:show], controller: "billing" do
+      post :checkout
+      get :success
+      post :portal
     end
 
     # App subdomain root -> projects
