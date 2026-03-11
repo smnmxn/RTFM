@@ -37,10 +37,11 @@
           Trust Center
         </a>
         <% if active == 'login' %>
-          <% signin_class = "#{dark ? 'text-zinc-200 font-semibold' : 'text-zinc-900 font-semibold'} transition-colors bg-transparent border-0 p-0 cursor-pointer font-inherit text-sm" %>
-          <%= button_to "/auth/github", method: :post, data: { turbo: false }, class: signin_class do %>
+          <button data-action="click->login-toggle#open"
+                  data-login-toggle-mode-param="signin"
+                  class="<%= dark ? 'text-zinc-200 font-semibold' : 'text-zinc-900 font-semibold' %> transition-colors bg-transparent border-0 p-0 cursor-pointer text-sm">
             Sign in
-          <% end %>
+          </button>
         <% else %>
           <a href="/login"
              class="<%= dark ? 'text-zinc-300 hover:text-zinc-200' : 'text-zinc-700 hover:text-zinc-900' %> transition-colors">
@@ -92,10 +93,11 @@
         Trust Center
       </a>
       <% if active == 'login' %>
-        <% mobile_signin_class = "block w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium #{dark ? 'text-white bg-white/10' : 'text-slate-900 bg-slate-100'} transition-colors border-0 cursor-pointer" %>
-        <%= button_to "/auth/github", method: :post, data: { turbo: false }, class: mobile_signin_class do %>
+        <button data-action="click->login-toggle#open"
+                data-login-toggle-mode-param="signin"
+                class="block w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium <%= dark ? 'text-white bg-white/10' : 'text-slate-900 bg-slate-100' %> transition-colors border-0 cursor-pointer">
           Sign in
-        <% end %>
+        </button>
       <% else %>
         <a href="/login"
            class="block px-3 py-2.5 rounded-lg text-sm font-medium <%= dark ? 'text-zinc-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' %> transition-colors">

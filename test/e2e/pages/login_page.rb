@@ -17,61 +17,61 @@ module E2E
         self
       end
 
-      def sign_in_with_github
-        click("button:has-text('Sign in with GitHub')")
-        wait_for_turbo
+      def open_login_modal
+        click("#hero-cta button[data-login-toggle-mode-param='signin']")
+        page.wait_for_selector("[data-login-toggle-target='modal']:not(.hidden)", timeout: 5000)
       end
 
-      def join_waitlist(email)
-        fill("input[type='email']", email)
-        click("input[value='Join']")
-        wait_for_turbo
-        # Wait for page to fully load after redirect
-        page.wait_for_load_state(state: "networkidle")
+      def open_signup_modal
+        click("#hero-cta button[data-login-toggle-mode-param='register']")
+        page.wait_for_selector("[data-login-toggle-target='modal']:not(.hidden)", timeout: 5000)
       end
 
-      # Page element checks
-      def has_github_button?
-        has_element?("button:has-text('Sign in with GitHub')")
+      # Page element checks (hero page)
+      def has_login_button?
+        has_element?("#hero-cta button[data-login-toggle-mode-param='signin']")
       end
 
-      def has_create_account_button?
-        has_element?("button:has-text('Create account')")
-      end
-
-      def has_waitlist_form?
-        has_element?("input[type='email']")
+      def has_signup_button?
+        has_element?("#hero-cta button[data-login-toggle-mode-param='register']")
       end
 
       def has_logo?
-        # Check for the logo image in either the header or main content
         has_element?("img[alt='supportpages.io']") || has_element?("a[href='/'] img")
       end
 
       def has_tagline?
-        has_text?("Support pages that write and maintain themselves")
+        has_text?("Your docs are out of date")
       end
 
       def has_video_placeholder?
-        # Check for the video player container with the play button SVG
-        has_element?("[data-controller='video-player']") && has_element?("svg path[d='M8 5v14l11-7z']")
+        has_element?("[data-controller*='video-player']") && has_element?("svg path[d='M8 5v14l11-7z']")
       end
 
-      def has_existing_users_section?
-        has_text?("Existing users")
+      # Modal element checks (must open modal first)
+      def has_github_button?
+        has_element?("button:has-text('Continue with GitHub')")
       end
 
-      def has_waitlist_section?
-        has_text?("New here?")
+      def has_google_button?
+        has_element?("button:has-text('Continue with Google')")
+      end
+
+      def has_apple_button?
+        has_element?("button:has-text('Continue with Apple')")
+      end
+
+      def has_modal_open?
+        has_element?("[data-login-toggle-target='modal']:not(.hidden)")
       end
 
       # Flash message checks
       def has_notice_message?(text)
-        has_element?(".bg-emerald-50") && has_text?(text)
+        has_element?("[class*='bg-emerald']") && has_text?(text)
       end
 
       def has_alert_message?(text)
-        has_element?(".bg-red-50") && has_text?(text)
+        has_element?("[class*='bg-red']") && has_text?(text)
       end
 
       def has_error_message?

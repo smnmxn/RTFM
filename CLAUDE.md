@@ -28,7 +28,7 @@ RTFM is a developer-first platform that automatically converts code changes into
 
 - **Backend**: Ruby 3.3.6, Rails 8.1, SQLite (dev), Sidekiq (Redis)
 - **Frontend**: Tailwind CSS, Hotwire (Turbo & Stimulus), ERB
-- **Auth**: Devise + OmniAuth GitHub (Phase 2)
+- **Auth**: OmniAuth (GitHub, Google, Apple) + email/password (bcrypt)
 - **AI**: Claude Code CLI (in Docker), Anthropic API
 - **VCS**: GitHub API via Octokit
 - **Image Generation**: Puppeteer + Chromium (in Docker)
@@ -212,6 +212,8 @@ Blog posts are fully optimized for search engines and AI crawlers:
 
 Required in `.env`:
 - `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` - OAuth for GitHub App
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` - OAuth for Google (optional, buttons hidden if not set)
+- `APPLE_CLIENT_ID` / `APPLE_TEAM_ID` / `APPLE_KEY_ID` / `APPLE_PRIVATE_KEY` - Sign in with Apple (optional)
 - `REDIS_URL` - For Sidekiq (default: `redis://localhost:6379/1`)
 - `HOST_URL` - Webhook callback URL (use ngrok for local dev)
 

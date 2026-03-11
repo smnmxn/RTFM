@@ -27,7 +27,8 @@ class ApplicationController < ActionController::Base
     return if Rails.env.test? && params[:action] == "test_login"
 
     unless logged_in?
-      redirect_to bare_domain_url("/login"), allow_other_host: true, alert: "Please sign in with GitHub to continue."
+      session[:redirect_after_login] = request.path if request.get?
+      redirect_to bare_domain_url("/login"), allow_other_host: true, alert: "Please sign in to continue."
     end
   end
 

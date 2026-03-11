@@ -1,0 +1,13 @@
+one_github:
+  user: one
+  provider: github
+  uid: gh_12345
+  token: token_abc123
+  auth_data: '{"username":"alice"}'
+
+two_github:
+  user: two
+  provider: github
+  uid: gh_67890
+  token: token_def456
+  auth_data: '{"username":"bob"}'

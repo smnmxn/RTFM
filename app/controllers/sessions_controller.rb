@@ -1,7 +1,7 @@
 class SessionsController < ApplicationController
   include Trackable
 
-  skip_before_action :require_authentication, only: [ :new, :create, :failure, :destroy ]
+  skip_before_action :require_authentication, only: [ :new, :create, :failure, :destroy, :create_with_password, :register ]
 
   def new
     redirect_to app_subdomain_url(default_landing_path), allow_other_host: true if logged_in?
@@ -9,75 +9,54 @@ class SessionsController < ApplicationController
 
   def create
     auth = request.env["omniauth.auth"]
-
-    user = User.find_by(github_uid: auth.uid)
+    user = User.find_from_omniauth(auth)
 
     if user
-      # Existing user - update credentials and log in
-      user.update!(
-        github_token: auth.credentials.token,
-        github_username: auth.info.nickname,
-        name: auth.info.name,
-        email: auth.info.email
-      )
-      session[:user_id] = user.id
-      session.delete(:invite_token)
-
-      # Identify the visitor
-      identify_visitor(user)
-
-      redirect_to app_subdomain_url(default_landing_path(user)), allow_other_host: true, notice: "Welcome back, #{user.name || user.github_username}!"
+      log_in_user(user)
     else
-      # New user - require valid invite
-      invite = Invite.available.find_by(token: session[:invite_token])
-
-      if invite.nil?
-        # Add them to the waitlist
-        email = auth.info.email
-        name = auth.info.name || auth.info.nickname
-
-        waitlist_entry = WaitlistEntry.find_or_initialize_by(email: email)
-        if waitlist_entry.new_record?
-          waitlist_entry.name = name
-          waitlist_entry.save!
-        end
-
-        # Identify the visitor
-        identify_visitor_with_email(email)
-
-        # Redirect to questions if not yet completed
-        if waitlist_entry.questions_completed_at.nil?
-          redirect_to waitlist_questions_path(waitlist_entry.token), notice: "Thanks for your interest! Please tell us a bit more about your project."
-        else
-          redirect_to login_path, notice: "You're already on the waitlist. We'll be in touch soon!"
-        end
-        return
-      end
-
-      user = User.create!(
-        github_uid: auth.uid,
-        github_token: auth.credentials.token,
-        github_username: auth.info.nickname,
-        name: auth.info.name,
-        email: auth.info.email
-      )
-
-      invite.redeem!(user)
-      session.delete(:invite_token)
-      session[:user_id] = user.id
-
-      # Identify the visitor
-      identify_visitor(user)
-
-      redirect_to app_subdomain_url(default_landing_path(user)), allow_other_host: true, notice: "Welcome, #{user.name || user.github_username}!"
+      handle_new_user_signup(auth)
     end
   rescue ActiveRecord::RecordInvalid => e
     redirect_to login_path, alert: "Authentication failed: #{e.message}"
   end
 
+  def create_with_password
+    user = User.find_by(email: params[:email])
+    if user&.authenticate(params[:password])
+      log_in_user(user)
+    else
+      flash.now[:alert] = "Invalid email or password."
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  def register
+    invite = Invite.available.find_by(token: session[:invite_token])
+    if invite_required? && invite.nil?
+      redirect_to login_path, alert: "Sign up is currently invite-only. Please request an invite to get started."
+      return
+    end
+
+    user = User.new(
+      email: params[:email],
+      name: params[:name],
+      password: params[:password],
+      password_confirmation: params[:password_confirmation]
+    )
+
+    if user.save
+      invite&.redeem!(user)
+      session.delete(:invite_token)
+      log_in_user(user)
+    else
+      flash.now[:alert] = user.errors.full_messages.join(", ")
+      render :new, status: :unprocessable_entity
+    end
+  end
+
   def failure
     message = params[:message] || "Authentication failed"
-    redirect_to login_path, alert: "GitHub authentication failed: #{message}"
+    redirect_to login_path, alert: "Authentication failed: #{message}"
   end
 
   def destroy
@@ -86,6 +65,38 @@ class SessionsController < ApplicationController
   end
 
   private
+
+  def log_in_user(user)
+    session[:user_id] = user.id
+    session.delete(:invite_token)
+
+    identify_visitor(user)
+
+    redirect_path = session.delete(:redirect_after_login) || default_landing_path(user)
+    redirect_to app_subdomain_url(redirect_path), allow_other_host: true, notice: "Welcome back, #{user.name || user.email}!"
+  end
+
+  def handle_new_user_signup(auth)
+    invite = Invite.available.find_by(token: session[:invite_token])
+
+    if invite_required? && invite.nil?
+      redirect_to login_path, alert: "Sign up is currently invite-only. Please request an invite to get started."
+      return
+    end
+
+    user = User.create_from_omniauth!(auth)
+    invite&.redeem!(user)
+    session.delete(:invite_token)
+    session[:user_id] = user.id
+
+    identify_visitor(user)
+
+    redirect_to app_subdomain_url(default_landing_path(user)), allow_other_host: true, notice: "Welcome, #{user.name || user.email}!"
+  end
+
+  def invite_required?
+    ENV.fetch("REQUIRE_INVITE", "false") == "true"
+  end
 
   def identify_visitor(user)
     return unless cookies[:_sp_vid].present?

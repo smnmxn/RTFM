@@ -18,6 +18,18 @@ class Project < ApplicationRecord
   has_many :project_repositories, dependent: :destroy
   has_many :article_update_checks, dependent: :destroy
   has_many :pending_notifications, dependent: :destroy
+  has_many :product_events, dependent: :nullify
+
+  before_destroy :clean_up_orphan_references
+
+  def clean_up_orphan_references
+    conn = self.class.connection
+    # announcement_images FK → announcements FK → projects
+    conn.execute(ActiveRecord::Base.sanitize_sql([
+      "DELETE FROM announcement_images WHERE announcement_id IN (SELECT id FROM announcements WHERE project_id = ?)", id
+    ]))
+    conn.execute(ActiveRecord::Base.sanitize_sql(["DELETE FROM announcements WHERE project_id = ?", id]))
+  end
 
   # Logo and favicon uploads via Active Storage
   has_one_attached :logo

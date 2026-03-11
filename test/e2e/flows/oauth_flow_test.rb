@@ -1,13 +1,11 @@
 require "e2e_test_helper"
 require_relative "../pages/login_page"
 require_relative "../pages/dashboard_page"
-require_relative "../pages/waitlist_questions_page"
 
 class OAuthFlowTest < E2ETestCase
   setup do
     @login_page = E2E::Pages::LoginPage.new(@page, self)
     @dashboard_page = E2E::Pages::DashboardPage.new(@page, self)
-    @waitlist_questions_page = E2E::Pages::WaitlistQuestionsPage.new(@page, self)
   end
 
   # =============================================================
@@ -32,119 +30,88 @@ class OAuthFlowTest < E2ETestCase
     assert @login_page.has_video_placeholder?, "Expected video placeholder to be visible"
   end
 
-  test "login page displays GitHub sign in button" do
+  test "login page displays Log in and Sign up buttons" do
     @login_page.visit
 
-    assert @login_page.has_github_button?, "Expected GitHub sign in button to be visible"
-  end
-
-  test "login page displays existing users section" do
-    @login_page.visit
-
-    assert @login_page.has_existing_users_section?, "Expected 'Existing users' section to be visible"
-  end
-
-  test "login page displays waitlist form" do
-    @login_page.visit
-
-    assert @login_page.has_waitlist_form?, "Expected waitlist form to be visible"
-  end
-
-  test "login page displays waitlist section" do
-    @login_page.visit
-
-    assert @login_page.has_waitlist_section?, "Expected 'New here?' waitlist section to be visible"
-  end
-
-  test "login page is accessible at /login" do
-    visit "/login"
-
-    assert_path "/login"
-    assert @page.url.include?("/login"), "Should be on login page"
+    assert @login_page.has_login_button?, "Expected Log in CTA button"
+    assert @login_page.has_signup_button?, "Expected Sign up CTA button"
   end
 
   # =============================================================
-  # Waitlist Flow Tests
+  # Modal Tests
   # =============================================================
 
-  test "join waitlist redirects to questions page" do
-    unique_email = "newuser_#{SecureRandom.hex(4)}@example.com"
+  test "clicking Log in opens modal with sign in form" do
     @login_page.visit
-    @login_page.join_waitlist(unique_email)
+    @login_page.open_login_modal
 
-    assert @waitlist_questions_page.on_questions_page?, "Expected to be on questions page"
-    assert @waitlist_questions_page.has_question?("What type of product"), "Expected first question to be visible"
+    assert @login_page.has_modal_open?, "Expected modal to be open"
+    assert has_text?("Welcome back"), "Expected sign in title"
+    assert @login_page.has_github_button?, "Expected GitHub button in modal"
+    assert @login_page.has_google_button?, "Expected Google button in modal"
+    assert @login_page.has_apple_button?, "Expected Apple button in modal"
   end
 
-  test "completing waitlist questions shows success and redirects to login" do
-    unique_email = "complete_#{SecureRandom.hex(4)}@example.com"
+  test "clicking Sign up opens modal with register form" do
     @login_page.visit
-    @login_page.join_waitlist(unique_email)
+    @login_page.open_signup_modal
 
-    # Complete all questions
-    @waitlist_questions_page.complete_all_questions
-
-    # Should show completion message then redirect
-    assert has_text?("You're on the list") || @page.url.include?("/login"), "Expected to complete and redirect to login"
+    assert @login_page.has_modal_open?, "Expected modal to be open"
+    assert has_text?("Create your account"), "Expected register title"
+    assert visible?("input[name='name']"), "Expected name field visible"
   end
 
-  test "skipping all waitlist questions still completes signup" do
-    unique_email = "skipper_#{SecureRandom.hex(4)}@example.com"
+  test "modal toggles between sign in and register" do
     @login_page.visit
-    @login_page.join_waitlist(unique_email)
+    @login_page.open_login_modal
 
-    # Skip all questions
-    @waitlist_questions_page.skip_all_questions
+    # Start in sign in mode
+    assert has_text?("Welcome back"), "Expected sign in mode"
 
-    # Should show completion or redirect to login
-    assert has_text?("You're on the list") || @page.url.include?("/login"), "Expected to complete even when skipping"
+    # Toggle to register
+    @page.click("[data-login-toggle-target='toggleLink']")
+    assert has_text?("Create your account"), "Expected register mode"
+
+    # Toggle back to sign in
+    @page.click("[data-login-toggle-target='toggleLink']")
+    assert has_text?("Welcome back"), "Expected sign in mode again"
   end
 
-  test "join waitlist with duplicate completed email shows already registered" do
-    # Use the fixture with completed questions
+  test "modal closes on backdrop click" do
     @login_page.visit
-    @login_page.join_waitlist("completed@example.com")
+    @login_page.open_login_modal
+    assert @login_page.has_modal_open?, "Modal should be open"
 
-    # Should redirect back to login with message
-    wait_for_text("already on the waitlist")
-    assert has_text?("already on the waitlist"), "Expected already registered message"
+    # Click outside the modal dialog (on the modal overlay)
+    @page.click("[data-login-toggle-target='modal']", position: { x: 10, y: 10 })
+    sleep 0.5
+
+    assert_not @login_page.has_modal_open?, "Modal should be closed after backdrop click"
   end
 
-  test "join waitlist with duplicate incomplete email continues to questions" do
-    # Use the fixture without completed questions
+  test "modal closes on X button click" do
     @login_page.visit
-    @login_page.join_waitlist("existing@example.com")
+    @login_page.open_login_modal
+    assert @login_page.has_modal_open?, "Modal should be open"
 
-    # Should continue to questions page
-    assert @waitlist_questions_page.on_questions_page?, "Expected to continue to questions page for incomplete entry"
-  end
+    # Click close button (the X button inside the modal)
+    @page.click("button[data-action='click->login-toggle#close']")
+    sleep 0.5
 
-  test "join waitlist with invalid email shows error" do
-    @login_page.visit
-
-    # Fill in an invalid email format
-    @page.fill("input[type='email']", "not-an-email")
-    @page.click("input[type='submit']")
-    wait_for_turbo
-
-    # Browser validation should prevent submission, or server should return error
-    # If browser validation blocks, we stay on the same page
-    # If server validates, we get an alert message
-    assert_path "/login"
+    assert_not @login_page.has_modal_open?, "Modal should be closed after X click"
   end
 
   # =============================================================
   # Invite Token Flow Tests
   # =============================================================
 
-  test "visiting with valid invite token shows create account button" do
+  test "visiting with valid invite token shows invite ready message" do
     @login_page.visit_with_invite("valid-test-token-123")
 
-    assert @login_page.has_create_account_button?, "Expected 'Create account' button when invite is valid"
     assert @login_page.has_invite_ready_message?, "Expected 'Your invite is ready' message"
   end
 
-  test "visiting with invalid invite token shows error" do
+  test "visiting with invalid invite token shows error on page" do
     @login_page.visit_with_invite("invalid-nonexistent-token")
 
     assert @login_page.has_alert_message?("Invalid invite link"), "Expected invalid invite error message"
@@ -160,22 +127,18 @@ class OAuthFlowTest < E2ETestCase
   # Flash Message Tests
   # =============================================================
 
-  test "notice flash message displays in green" do
-    # Use valid invite to trigger a notice message
+  test "notice flash message displays in green on page" do
     @login_page.visit_with_invite("valid-test-token-123")
 
-    # Check that the emerald/green notice container exists
     assert has_text?("Invite accepted"), "Expected notice message text"
-    assert visible?(".bg-emerald-50"), "Expected green notice styling"
+    assert @login_page.has_notice_message?("Invite accepted"), "Expected green notice styling"
   end
 
-  test "alert flash message displays in red" do
-    # Use invalid invite to trigger an alert message
+  test "alert flash message displays in red on page" do
     @login_page.visit_with_invite("completely-fake-token")
 
-    # Check that the red alert container exists
     assert has_text?("Invalid invite link"), "Expected alert message text"
-    assert visible?(".bg-red-50"), "Expected red alert styling"
+    assert @login_page.has_alert_message?("Invalid invite link"), "Expected red alert styling"
   end
 
   # =============================================================
@@ -185,14 +148,16 @@ class OAuthFlowTest < E2ETestCase
   test "root path shows login page for unauthenticated users" do
     visit "/"
 
-    # Root should show the login page content
     assert @login_page.has_logo?, "Expected to see login page content at root"
-    assert @login_page.has_github_button?, "Expected GitHub button on root page"
+    assert @login_page.has_login_button?, "Expected Log in button on root page"
   end
 
-  # Note: OAuth callback redirect test removed - OmniAuth mock doesn't work
-  # reliably in E2E tests (server runs in separate thread). OAuth flow is
-  # better tested via controller integration tests in sessions_controller_test.rb
+  test "login page is accessible at /login" do
+    visit "/login"
+
+    assert_path "/login"
+    assert @page.url.include?("/login"), "Should be on login page"
+  end
 
   # =============================================================
   # Health Check Test

@@ -156,9 +156,15 @@
         </li>
       </ul>
 
-      <a href="<%= app_subdomain_url('/billing') %>" class="block text-center px-6 py-3 bg-white text-zinc-900 font-semibold rounded-xl hover:bg-zinc-100 transition-all duration-200 text-sm">
-        Start free trial
-      </a>
+      <% if logged_in? %>
+        <a href="<%= app_subdomain_url('/billing') %>" class="block text-center px-6 py-3 bg-white text-zinc-900 font-semibold rounded-xl hover:bg-zinc-100 transition-all duration-200 text-sm">
+          Start free trial
+        </a>
+      <% else %>
+        <a href="<%= login_path %>" class="block text-center px-6 py-3 bg-white text-zinc-900 font-semibold rounded-xl hover:bg-zinc-100 transition-all duration-200 text-sm">
+          Start free trial
+        </a>
+      <% end %>
     </div>
 
     <!-- Enterprise -->

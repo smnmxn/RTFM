@@ -50,8 +50,13 @@ Rails.application.routes.draw do
   get "/brand", to: "pages#brand", as: :brand
 
   # OmniAuth callbacks (bare domain)
-  get "/auth/github/callback", to: "sessions#create"
+  get "/auth/:provider/callback", to: "sessions#create"
+  post "/auth/:provider/callback", to: "sessions#create"
   get "/auth/failure", to: "sessions#failure"
+
+  # Email/password auth (bare domain)
+  post "/login", to: "sessions#create_with_password", as: :login_with_password
+  post "/register", to: "sessions#register", as: :register
 
   # Test-only login endpoint for E2E tests
   # Bypasses OAuth since OmniAuth mocks don't work across threads
@@ -74,8 +79,13 @@ Rails.application.routes.draw do
     delete "/logout", to: "sessions#destroy"
 
     # OmniAuth callback on app subdomain
-    get "/auth/github/callback", to: "sessions#create"
+    get "/auth/:provider/callback", to: "sessions#create"
+    post "/auth/:provider/callback", to: "sessions#create"
     get "/auth/failure", to: "sessions#failure"
+
+    # Email/password auth (app subdomain)
+    post "/login", to: "sessions#create_with_password"
+    post "/register", to: "sessions#register"
 
     # Sidekiq Web UI (authenticated users only)
     authenticate_sidekiq = ->(request) {
