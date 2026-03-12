@@ -9,6 +9,13 @@ class SessionsController < ApplicationController
 
   def create
     auth = request.env["omniauth.auth"]
+
+    # If a user is already logged in, link the identity to their account
+    if logged_in?
+      handle_account_linking(auth)
+      return
+    end
+
     user = User.find_from_omniauth(auth)
 
     if user
@@ -74,6 +81,37 @@ class SessionsController < ApplicationController
 
     redirect_path = session.delete(:redirect_after_login) || default_landing_path(user)
     redirect_to app_subdomain_url(redirect_path), allow_other_host: true, notice: "Welcome back, #{user.name || user.email}!"
+  end
+
+  def handle_account_linking(auth)
+    # Check if this identity is already linked to this user
+    existing_identity = current_user.user_identities.find_by(provider: auth.provider, uid: auth.uid)
+
+    if existing_identity
+      # Already linked to this user — just update the token
+      existing_identity.update!(token: auth.credentials&.token)
+    else
+      # Create a new identity for this user (another user may also have the same
+      # GitHub identity linked — that's fine, they're separate accounts sharing
+      # the same GitHub credentials)
+      current_user.user_identities.create!(
+        provider: auth.provider, uid: auth.uid,
+        token: auth.credentials&.token,
+        auth_data: { username: auth.info.nickname }.compact
+      )
+    end
+
+    # Backfill legacy github columns (don't clear from other users)
+    if auth.provider == "github"
+      current_user.update_columns(
+        github_uid: auth.uid,
+        github_token: auth.credentials&.token,
+        github_username: auth.info.nickname
+      )
+    end
+
+    redirect_path = session.delete(:redirect_after_login) || default_landing_path
+    redirect_to app_subdomain_url(redirect_path), allow_other_host: true, notice: "#{auth.provider.titleize} account linked successfully!"
   end
 
   def handle_new_user_signup(auth)

@@ -86,10 +86,12 @@ module Onboarding
           next
         end
 
-        # Check if repo is already connected to another project
-        existing_repo = ProjectRepository.find_by(github_repo: repo_full_name)
+        # Check if repo is already connected to another project by the same user
+        existing_repo = ProjectRepository
+          .joins(:project)
+          .find_by(github_repo: repo_full_name, projects: { user_id: current_user.id })
         if existing_repo && existing_repo.project_id != @project.id
-          errors << "#{repo_full_name} is already connected to another project."
+          errors << "#{repo_full_name} is already connected to your project '#{existing_repo.project.name}'."
           next
         end
 

@@ -24,6 +24,8 @@ class Project < ApplicationRecord
 
   def clean_up_orphan_references
     conn = self.class.connection
+    # Nullify product_events FK before destroy (belt-and-suspenders with has_many :dependent)
+    conn.execute(ActiveRecord::Base.sanitize_sql(["UPDATE product_events SET project_id = NULL WHERE project_id = ?", id]))
     # announcement_images FK → announcements FK → projects
     conn.execute(ActiveRecord::Base.sanitize_sql([
       "DELETE FROM announcement_images WHERE announcement_id IN (SELECT id FROM announcements WHERE project_id = ?)", id

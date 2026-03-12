@@ -58,6 +58,9 @@ Rails.application.routes.draw do
   post "/login", to: "sessions#create_with_password", as: :login_with_password
   post "/register", to: "sessions#register", as: :register
 
+  # GitHub App installation callback (bare domain fallback)
+  get "/github_app/callback", to: "github_app#callback", as: nil
+
   # Test-only login endpoint for E2E tests
   # Bypasses OAuth since OmniAuth mocks don't work across threads
   # Defined outside subdomain constraint so it's available on all hosts

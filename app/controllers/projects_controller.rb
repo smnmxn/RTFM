@@ -425,6 +425,7 @@ class ProjectsController < ApplicationController
     if result.success?
       @repositories = result.repositories
       @installations = result.installations
+      @org_access_limited = result.org_access_limited
 
       # Pass through onboarding project if in wizard
       @onboarding_project = current_user.projects.find_by(slug: params[:onboarding_project_slug]) if params[:onboarding_project_slug].present?

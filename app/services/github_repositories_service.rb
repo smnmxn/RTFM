@@ -1,16 +1,35 @@
 class GithubRepositoriesService
-  Result = Struct.new(:success?, :repositories, :installations, :error, keyword_init: true)
+  Result = Struct.new(:success?, :repositories, :installations, :error, :org_access_limited, keyword_init: true)
 
   def initialize(user)
     @user = user
   end
 
   def call
-    # First-come-claims: assign unclaimed installations to this user
-    GithubAppInstallation.active.where(user_id: nil).update_all(user_id: @user.id)
+    github_token = user_github_token
+    unless github_token
+      return Result.new(
+        success?: true,
+        repositories: [],
+        installations: []
+      )
+    end
 
-    # Now query only this user's installations
-    installations = @user.github_app_installations.active.order(:account_login)
+    # Find installations the user can access by matching their GitHub
+    # username and org memberships against installation account_login
+    user_client = Octokit::Client.new(access_token: github_token)
+    accessible_accounts = [user_client.user.login]
+    org_access_limited = false
+    begin
+      accessible_accounts += user_client.organizations.map(&:login)
+    rescue Octokit::Forbidden
+      # Token lacks read:org scope — continue with personal repos only
+      org_access_limited = true
+    end
+
+    installations = GithubAppInstallation.active
+      .where(account_login: accessible_accounts)
+      .order(:account_login)
 
     if installations.empty?
       return Result.new(
@@ -29,7 +48,6 @@ class GithubRepositoriesService
         all_repos.concat(repos)
       rescue Octokit::NotFound, Octokit::Unauthorized => e
         Rails.logger.warn "[GithubRepositoriesService] Installation #{installation.id} error: #{e.message}"
-        # Skip this installation but continue with others
       end
     end
 
@@ -46,7 +64,8 @@ class GithubRepositoriesService
     Result.new(
       success?: true,
       repositories: all_repos,
-      installations: installations
+      installations: installations,
+      org_access_limited: org_access_limited
     )
   rescue => e
     Rails.logger.error "[GithubRepositoriesService] Error: #{e.message}"
@@ -54,6 +73,12 @@ class GithubRepositoriesService
   end
 
   private
+
+  def user_github_token
+    # Try the identity token first, fall back to legacy column
+    identity = @user.user_identities.find_by(provider: "github")
+    identity&.token || @user.github_token
+  end
 
   def format_repo(repo, installation)
     {

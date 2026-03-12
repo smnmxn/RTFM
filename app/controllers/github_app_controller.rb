@@ -15,9 +15,10 @@ class GithubAppController < ApplicationController
     setup_action = params[:setup_action]
 
     return_path = session.delete(:github_app_return_to) || projects_path
+    return_url = app_subdomain_url(return_path)
 
     if installation_id.blank?
-      redirect_to return_path, alert: "GitHub App installation was cancelled."
+      redirect_to return_url, allow_other_host: true, alert: "GitHub App installation was cancelled."
       return
     end
 
@@ -25,9 +26,9 @@ class GithubAppController < ApplicationController
     installation = sync_installation(installation_id)
 
     if installation
-      redirect_to return_path, notice: "GitHub App installed successfully! You can now connect repositories."
+      redirect_to return_url, allow_other_host: true, notice: "GitHub App installed successfully! You can now connect repositories."
     else
-      redirect_to return_path, alert: "Failed to configure GitHub App. Please try again."
+      redirect_to return_url, allow_other_host: true, alert: "Failed to configure GitHub App. Please try again."
     end
   end
 

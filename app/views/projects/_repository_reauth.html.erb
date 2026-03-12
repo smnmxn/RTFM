@@ -1,0 +1,16 @@
+<%= turbo_frame_tag "repository_list" do %>
+  <div class="p-8 text-center">
+    <div class="mx-auto w-12 h-12 rounded-full app-accent-light flex items-center justify-center mb-4">
+      <%= heroicon "arrow-path", options: { class: "w-6 h-6 app-accent-text" } %>
+    </div>
+    <h3 class="text-lg font-medium app-text mb-2">Reconnect your GitHub account</h3>
+    <p class="app-text-secondary mb-6 max-w-sm mx-auto">
+      We need updated permissions to list your organizations. This is a one-time step.
+    </p>
+    <%= button_to "Reconnect GitHub",
+        "/auth/github",
+        method: :post,
+        data: { turbo: false },
+        class: "inline-flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 transition-smooth" %>
+  </div>
+<% end %>

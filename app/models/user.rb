@@ -11,7 +11,6 @@ class User < ApplicationRecord
   has_many :user_identities, dependent: :destroy
 
   validates :email, presence: true, uniqueness: true
-  validates :github_uid, uniqueness: true, allow_nil: true
   validates :password, length: { minimum: 8 }, if: -> { password.present? }
 
   def admin?
@@ -67,15 +66,17 @@ class User < ApplicationRecord
 
   # Returns existing user or nil (does NOT create)
   def self.find_from_omniauth(auth)
-    # 1. Find by identity (provider + uid)
-    identity = UserIdentity.find_by(provider: auth.provider, uid: auth.uid)
-    if identity
+    email = auth.info.email
+
+    # 1. Find by identity — prefer the user whose email matches the OAuth email
+    identities = UserIdentity.where(provider: auth.provider, uid: auth.uid)
+    if identities.exists?
+      identity = identities.joins(:user).find_by(users: { email: email }) || identities.first
       identity.update!(token: auth.credentials&.token)
       return identity.user
     end
 
     # 2. Find by email (auto-link)
-    email = auth.info.email
     user = find_by(email: email) if email.present?
     if user
       user.user_identities.create!(

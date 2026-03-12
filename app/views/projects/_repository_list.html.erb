@@ -1,20 +1,45 @@
 <%= turbo_frame_tag "repository_list" do %>
+  <% if @org_access_limited %>
+    <div class="px-4 py-3 border-b app-border bg-amber-50 dark:bg-amber-950/30">
+      <div class="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200">
+        <%= heroicon "information-circle", options: { class: "w-4 h-4 flex-shrink-0" } %>
+        <span>Can't see your organization's repos? Reconnect GitHub to grant access.</span>
+        <%= button_to "Reconnect",
+            "/auth/github",
+            method: :post,
+            data: { turbo: false },
+            class: "ml-auto flex-shrink-0 px-3 py-1 text-xs font-medium rounded bg-amber-200 dark:bg-amber-800 hover:bg-amber-300 dark:hover:bg-amber-700 transition-smooth" %>
+      </div>
+    </div>
+  <% end %>
   <div class="divide-y divide-[color:var(--app-border)]">
     <% if @installations.blank? %>
-      <%# No GitHub App installed %>
+      <% has_github = current_user.user_identities.exists?(provider: "github") || current_user.github_token.present? %>
       <div class="p-8 text-center">
         <div class="mx-auto w-12 h-12 rounded-full app-accent-light flex items-center justify-center mb-4">
           <%= heroicon "link", options: { class: "w-6 h-6 app-accent-text" } %>
         </div>
-        <h3 class="text-lg font-medium app-text mb-2">Install the GitHub App</h3>
-        <p class="app-text-secondary mb-6 max-w-sm mx-auto">
-          To connect repositories, you need to install our GitHub App and grant access to the repos you want to document.
-        </p>
-        <% return_path = @onboarding_project.present? ? repository_onboarding_project_path(@onboarding_project) : new_project_path %>
-        <%= link_to "Install GitHub App",
-            github_app_install_path(return_to: return_path),
-            class: "inline-flex items-center px-4 py-2 bg-gradient-brand text-white text-sm font-medium rounded-lg hover:opacity-90 transition-smooth",
-            data: { turbo: false } %>
+        <% if has_github %>
+          <h3 class="text-lg font-medium app-text mb-2">Install the GitHub App</h3>
+          <p class="app-text-secondary mb-6 max-w-sm mx-auto">
+            To connect repositories, you need to install our GitHub App and grant access to the repos you want to document.
+          </p>
+          <% return_path = @onboarding_project.present? ? repository_onboarding_project_path(@onboarding_project) : new_project_path %>
+          <%= link_to "Install GitHub App",
+              github_app_install_path(return_to: return_path),
+              class: "inline-flex items-center px-4 py-2 bg-gradient-brand text-white text-sm font-medium rounded-lg hover:opacity-90 transition-smooth",
+              data: { turbo: false } %>
+        <% else %>
+          <h3 class="text-lg font-medium app-text mb-2">Connect your GitHub account</h3>
+          <p class="app-text-secondary mb-6 max-w-sm mx-auto">
+            Link your GitHub account to access repositories. If your team has already installed the GitHub App, you'll see those repos automatically.
+          </p>
+          <%= button_to "Connect GitHub",
+              "/auth/github",
+              method: :post,
+              data: { turbo: false },
+              class: "inline-flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 transition-smooth" %>
+        <% end %>
       </div>
     <% elsif @repositories.empty? %>
       <%# App installed but no repos accessible %>
