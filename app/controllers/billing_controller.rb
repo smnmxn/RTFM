@@ -3,6 +3,7 @@ class BillingController < ApplicationController
     @user = current_user
     @subscription = @user.active_subscription
     @project_count = @user.projects.where(onboarding_step: nil).count
+    @article_count = Article.where(project_id: @user.project_ids).count
     @team_member_count = 1
   end
 
@@ -33,6 +34,9 @@ class BillingController < ApplicationController
 
   def success
     # Post-checkout confirmation — plan sync happens via webhook
+    if current_user.projects.where(onboarding_step: nil).empty?
+      redirect_to new_onboarding_project_path, notice: "Pro trial started! Let's set up your first project."
+    end
   end
 
   def portal

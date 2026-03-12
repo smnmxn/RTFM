@@ -8,6 +8,7 @@ class User < ApplicationRecord
   has_many :projects, dependent: :destroy
   has_many :github_app_installations, dependent: :nullify
   has_many :pending_notifications, dependent: :destroy
+  has_many :product_events, dependent: :destroy
   has_many :user_identities, dependent: :destroy
 
   validates :email, presence: true, uniqueness: true

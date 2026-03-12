@@ -6,7 +6,7 @@ module Onboarding
     before_action :ensure_onboarding_active, except: [ :new, :create ]
     before_action :ensure_correct_step, except: [ :new, :create ]
 
-    # Step 0: Landing page to start onboarding
+    # Start onboarding: create project and go straight to repository selection
     def new
       completed_count = current_user.projects.where(onboarding_step: nil).count
       unless current_user.within_plan_limit?(:projects, completed_count)
@@ -16,16 +16,6 @@ module Onboarding
 
       # Clean up any incomplete onboarding projects so user starts fresh
       current_user.projects.onboarding_incomplete.destroy_all
-
-      @project = Project.new
-    end
-
-    def create
-      completed_count = current_user.projects.where(onboarding_step: nil).count
-      unless current_user.within_plan_limit?(:projects, completed_count)
-        redirect_to billing_path, alert: "You've reached your plan limit of #{current_user.plan_limit(:projects)} project(s). Upgrade to create more."
-        return
-      end
 
       # Create a bare project with temporary values — name/subdomain collected in setup step
       @project = current_user.projects.build(
@@ -42,6 +32,11 @@ module Onboarding
       else
         redirect_to projects_path, alert: "Could not start onboarding"
       end
+    end
+
+    # POST endpoint — kept for any existing forms, same logic as new
+    def create
+      new
     end
 
     # Step 1: Connect Repository

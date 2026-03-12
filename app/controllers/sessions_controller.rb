@@ -9,7 +9,11 @@ class SessionsController < ApplicationController
   end
 
   def new2
-    redirect_to app_subdomain_url(default_landing_path), allow_other_host: true if logged_in?
+    if logged_in?
+      redirect_to app_subdomain_url(default_landing_path), allow_other_host: true
+      return
+    end
+    session[:selected_plan] = params[:plan] if params[:plan].in?(%w[free pro])
   end
 
   def create
@@ -85,7 +89,11 @@ class SessionsController < ApplicationController
     identify_visitor(user)
 
     redirect_path = session.delete(:redirect_after_login) || default_landing_path(user)
-    redirect_to app_subdomain_url(redirect_path), allow_other_host: true, notice: "Welcome back, #{user.name || user.email}!"
+    if redirect_path == choose_plan_path
+      redirect_to app_subdomain_url(redirect_path), allow_other_host: true
+    else
+      redirect_to app_subdomain_url(redirect_path), allow_other_host: true, notice: "Welcome back, #{user.name || user.email}!"
+    end
   end
 
   def handle_account_linking(auth)
@@ -134,7 +142,12 @@ class SessionsController < ApplicationController
 
     identify_visitor(user)
 
-    redirect_to app_subdomain_url(default_landing_path(user)), allow_other_host: true, notice: "Welcome, #{user.name || user.email}!"
+    landing = default_landing_path(user)
+    if landing == choose_plan_path
+      redirect_to app_subdomain_url(landing), allow_other_host: true
+    else
+      redirect_to app_subdomain_url(landing), allow_other_host: true, notice: "Welcome, #{user.name || user.email}!"
+    end
   end
 
   def invite_required?
@@ -178,7 +191,7 @@ class SessionsController < ApplicationController
 
     case projects.count
     when 0
-      new_onboarding_project_path
+      choose_plan_path
     when 1
       project_path(projects.first)
     else

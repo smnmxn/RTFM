@@ -15,6 +15,15 @@ class ArticlesController < ApplicationController
   end
 
   def create_article
+    article_count = Article.where(project_id: current_user.project_ids).count
+    unless current_user.within_plan_limit?(:articles, article_count)
+      respond_to do |format|
+        format.json { render json: { error: "Article limit reached. Upgrade your plan." }, status: :forbidden }
+        format.html { redirect_to billing_path, alert: "You've reached your plan limit of #{current_user.plan_limit(:articles)} articles. Upgrade to create more." }
+      end
+      return
+    end
+
     # Parse JSON body
     data = if request.content_type&.include?("application/json")
       JSON.parse(request.body.read)
@@ -303,6 +312,12 @@ class ArticlesController < ApplicationController
   end
 
   def duplicate
+    article_count = Article.where(project_id: current_user.project_ids).count
+    unless current_user.within_plan_limit?(:articles, article_count)
+      redirect_to billing_path, alert: "You've reached your plan limit of #{current_user.plan_limit(:articles)} articles. Upgrade to create more."
+      return
+    end
+
     @new_article = @article.duplicate!
     track_event("article.duplicated", article_id: @article.id, new_article_id: @new_article.id)
     @section_id = @new_article.section_id || "uncategorized"

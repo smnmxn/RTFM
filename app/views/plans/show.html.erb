@@ -1,0 +1,99 @@
+<% content_for(:title) { "Choose Your Plan - SupportPages" } %>
+
+<%# Checkmark icon helper %>
+<% check_icon = capture do %>
+  <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+    <svg class="w-3 h-3 text-emerald-500 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+  </div>
+<% end %>
+
+<div class="max-w-3xl mx-auto pt-8" data-controller="billing-toggle">
+  <div class="text-center mb-8">
+    <h1 class="text-2xl font-bold app-text" style="font-family: var(--app-font-display);">Choose your plan</h1>
+    <p class="mt-2 text-sm app-text-secondary">Start with a 14-day Pro trial, or go free. You can change anytime.</p>
+  </div>
+
+  <!-- Billing toggle -->
+  <div class="flex justify-center mb-8">
+    <div class="inline-flex items-center app-surface-alt rounded-full p-1 border app-border">
+      <button data-billing-toggle-target="monthlyBtn"
+              data-action="click->billing-toggle#selectMonthly"
+              class="px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 app-text-muted">
+        Monthly
+      </button>
+      <button data-billing-toggle-target="annualBtn"
+              data-action="click->billing-toggle#selectAnnual"
+              class="px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 bg-white dark:bg-zinc-700 app-text shadow-sm">
+        Annual <span class="text-emerald-600 dark:text-emerald-400 font-semibold">save 23%</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-6">
+    <!-- Free -->
+    <div class="app-surface rounded-xl border <%= @selected_plan == 'free' ? 'ring-2 ring-[color:var(--app-accent)]' : 'app-border' %> p-6 flex flex-col">
+      <div class="mb-4">
+        <h3 class="text-lg font-semibold app-text mb-1">Free</h3>
+        <p class="text-sm app-text-secondary mb-3">For open source & hobby projects</p>
+        <div class="flex items-baseline gap-1">
+          <span class="text-3xl font-bold app-text" style="font-family: var(--app-font-display);">$0</span>
+          <span class="app-text-muted text-sm">/month</span>
+        </div>
+      </div>
+
+      <ul class="space-y-2.5 mb-6 flex-1">
+        <li class="flex items-start gap-2.5"><%= check_icon %><span class="text-sm app-text-secondary">1 project</span></li>
+        <li class="flex items-start gap-2.5"><%= check_icon %><span class="text-sm app-text-secondary">10 articles</span></li>
+        <li class="flex items-start gap-2.5"><%= check_icon %><span class="text-sm app-text-secondary">Subdomain help centre</span></li>
+        <li class="flex items-start gap-2.5"><%= check_icon %><span class="text-sm app-text-secondary">100 AI answers/month</span></li>
+        <li class="flex items-start gap-2.5"><%= check_icon %><span class="text-sm app-text-secondary">1 team member</span></li>
+      </ul>
+
+      <%= form_with url: choose_plan_path, method: :post, data: { turbo: false } do |f| %>
+        <input type="hidden" name="plan" value="free">
+        <%= f.submit "Continue with Free", class: "btn-secondary-md w-full cursor-pointer" %>
+      <% end %>
+    </div>
+
+    <!-- Pro -->
+    <div class="app-surface rounded-xl border <%= @selected_plan == 'pro' ? 'ring-2 ring-[color:var(--app-accent)]' : 'border-zinc-300 dark:border-zinc-600' %> p-6 flex flex-col relative">
+      <div class="absolute -top-2.5 left-1/2 -translate-x-1/2">
+        <span class="px-2.5 py-0.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-semibold rounded-full whitespace-nowrap">Recommended</span>
+      </div>
+
+      <div class="mb-4">
+        <div class="flex items-center gap-2 mb-1">
+          <h3 class="text-lg font-semibold app-text">Pro</h3>
+          <span class="px-2 py-0.5 bg-blue-500/15 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full">14-day free trial</span>
+        </div>
+        <p class="text-sm app-text-secondary mb-3">For startups & growing teams</p>
+        <div data-billing-toggle-target="annual" class="flex items-baseline gap-1">
+          <span class="text-3xl font-bold app-text" style="font-family: var(--app-font-display);">$99</span>
+          <span class="app-text-muted text-sm">/month</span>
+        </div>
+        <div data-billing-toggle-target="monthly" class="flex items-baseline gap-1 hidden">
+          <span class="text-3xl font-bold app-text" style="font-family: var(--app-font-display);">$129</span>
+          <span class="app-text-muted text-sm">/month</span>
+        </div>
+      </div>
+
+      <ul class="space-y-2.5 mb-6 flex-1">
+        <li class="flex items-start gap-2.5"><%= check_icon %><span class="text-sm app-text-secondary">Unlimited projects</span></li>
+        <li class="flex items-start gap-2.5"><%= check_icon %><span class="text-sm app-text-secondary">Unlimited articles</span></li>
+        <li class="flex items-start gap-2.5"><%= check_icon %><span class="text-sm app-text-secondary">Custom domain</span></li>
+        <li class="flex items-start gap-2.5"><%= check_icon %><span class="text-sm app-text-secondary">Unlimited AI answers</span></li>
+        <li class="flex items-start gap-2.5"><%= check_icon %><span class="text-sm app-text-secondary">Full custom branding</span></li>
+        <li class="flex items-start gap-2.5"><%= check_icon %><span class="text-sm app-text-secondary">Up to 10 team members</span></li>
+        <li class="flex items-start gap-2.5"><%= check_icon %><span class="text-sm app-text-secondary">Priority processing</span></li>
+        <li class="flex items-start gap-2.5"><%= check_icon %><span class="text-sm app-text-secondary">Analytics & notifications</span></li>
+      </ul>
+
+      <p class="text-xs app-text-muted mb-2 text-center">14-day free trial. Cancel anytime.</p>
+      <%= form_with url: choose_plan_path, method: :post, data: { turbo: false } do |f| %>
+        <input type="hidden" name="plan" value="pro">
+        <input type="hidden" name="interval" value="annual" data-billing-toggle-target="intervalField">
+        <%= f.submit "Start Pro trial", class: "btn-primary-md w-full cursor-pointer" %>
+      <% end %>
+    </div>
+  </div>
+</div>

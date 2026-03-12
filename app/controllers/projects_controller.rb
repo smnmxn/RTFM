@@ -153,6 +153,12 @@ class ProjectsController < ApplicationController
   end
 
   def accept_recommendation
+    article_count = Article.where(project_id: current_user.project_ids).count
+    unless current_user.within_plan_limit?(:articles, article_count)
+      redirect_to billing_path, alert: "You've reached your plan limit of #{current_user.plan_limit(:articles)} articles. Upgrade to create more."
+      return
+    end
+
     @recommendation = @project.recommendations.find(params[:recommendation_id])
     recommendation_created_at = @recommendation.created_at
 

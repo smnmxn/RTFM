@@ -233,6 +233,10 @@ Rails.application.routes.draw do
       end
     end
 
+    # Plan selection (post-signup)
+    get "/choose-plan", to: "plans#show", as: :choose_plan
+    post "/choose-plan", to: "plans#create"
+
     # Billing
     resource :billing, only: [:show], controller: "billing" do
       post :checkout

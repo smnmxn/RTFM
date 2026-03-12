@@ -6,6 +6,12 @@ export default class extends Controller {
   connect() {
     this.handleEscape = this.closeOnEscape.bind(this)
     document.addEventListener("keydown", this.handleEscape)
+
+    // Auto-open register modal when arriving from pricing page (?plan=)
+    const params = new URLSearchParams(window.location.search)
+    if (params.has("plan")) {
+      this.openModal("register")
+    }
   }
 
   disconnect() {
