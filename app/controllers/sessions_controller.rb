@@ -1,9 +1,14 @@
 class SessionsController < ApplicationController
   include Trackable
 
-  skip_before_action :require_authentication, only: [ :new, :create, :failure, :destroy, :create_with_password, :register ]
+  skip_before_action :require_authentication, only: [ :new, :new2, :create, :failure, :destroy, :create_with_password, :register ]
+  skip_forgery_protection only: :create  # OmniAuth callbacks use state param for CSRF; Apple POSTs cross-origin
 
   def new
+    redirect_to app_subdomain_url(default_landing_path), allow_other_host: true if logged_in?
+  end
+
+  def new2
     redirect_to app_subdomain_url(default_landing_path), allow_other_host: true if logged_in?
   end
 

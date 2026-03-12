@@ -22,6 +22,16 @@ x-app: &app
       condition: service_healthy
 
 services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "3443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - web
+
   web:
     <<: *app
     command: bash -c "bundle install && rm -f tmp/pids/server.pid && bin/rails db:prepare && bin/rails server -b 0.0.0.0 -p 3000"

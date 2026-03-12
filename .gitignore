@@ -33,6 +33,9 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
+# Ignore local TLS certs (mkcert)
+/docker/nginx/certs/*.pem
+
 # Ignore test coverage reports
 /coverage
 

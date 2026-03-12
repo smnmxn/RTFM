@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_12_092022) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_12_112031) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -488,6 +488,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_092022) do
     t.string "github_username"
     t.string "name"
     t.json "notification_preferences"
+    t.string "password_digest"
     t.string "plan", default: "free", null: false
     t.string "plan_status", default: "active", null: false
     t.datetime "trial_ends_at"

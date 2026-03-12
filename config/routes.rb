@@ -14,6 +14,7 @@ Rails.application.routes.draw do
 
   # Authentication (bare domain)
   get  "/login",  to: "sessions#new",     as: :login
+  get  "/signin2", to: "sessions#new2",   as: :login2
   get  "/logout", to: "sessions#destroy", as: :logout
   delete "/logout", to: "sessions#destroy"
 
