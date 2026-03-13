@@ -52,9 +52,9 @@
         <%= heroicon "globe-alt", options: { class: "w-4 h-4 app-text-muted" } %>
         Custom Domain
         <% if @project.custom_domain_active? %>
-          <span class="ml-auto inline-flex items-center rounded-full bg-green-100 px-1.5 py-0.5 text-xs font-medium text-green-700">Active</span>
+          <span class="ml-auto inline-flex items-center rounded-full bg-green-100 px-1.5 py-0.5 text-xs font-medium text-green-700" data-controller="tooltip" data-tooltip-content-value="Custom domain is verified and live">Active</span>
         <% elsif @project.custom_domain_verifying? %>
-          <span class="ml-auto inline-flex items-center rounded-full bg-yellow-100 px-1.5 py-0.5 text-xs font-medium text-yellow-700">Pending</span>
+          <span class="ml-auto inline-flex items-center rounded-full bg-yellow-100 px-1.5 py-0.5 text-xs font-medium text-yellow-700" data-controller="tooltip" data-tooltip-content-value="DNS verification in progress">Pending</span>
         <% end %>
       </button>
 

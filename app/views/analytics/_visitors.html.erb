@@ -97,7 +97,7 @@
                         <span class="text-xs app-text-muted"><%= visitor.utm_medium %></span>
                       <% end %>
                       <% if visitor.utm_campaign.present? %>
-                        <span class="text-xs app-text-muted truncate max-w-[120px]" title="<%= visitor.utm_campaign %>">
+                        <span class="text-xs app-text-muted truncate max-w-[120px]" data-controller="tooltip" data-tooltip-content-value="<%= visitor.utm_campaign %>">
                           <%= visitor.utm_campaign %>
                         </span>
                       <% end %>

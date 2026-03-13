@@ -10,7 +10,7 @@
       ) do %>
     <div class="flex items-center gap-3">
       <div class="flex-shrink-0">
-        <%= heroicon "light-bulb", options: { class: "w-5 h-5 text-amber-800" } %>
+        <span data-controller="tooltip" data-tooltip-content-value="Article suggestion"><%= heroicon "light-bulb", options: { class: "w-5 h-5 text-amber-800" } %></span>
       </div>
       <div class="min-w-0 flex-1">
         <p class="text-sm font-medium app-text truncate"><%= recommendation.title %></p>

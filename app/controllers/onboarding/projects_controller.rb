@@ -115,13 +115,35 @@ module Onboarding
         @project.save!
       end
 
-      @project.advance_onboarding!("setup")
-      track_event("project.onboarding_step_completed", step: "repository")
-      redirect_to setup_onboarding_project_path(@project)
+      # Check if any repo has multiple branches — if so, ask user to pick
+      needs_branch_picker = false
+      @project.project_repositories.each do |pr|
+        result = GithubBranchesService.new(
+          github_repo: pr.github_repo,
+          installation_id: pr.github_installation_id
+        ).call
+
+        if result.success? && result.branches.size > 1
+          needs_branch_picker = true
+          break
+        end
+      end
+
+      if needs_branch_picker
+        # Show branch picker before starting analysis
+        track_event("project.onboarding_step_completed", step: "repository")
+        redirect_to branches_onboarding_project_path(@project)
+      else
+        # Single branch per repo — kick off analysis immediately
+        start_analysis_early
+        @project.advance_onboarding!("setup")
+        track_event("project.onboarding_step_completed", step: "repository")
+        redirect_to setup_onboarding_project_path(@project)
+      end
     end
 
-    # Step 2: Setup — project name, subdomain, and branch per repo
-    def setup
+    # Branch picker — shown after connect if any repo has multiple branches
+    def branches
       @project_repositories = @project.project_repositories.order(:created_at)
       @branches_by_repo = {}
 
@@ -143,7 +165,23 @@ module Onboarding
           }
         end
       end
+    end
 
+    def save_branches
+      repo_branches = params[:repo_branches] || {}
+      @project.project_repositories.each do |pr|
+        branch = repo_branches[pr.id.to_s]
+        pr.update!(branch: branch.presence)
+      end
+
+      start_analysis_early
+      @project.advance_onboarding!("setup")
+      track_event("project.onboarding_step_completed", step: "repository")
+      redirect_to setup_onboarding_project_path(@project)
+    end
+
+    # Step 2: Setup — project name, subdomain, and website URL
+    def setup
       # Pre-fill website URL from saved value or GitHub repo homepage
       @suggested_website_url = @project.website_url
       if @suggested_website_url.blank?
@@ -176,19 +214,7 @@ module Onboarding
       if errors_to_check.any?
         @project.errors.clear
         errors_to_check.each { |e| @project.errors.add(e.attribute, e.message) }
-        @project_repositories = @project.project_repositories.order(:created_at)
-        @branches_by_repo = {}
-        @project_repositories.each do |pr|
-          result = GithubBranchesService.new(
-            github_repo: pr.github_repo,
-            installation_id: pr.github_installation_id
-          ).call
-          @branches_by_repo[pr.id] = if result.success?
-            { branches: result.branches, default_branch: result.default_branch }
-          else
-            { branches: [], default_branch: nil }
-          end
-        end
+        @suggested_website_url = params.dig(:project, :website_url)
         render :setup, status: :unprocessable_entity
         return
       end
@@ -202,13 +228,6 @@ module Onboarding
         ExtractBrandingJob.perform_later(@project.id, website_url, force: true)
       end
 
-      # Save branch selections per repo
-      repo_branches = params[:repo_branches] || {}
-      @project.project_repositories.each do |pr|
-        branch = repo_branches[pr.id.to_s]
-        pr.update!(branch: branch.presence)
-      end
-
       @project.advance_onboarding!("analyze")
       track_event("project.onboarding_step_completed", step: "setup")
       redirect_to analyze_onboarding_project_path(@project)
@@ -216,13 +235,10 @@ module Onboarding
 
     # Step 3: Analyze Codebase
     def analyze
-      # Auto-start analysis if not already running
+      # Analysis is kicked off early (after connect/branches step).
+      # As a fallback, start it here if it wasn't already started.
       if @project.analysis_status.nil? || @project.analysis_status.blank?
-        @project.update!(
-          analysis_status: "pending",
-          analysis_started_at: Time.current
-        )
-        AnalyzeCodebaseJob.perform_later(@project.id)
+        start_analysis_early
       end
     end
 
@@ -344,6 +360,16 @@ module Onboarding
 
       # Redirect to correct step
       redirect_to send("#{expected_step}_onboarding_project_path", @project)
+    end
+
+    def start_analysis_early
+      return if @project.analysis_status == "running"
+
+      @project.update!(
+        analysis_status: "pending",
+        analysis_started_at: Time.current
+      )
+      AnalyzeCodebaseJob.perform_later(@project.id)
     end
 
     def fetch_repo_homepage_url

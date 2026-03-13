@@ -1,13 +1,13 @@
 <%= tag.div id: dom_id(section), class: "p-4 flex items-center justify-between hover:app-surface-alt" do %>
   <div class="flex items-center gap-4 flex-1">
-<div class="flex-shrink-0 app-text-muted">
+<div class="flex-shrink-0 app-text-muted" data-controller="tooltip" data-tooltip-content-value="Drag to reorder">
       <%= heroicon "bars-3", options: { class: "w-5 h-5" } %>
     </div>
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2">
         <h4 class="font-medium app-text"><%= section.name %></h4>
         <% unless section.visible? %>
-          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium app-surface-alt app-text-secondary">Hidden</span>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium app-surface-alt app-text-secondary" data-controller="tooltip" data-tooltip-content-value="Hidden from help centre">Hidden</span>
         <% end %>
         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium <%= section_type_badge_class(section) %>">
           <%= section.section_type.humanize %>

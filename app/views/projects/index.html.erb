@@ -109,7 +109,7 @@
                     <div class="text-center">
                       <div class="flex items-center justify-center gap-1">
                         <% if inbox_count > 0 %>
-                          <span class="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0"></span>
+                          <span class="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" data-controller="tooltip" data-tooltip-content-value="Unreviewed items"></span>
                         <% end %>
                         <span class="text-lg font-semibold app-text" style="font-family: var(--app-font-display);"><%= inbox_count %></span>
                       </div>

@@ -124,6 +124,8 @@ Rails.application.routes.draw do
         member do
           get :repository
           post :connect
+          get :branches
+          post :save_branches
           get :setup
           post :save_setup
           get :analyze

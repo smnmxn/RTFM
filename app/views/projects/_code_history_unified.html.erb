@@ -115,7 +115,7 @@
               <% elsif update.analysis_status == "failed" %>
                 <div class="bg-red-50 px-5 py-4 border-b border-red-100">
                   <div class="flex items-center gap-3">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center" data-controller="tooltip" data-tooltip-content-value="Analysis encountered an error">
                       <%= heroicon "x-mark", options: { class: "w-5 h-5 text-red-600" } %>
                     </div>
                     <span class="font-medium text-red-700">Analysis failed</span>
@@ -139,7 +139,7 @@
                id="<%= is_commit ? "code-history-commit-#{item[:short_sha]}" : "code-history-pr-#{item[:pr_number]}" %>">
             <div class="flex items-center gap-4">
               <!-- Type indicator icon -->
-              <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center <%= is_commit ? 'app-surface-alt' : 'app-accent-light' %>">
+              <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center <%= is_commit ? 'app-surface-alt' : 'app-accent-light' %>" data-controller="tooltip" data-tooltip-content-value="<%= is_commit ? 'Commit' : 'Pull request' %>">
                 <% if is_commit %>
                   <%= heroicon "code-bracket", variant: :mini, options: { class: "w-4 h-4 app-text-secondary" } %>
                 <% else %>
@@ -168,13 +168,13 @@
                     <% end %>
                   </span>
                   <% if is_analysis_baseline %>
-                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium app-accent-light app-accent-on-light">
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium app-accent-light app-accent-on-light" data-controller="tooltip" data-tooltip-content-value="Analysis baseline">
                       <%= heroicon "flag", options: { class: "w-3 h-3" } %>
                       Baseline
                     </span>
                   <% end %>
                   <% if is_last_check %>
-                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700" data-controller="tooltip" data-tooltip-content-value="Last automatic documentation check">
                       <%= heroicon "arrow-path", options: { class: "w-3 h-3" } %>
                       Last check
                     </span>

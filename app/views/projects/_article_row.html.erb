@@ -9,7 +9,7 @@
         "row-unselected" => !selected
       ) do %>
     <div class="flex items-center gap-3">
-      <div class="flex-shrink-0">
+      <div class="flex-shrink-0" data-controller="tooltip" data-tooltip-content-value="<%= if article.generation_running? then 'Generating…' elsif article.generation_failed? then 'Generation failed' elsif article.approved? then 'Approved' elsif article.rejected? then 'Rejected' else 'Ready for review' end %>">
         <% if article.generation_running? %>
           <%= spinner_icon(size: "w-5 h-5", extra_class: "app-accent-text") %>
         <% elsif article.generation_failed? %>

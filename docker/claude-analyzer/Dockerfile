@@ -30,8 +30,8 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 ENV NODE_PATH=/usr/local/lib/node_modules
 
-# Install Claude Code CLI, Puppeteer, and jsdom globally
-RUN npm install -g @anthropic-ai/claude-code puppeteer jsdom
+# Install Claude Code CLI (latest), Puppeteer, and jsdom globally
+RUN npm install -g @anthropic-ai/claude-code@latest puppeteer jsdom
 
 # Create non-root user
 RUN useradd -m -s /bin/bash analyzer

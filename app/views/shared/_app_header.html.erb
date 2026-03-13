@@ -13,14 +13,14 @@
       <% if local_assigns[:project] %>
         <%= link_to project_help_centre_url(project), target: "_blank",
             class: "p-1.5 rounded-lg app-text-muted hover:app-text hover:app-surface-alt transition-colors",
-            title: "View help centre" do %>
+            data: tooltip_data("View help centre") do %>
           <%= heroicon "arrow-top-right-on-square", options: { class: "w-5 h-5" } %>
         <% end %>
       <% end %>
       <%# Theme toggle %>
-      <button data-controller="theme" data-action="click->theme#toggle"
-              class="p-1.5 rounded-lg app-text-muted hover:app-text hover:app-surface-alt transition-colors"
-              title="Toggle dark mode">
+      <button data-controller="theme tooltip" data-action="click->theme#toggle"
+              data-tooltip-content-value="Toggle dark mode"
+              class="p-1.5 rounded-lg app-text-muted hover:app-text hover:app-surface-alt transition-colors">
         <svg class="w-5 h-5 hidden dark:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
         </svg>
@@ -31,8 +31,8 @@
       <%# User dropdown %>
       <div class="relative" data-controller="dropdown">
         <button data-action="click->dropdown#toggle"
-                class="w-8 h-8 rounded-full app-surface-alt flex items-center justify-center text-sm font-medium app-text-secondary hover:app-text transition-colors"
-                title="<%= current_user.name || current_user.github_username %>">
+                data-controller="tooltip" data-tooltip-content-value="<%= current_user.name || current_user.github_username %>"
+                class="w-8 h-8 rounded-full app-surface-alt flex items-center justify-center text-sm font-medium app-text-secondary hover:app-text transition-colors">
           <%= (current_user.name || current_user.github_username).first.upcase %>
         </button>
         <div data-dropdown-target="menu" class="hidden absolute right-0 mt-2 w-48 app-surface rounded-lg app-shadow border app-border py-1 z-50">

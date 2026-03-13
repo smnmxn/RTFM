@@ -5,7 +5,7 @@
   <% pending_articles_count = project.articles.where(review_status: :unreviewed, generation_status: :generation_completed).count %>
   <span class="text-sm app-text-secondary">
     <% if pending_recs > 0 || pending_articles_count > 0 %>
-      <%= pending_recs + pending_articles_count %> pending
+      <span data-controller="tooltip" data-tooltip-content-value="<%= pending_recs + pending_articles_count %> unreviewed suggestions and articles"><%= pending_recs + pending_articles_count %> pending</span>
     <% elsif total > 0 %>
       <%= approved %>/<%= total %> approved
     <% else %>
@@ -13,7 +13,7 @@
     <% end %>
   </span>
   <% if total > 0 %>
-    <div class="w-24 app-surface-alt rounded-full h-2">
+    <div class="w-24 app-surface-alt rounded-full h-2" data-controller="tooltip" data-tooltip-content-value="<%= approved %> of <%= total %> articles approved">
       <div class="app-accent-bg h-2 rounded-full transition-all duration-300" style="width: <%= (approved * 100 / total) %>%"></div>
     </div>
   <% end %>

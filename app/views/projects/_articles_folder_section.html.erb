@@ -22,17 +22,19 @@
     <% if section.present? %>
       <!-- Add article button -->
       <button type="button"
-              data-controller="add-article-button"
+              data-controller="add-article-button tooltip"
               data-add-article-button-section-id-value="<%= section.id %>"
               data-action="add-article-button#open"
               class="p-1 app-text-muted hover:app-text opacity-0 group-hover/section:opacity-100 transition-opacity flex-shrink-0"
-              title="Add article to <%= section.name %>">
+              data-tooltip-content-value="Add article to <%= section.name %>"
         <%= heroicon "plus", options: { class: "w-4 h-4" } %>
       </button>
 
       <!-- Kebab menu -->
       <button type="button"
               data-action="section-menu#toggle"
+              data-controller="tooltip"
+              data-tooltip-content-value="Section options"
               class="p-1 app-text-muted hover:app-text opacity-0 group-hover/section:opacity-100 transition-opacity flex-shrink-0">
         <%= heroicon "ellipsis-vertical", options: { class: "w-4 h-4" } %>
       </button>

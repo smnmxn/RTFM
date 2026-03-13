@@ -32,6 +32,10 @@ module ApplicationHelper
     markdown.render(text).html_safe
   end
 
+  def tooltip_data(text, position: "top")
+    { controller: "tooltip", tooltip_content_value: text, tooltip_position_value: position }
+  end
+
   def section_type_badge_class(section)
     case section.section_type
     when "template"
