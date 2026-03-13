@@ -17,9 +17,9 @@
       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full app-surface-alt mb-4">
         <%= heroicon "rectangle-stack", variant: :outline, options: { class: "w-8 h-8 app-accent-text animate-pulse" } %>
       </div>
-      <h3 class="text-xl font-semibold app-text mb-2">Generating topics</h3>
+      <h3 class="text-xl font-semibold app-text mb-2">Generating sections</h3>
       <p class="app-text-secondary text-sm max-w-md mx-auto">
-        We're identifying the best documentation topics for your project.
+        We're suggesting sections to organise your help centre.
       </p>
     </div>
     <%= render "onboarding/shared/loading_banner",
@@ -27,7 +27,7 @@
         stage_duration: 15,
         start_time: project.sections_generation_started_at,
         variant: "checklist" %>
-    <%= render "onboarding/shared/page_warning" %>
+    <%= render "onboarding/shared/notification_prompt" %>
   </div>
 <% elsif sections.any? %>
   <div class="p-6 pb-0">
@@ -35,9 +35,9 @@
       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full app-surface-alt mb-4">
         <%= heroicon "check-circle", variant: :outline, options: { class: "w-8 h-8 app-accent-text" } %>
       </div>
-      <h3 class="text-xl font-semibold app-text mb-2">Review your topics</h3>
+      <h3 class="text-xl font-semibold app-text mb-2">Review your sections</h3>
       <p class="app-text-secondary text-sm max-w-md mx-auto">
-        Accept the sections you'd like to generate documentation for.
+        Sections organise your help centre into categories like "Getting Started" or "Billing". Accept the ones that fit — you can always add, rename, or remove them later.
       </p>
     </div>
   </div>
@@ -52,9 +52,9 @@
     <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
       <%= heroicon "check", variant: :outline, options: { class: "w-8 h-8 text-emerald-600" } %>
     </div>
-    <h3 class="text-lg font-semibold app-text mb-2">All topics reviewed!</h3>
+    <h3 class="text-lg font-semibold app-text mb-2">All sections reviewed!</h3>
     <p class="app-text-secondary text-sm max-w-sm mx-auto">
-      You've reviewed all the suggested topics. Click below to continue and we'll start generating article recommendations.
+      You've reviewed all the suggested sections. Click below to continue and we'll start generating article recommendations.
     </p>
   </div>
 <% end %>

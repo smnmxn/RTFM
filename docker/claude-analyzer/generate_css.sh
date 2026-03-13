@@ -26,7 +26,7 @@ cd /repo
 echo "Analyzing codebase and generating CSS..."
 echo "API Key set: ${ANTHROPIC_API_KEY:+yes}"
 
-cat <<'CSS_PROMPT' | claude -p --output-format json --allowedTools "Read,Glob,Grep" > /tmp/claude_output.json
+cat <<'CSS_PROMPT' | claude -p --output-format json --allowedTools "Read,Write,Edit,Glob,Grep,Bash,Agent" > /tmp/claude_output.json
 Analyze this codebase and generate comprehensive CSS for accurate UI mockup rendering.
 
 === STEP 1: DETECT THE CSS FRAMEWORK ===

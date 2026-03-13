@@ -132,7 +132,7 @@ else
     REPO_RELATIONSHIPS_SECTION=""
 fi
 
-cat <<PROMPT | claude -p --output-format json --allowedTools "Read,Glob,Grep,Bash" > /tmp/claude_main_output.json
+cat <<PROMPT | claude -p --output-format json --allowedTools "Read,Write,Edit,Glob,Grep,Bash,Agent" > /tmp/claude_main_output.json
 ${MULTI_REPO_INTRO}Analyze this codebase and provide:
 
 1. FIRST, output a CLAUDE.md-style project summary in markdown format including:
@@ -262,7 +262,7 @@ echo "Main analysis complete!"
 # Extract style context for UI mockup generation
 echo "Extracting style context..."
 
-cat <<'STYLE_PROMPT' | claude -p --output-format json --allowedTools "Read,Glob,Grep" > /tmp/claude_style_output.json
+cat <<'STYLE_PROMPT' | claude -p --output-format json --allowedTools "Read,Write,Edit,Glob,Grep,Bash,Agent" > /tmp/claude_style_output.json
 Analyze this codebase and extract a comprehensive visual style context for generating accurate UI mockups.
 
 STEP 1: Determine the application type:

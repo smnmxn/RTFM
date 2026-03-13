@@ -83,7 +83,7 @@ echo "Max turns: ${CLAUDE_MAX_TURNS}"
 
 # Run Claude and capture exit status (don't fail on error due to set -e)
 set +e
-cat <<'PROMPT' | claude -p --model "${CLAUDE_MODEL}" ${MAX_TURNS_ARG} --output-format json --allowedTools "Read,Glob,Grep,Bash" > /tmp/claude_output.json
+cat <<'PROMPT' | claude -p --model "${CLAUDE_MODEL}" ${MAX_TURNS_ARG} --output-format json --allowedTools "Read,Write,Edit,Glob,Grep,Bash,Agent" > /tmp/claude_output.json
 You are a technical writer creating a how-to guide article for end users of a software product.
 
 STEP 1: Read the context file to understand what article you need to write:

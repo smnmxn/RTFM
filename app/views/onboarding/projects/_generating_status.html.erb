@@ -23,9 +23,9 @@
       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full app-surface-alt mb-4">
         <%= heroicon "sparkles", variant: :outline, options: { class: "w-8 h-8 app-accent-text animate-pulse" } %>
       </div>
-      <h3 class="text-xl font-semibold app-text mb-2">Creating your help centre</h3>
+      <h3 class="text-xl font-semibold app-text mb-2">Great choices!</h3>
       <p class="app-text-secondary text-sm max-w-md mx-auto">
-        We're generating personalized article recommendations for each section.
+        We're now generating article suggestions for each of your sections. Once ready, you'll be able to review, approve, or skip each one from your inbox.
       </p>
     </div>
 
@@ -35,6 +35,6 @@
         start_time: recommendations_start,
         variant: "checklist" %>
 
-    <%= render "onboarding/shared/page_warning" %>
+    <%= render "onboarding/shared/notification_prompt" %>
   </div>
 <% end %>

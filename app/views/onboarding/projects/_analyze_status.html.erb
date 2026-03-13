@@ -48,7 +48,7 @@
         </div>
         <h3 class="text-xl font-semibold app-text mb-2">Analyzing your codebase</h3>
         <p class="app-text-secondary text-sm max-w-md mx-auto">
-          We're scanning your repository to understand your project structure.
+          Depending on the size of your codebase, this may take a few minutes. This is a one-time process — we'll notify you when it's done.
         </p>
       </div>
       <%= render "onboarding/shared/loading_banner",
@@ -64,7 +64,7 @@
         </div>
         <h3 class="text-xl font-semibold app-text mb-2">Help us tailor your docs</h3>
         <p class="app-text-secondary text-sm max-w-md mx-auto">
-          Answer a few quick questions while we analyze your codebase.
+          Answer a few quick questions while we analyze your codebase. Depending on its size, this may take a few minutes — but you only have to do this once.
         </p>
       </div>
       <%= render "onboarding/projects/analysis_questions", project: project %>
@@ -85,7 +85,7 @@
         </div>
         <h3 class="text-xl font-semibold app-text mb-2">A few more questions</h3>
         <p class="app-text-secondary text-sm max-w-md mx-auto">
-          Help us understand your product better while we generate topics.
+          Help us understand your product better while we generate sections.
         </p>
       </div>
       <%= render "onboarding/projects/contextual_questions", project: project %>
@@ -98,9 +98,9 @@
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-full app-surface-alt mb-4">
           <%= heroicon "rectangle-stack", variant: :outline, options: { class: "w-8 h-8 app-accent-text animate-pulse" } %>
         </div>
-        <h3 class="text-xl font-semibold app-text mb-2">Generating topics</h3>
+        <h3 class="text-xl font-semibold app-text mb-2">Generating sections</h3>
         <p class="app-text-secondary text-sm max-w-md mx-auto">
-          We're identifying the best documentation topics for your project.
+          We're suggesting sections to organise your help centre.
         </p>
       </div>
       <%= render "onboarding/shared/loading_banner",
@@ -114,7 +114,7 @@
     <div class="p-6">
       <%= render "onboarding/shared/completion_state",
           title: "Analysis complete!",
-          message: "Redirecting to review your topics...",
+          message: "Redirecting to review your sections...",
           redirect_url: sections_onboarding_project_path(project) %>
     </div>
   <% elsif project.sections_generation_status == "failed" %>
@@ -132,9 +132,9 @@
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-full app-surface-alt mb-4">
           <%= heroicon "rectangle-stack", variant: :outline, options: { class: "w-8 h-8 app-accent-text animate-pulse" } %>
         </div>
-        <h3 class="text-xl font-semibold app-text mb-2">Generating topics</h3>
+        <h3 class="text-xl font-semibold app-text mb-2">Generating sections</h3>
         <p class="app-text-secondary text-sm max-w-md mx-auto">
-          We're identifying the best documentation topics for your project.
+          We're suggesting sections to organise your help centre.
         </p>
       </div>
       <%= render "onboarding/shared/loading_banner",

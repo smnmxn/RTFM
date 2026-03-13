@@ -34,7 +34,7 @@ echo "Suggesting sections for: ${PROJECT_NAME}"
 echo "Running Claude Code analysis..."
 echo "API Key set: ${ANTHROPIC_API_KEY:+yes}"
 
-cat <<'PROMPT' | claude -p --output-format json --allowedTools "Read,Glob,Grep,Bash" > /tmp/claude_output.json
+cat <<'PROMPT' | claude -p --output-format json --allowedTools "Read,Write,Edit,Glob,Grep,Bash,Agent" > /tmp/claude_output.json
 You are a help centre strategist. Analyze this project and suggest the COMPLETE set of help centre sections for END USERS.
 
 CRITICAL: These sections are for END USERS, not developers.

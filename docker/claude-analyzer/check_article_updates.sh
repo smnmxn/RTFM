@@ -89,7 +89,7 @@ echo "Using model: ${CLAUDE_MODEL}"
 echo "Running Claude Code to analyze article updates..."
 
 set +e
-cat <<'PROMPT' | claude -p --model "${CLAUDE_MODEL}" --max-turns 15 --output-format json --allowedTools "Read,Glob,Grep" > /tmp/claude_output.json
+cat <<'PROMPT' | claude -p --model "${CLAUDE_MODEL}" --max-turns 15 --output-format json --allowedTools "Read,Write,Edit,Glob,Grep,Bash,Agent" > /tmp/claude_output.json
 You are analyzing code changes to determine which documentation articles need to be updated.
 
 STEP 1: Read the context file to understand the project:

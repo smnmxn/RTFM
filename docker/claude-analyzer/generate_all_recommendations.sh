@@ -31,7 +31,7 @@ cd /repo
 echo "Running Claude Code analysis for all accepted sections..."
 echo "API Key set: ${ANTHROPIC_API_KEY:+yes}"
 
-cat <<'PROMPT' | claude -p --output-format json --allowedTools "Read,Glob,Grep,Bash" > /tmp/claude_output.json
+cat <<'PROMPT' | claude -p --output-format json --allowedTools "Read,Write,Edit,Glob,Grep,Bash,Agent" > /tmp/claude_output.json
 You are a help centre content strategist. Your job is to suggest how-to guide articles for END USERS.
 
 CRITICAL: These articles are for END USERS, not developers.
