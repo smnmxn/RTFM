@@ -62,7 +62,7 @@
                         <% if first_rec %>
                           <div class="flex-shrink-0">
                             <%= link_to "Review",
-                                project_path(project, selected: "recommendation_#{first_rec.id}"),
+                                inbox_project_path(project, selected: "recommendation_#{first_rec.id}"),
                                 class: "inline-flex items-center px-3 py-1.5 text-sm font-medium app-accent-text app-surface hover:app-surface-alt rounded-md",
                                 data: { turbo_frame: "_top" } %>
                           </div>

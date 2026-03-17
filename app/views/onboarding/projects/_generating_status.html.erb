@@ -15,7 +15,7 @@
       title: "All done!",
       message: "Redirecting to your help centre...",
       icon: "check",
-      redirect_url: project_path(project) %>
+      redirect_url: inbox_project_path(project) %>
 <% else %>
   <% recommendations_start = project.sections.minimum(:recommendations_started_at) %>
   <div class="p-6">

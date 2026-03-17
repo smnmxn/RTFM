@@ -2,6 +2,8 @@ class ProjectsController < ApplicationController
   before_action :set_project, except: [ :index, :new, :create, :repositories ]
   before_action :require_pro_for_custom_domain, only: [ :update_custom_domain ]
 
+  layout "workspace", only: [ :inbox, :articles_page, :code_history_page, :settings_page ]
+
   def index
     @projects = current_user.projects
       .includes(logo_attachment: :blob)
@@ -14,6 +16,18 @@ class ProjectsController < ApplicationController
   end
 
   def show
+    # Backward compat: redirect old show URL to new workspace routes
+    if params[:article].present?
+      redirect_to articles_page_project_path(@project, article: params[:article]), status: :moved_permanently
+    elsif params[:section].present?
+      redirect_to articles_page_project_path(@project, section: params[:section]), status: :moved_permanently
+    else
+      redirect_to inbox_project_path(@project), status: :moved_permanently
+    end
+  end
+
+  # Workspace section: Inbox
+  def inbox
     @pending_recommendations = @project.recommendations.pending
       .includes(:section)
       .order(created_at: :asc)
@@ -38,33 +52,37 @@ class ProjectsController < ApplicationController
     end
 
     # Fallback to default selection if param invalid or not provided
-    # Don't override an explicitly selected recommendation with an article fallback
     if @selected_recommendation.nil?
       @selected_article ||= @inbox_articles.where(generation_status: :generation_completed).first
       @selected_recommendation ||= @selected_article.nil? ? @pending_recommendations.first : nil
     end
 
     @inbox_empty = @pending_recommendations.empty? && @inbox_articles.empty?
+  end
 
-    # Articles tab data
+  # Workspace section: Articles
+  def articles_page
     @articles_sections = @project.sections.visible.ordered
     @uncategorized_articles_count = @project.articles.for_folder_tree.where(section: nil).count
-    @total_published_articles = @project.articles.for_folder_tree.count
 
-    # Article preselection (from ?article=:id param, used by help centre Edit link)
     if params[:article].present?
       @preselected_article = @project.articles.for_folder_tree.find_by(id: params[:article])
       @preselected_section = @preselected_article&.section
-      @active_tab = "articles" if @preselected_article
     end
 
-    # Section preselection (from ?section=:id param, used after creating a section)
     if params[:section].present? && @preselected_section.nil?
       @preselected_section = @project.sections.find_by(id: params[:section])
-      @active_tab = "articles" if @preselected_section
     end
+  end
 
-    @active_tab ||= "inbox"
+  # Workspace section: Code History
+  def code_history_page
+    # Timeline is lazy-loaded via turbo frame
+  end
+
+  # Workspace section: Settings
+  def settings_page
+    # Settings sub-panels are self-contained forms
   end
 
   def inbox_articles
@@ -89,7 +107,7 @@ class ProjectsController < ApplicationController
     if turbo_frame_request?
       render partial: "projects/article_editor", locals: { article: @article }
     else
-      redirect_to project_path(@project, selected: params[:selected])
+      redirect_to inbox_project_path(@project, selected: params[:selected])
     end
   end
 
@@ -109,7 +127,7 @@ class ProjectsController < ApplicationController
 
     respond_to do |format|
       format.turbo_stream
-      format.html { redirect_to project_path(@project) }
+      format.html { redirect_to inbox_project_path(@project) }
     end
   end
 
@@ -124,7 +142,7 @@ class ProjectsController < ApplicationController
 
     respond_to do |format|
       format.turbo_stream
-      format.html { redirect_to project_path(@project) }
+      format.html { redirect_to inbox_project_path(@project) }
     end
   end
 
@@ -137,7 +155,7 @@ class ProjectsController < ApplicationController
 
     respond_to do |format|
       format.turbo_stream
-      format.html { redirect_to project_path(@project) }
+      format.html { redirect_to inbox_project_path(@project) }
     end
   end
 
@@ -148,14 +166,21 @@ class ProjectsController < ApplicationController
     if turbo_frame_request?
       render partial: "projects/recommendation_editor", locals: { recommendation: @recommendation }
     else
-      redirect_to project_path(@project, selected: "recommendation_#{@recommendation.id}")
+      redirect_to inbox_project_path(@project, selected: "recommendation_#{@recommendation.id}")
     end
   end
 
   def accept_recommendation
     article_count = Article.where(project_id: current_user.project_ids).count
     unless current_user.within_plan_limit?(:articles, article_count)
-      redirect_to billing_path, alert: "You've reached your plan limit of #{current_user.plan_limit(:articles)} articles. Upgrade to create more."
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace("inbox-editor",
+            partial: "projects/plan_limit_reached",
+            locals: { project: @project, limit: current_user.plan_limit(:articles) })
+        end
+        format.html { redirect_to billing_path, alert: "You've reached your plan limit of #{current_user.plan_limit(:articles)} articles. Upgrade to create more." }
+      end
       return
     end
 
@@ -184,7 +209,7 @@ class ProjectsController < ApplicationController
 
     respond_to do |format|
       format.turbo_stream
-      format.html { redirect_to project_path(@project) }
+      format.html { redirect_to inbox_project_path(@project) }
     end
   end
 
@@ -199,7 +224,7 @@ class ProjectsController < ApplicationController
 
     respond_to do |format|
       format.turbo_stream
-      format.html { redirect_to project_path(@project) }
+      format.html { redirect_to inbox_project_path(@project) }
     end
   end
 
@@ -215,7 +240,7 @@ class ProjectsController < ApplicationController
         sections: @sections
       }
     else
-      redirect_to project_path(@project, article: @article.id)
+      redirect_to articles_page_project_path(@project, article: @article.id)
     end
   end
 
@@ -340,7 +365,7 @@ class ProjectsController < ApplicationController
     # Check if analysis is already running for this commit
     existing_update = @project.updates.find_by(commit_sha: commit_sha, source_type: :commit)
     if existing_update&.analysis_status == "running"
-      redirect_to project_path(@project, anchor: "code-history"), alert: "Analysis is already in progress for commit #{commit_sha[0..6]}."
+      redirect_to code_history_page_project_path(@project), alert: "Analysis is already in progress for commit #{commit_sha[0..6]}."
       return
     end
 
@@ -362,20 +387,20 @@ class ProjectsController < ApplicationController
           partial: "projects/code_history_timeline_reload",
           locals: { project: @project })
       end
-      format.html { redirect_to project_path(@project, anchor: "code-history"), notice: "Analysis started for commit #{commit_sha[0..6]}." }
+      format.html { redirect_to code_history_page_project_path(@project), notice: "Analysis started for commit #{commit_sha[0..6]}." }
     end
   end
 
   def analyze
     if @project.analysis_status == "running"
-      redirect_to project_path(@project), alert: "Analysis is already in progress."
+      redirect_to code_history_page_project_path(@project), alert: "Analysis is already in progress."
       return
     end
 
     @project.update!(analysis_status: "pending")
     AnalyzeCodebaseJob.perform_later(@project.id)
 
-    redirect_to project_path(@project), notice: "Codebase analysis started. This may take a few minutes."
+    redirect_to code_history_page_project_path(@project), notice: "Codebase analysis started. This may take a few minutes."
   end
 
   def analyze_pull_request
@@ -384,7 +409,7 @@ class ProjectsController < ApplicationController
     # Check if analysis is already running for this PR
     existing_update = @project.updates.find_by(pull_request_number: pr_number)
     if existing_update&.analysis_status == "running"
-      redirect_to project_path(@project), alert: "Analysis is already in progress for PR ##{pr_number}."
+      redirect_to code_history_page_project_path(@project), alert: "Analysis is already in progress for PR ##{pr_number}."
       return
     end
 
@@ -408,19 +433,19 @@ class ProjectsController < ApplicationController
           partial: "projects/code_history_timeline_reload",
           locals: { project: @project })
       end
-      format.html { redirect_to project_path(@project, anchor: "code-history"), notice: "Analysis started for PR ##{pr_number}." }
+      format.html { redirect_to code_history_page_project_path(@project), notice: "Analysis started for PR ##{pr_number}." }
     end
   end
 
   def generate_recommendations
     unless @project.analysis_status == "completed"
-      redirect_to project_path(@project), alert: "Please run codebase analysis first."
+      redirect_to inbox_project_path(@project), alert: "Please run codebase analysis first."
       return
     end
 
     GenerateProjectRecommendationsJob.perform_later(project_id: @project.id)
 
-    redirect_to project_path(@project), notice: "Generating article recommendations. This may take a few minutes."
+    redirect_to inbox_project_path(@project), notice: "Generating article recommendations. This may take a few minutes."
   end
 
   def repositories
@@ -489,7 +514,7 @@ class ProjectsController < ApplicationController
   # Maintenance actions
   def reanalyze
     if @project.analysis_status == "running"
-      redirect_to project_path(@project, tab: "settings"), alert: "Analysis is already in progress."
+      redirect_to settings_page_project_path(@project), alert: "Analysis is already in progress."
       return
     end
 
@@ -498,7 +523,7 @@ class ProjectsController < ApplicationController
     GenerateCssJob.perform_later(project_id: @project.id)
     ExtractImagesJob.perform_later(project_id: @project.id)
 
-    redirect_to project_path(@project, tab: "settings"), notice: "Re-analysis started. This may take a few minutes."
+    redirect_to settings_page_project_path(@project), notice: "Re-analysis started. This may take a few minutes."
   end
 
   # Branding settings
@@ -524,7 +549,7 @@ class ProjectsController < ApplicationController
             locals: { project: @project, saved: true }
           )
         end
-        format.html { redirect_to project_path(@project, anchor: "settings"), notice: "Branding updated." }
+        format.html { redirect_to settings_page_project_path(@project), notice: "Branding updated." }
       end
     else
       respond_to do |format|
@@ -535,7 +560,7 @@ class ProjectsController < ApplicationController
             locals: { project: @project, saved: false }
           )
         end
-        format.html { redirect_to project_path(@project, anchor: "settings"), alert: "Failed to update branding." }
+        format.html { redirect_to settings_page_project_path(@project), alert: "Failed to update branding." }
       end
     end
   end
@@ -587,7 +612,7 @@ class ProjectsController < ApplicationController
             locals: { project: @project, saved: true }
           )
         end
-        format.html { redirect_to project_path(@project, anchor: "settings"), notice: "AI settings updated." }
+        format.html { redirect_to settings_page_project_path(@project), notice: "AI settings updated." }
       end
     else
       respond_to do |format|
@@ -598,7 +623,7 @@ class ProjectsController < ApplicationController
             locals: { project: @project, saved: false }
           )
         end
-        format.html { redirect_to project_path(@project, anchor: "settings"), alert: "Failed to update AI settings." }
+        format.html { redirect_to settings_page_project_path(@project), alert: "Failed to update AI settings." }
       end
     end
   end
@@ -617,7 +642,7 @@ class ProjectsController < ApplicationController
             locals: { project: @project, saved: true }
           )
         end
-        format.html { redirect_to project_path(@project, anchor: "settings"), notice: "Update strategy saved." }
+        format.html { redirect_to settings_page_project_path(@project), notice: "Update strategy saved." }
       end
     else
       respond_to do |format|
@@ -628,7 +653,7 @@ class ProjectsController < ApplicationController
             locals: { project: @project, saved: false }
           )
         end
-        format.html { redirect_to project_path(@project, anchor: "settings"), alert: "Failed to update strategy." }
+        format.html { redirect_to settings_page_project_path(@project), alert: "Failed to update strategy." }
       end
     end
   end
@@ -641,7 +666,7 @@ class ProjectsController < ApplicationController
       locals: {
         message: "This is a test notification",
         type: params[:toast_type] || "success",
-        action_url: project_path(@project),
+        action_url: inbox_project_path(@project),
         action_label: "View",
         persistent: params[:toast_type] == "error"
       }
@@ -686,7 +711,7 @@ class ProjectsController < ApplicationController
           locals: { project: @project, user: current_user, saved: true }
         )
       end
-      format.html { redirect_to project_path(@project, anchor: "settings/notifications"), notice: "Notification preferences saved." }
+      format.html { redirect_to settings_page_project_path(@project, anchor: "notifications"), notice: "Notification preferences saved." }
     end
   end
 
@@ -704,14 +729,14 @@ class ProjectsController < ApplicationController
 
     installation = GithubAppInstallation.find_by(github_installation_id: installation_id)
     unless installation
-      redirect_to project_path(@project, anchor: "settings"), alert: "GitHub App installation not found."
+      redirect_to settings_page_project_path(@project), alert: "GitHub App installation not found."
       return
     end
 
     # Check if repo is already connected to another project
     existing_repo = ProjectRepository.find_by(github_repo: repo_full_name)
     if existing_repo && existing_repo.project_id != @project.id
-      redirect_to project_path(@project, anchor: "settings"), alert: "This repository is already connected to another project."
+      redirect_to settings_page_project_path(@project), alert: "This repository is already connected to another project."
       return
     end
 
@@ -722,14 +747,14 @@ class ProjectsController < ApplicationController
     )
     track_event("settings.repository_added", repo: repo_full_name)
 
-    redirect_to project_path(@project, anchor: "settings"), notice: "Repository #{repo_full_name} added."
+    redirect_to settings_page_project_path(@project), notice: "Repository #{repo_full_name} added."
   end
 
   def remove_repository
     repo = @project.project_repositories.find(params[:repository_id])
 
     if @project.project_repositories.count == 1
-      redirect_to project_path(@project, anchor: "settings"), alert: "Cannot remove the only repository."
+      redirect_to settings_page_project_path(@project), alert: "Cannot remove the only repository."
       return
     end
 
@@ -741,7 +766,7 @@ class ProjectsController < ApplicationController
     track_event("settings.repository_removed", repo: repo.github_repo)
     repo.destroy
 
-    redirect_to project_path(@project, anchor: "settings"), notice: "Repository removed."
+    redirect_to settings_page_project_path(@project), notice: "Repository removed."
   end
 
   def set_primary_repository
@@ -753,7 +778,7 @@ class ProjectsController < ApplicationController
     # Also update legacy github_repo field
     @project.update!(github_repo: repo.github_repo)
 
-    redirect_to project_path(@project, anchor: "settings"), notice: "Primary repository updated."
+    redirect_to settings_page_project_path(@project), notice: "Primary repository updated."
   end
 
   # Custom domain management
@@ -762,7 +787,7 @@ class ProjectsController < ApplicationController
     custom_domain = params.dig(:project, :custom_domain).to_s.strip
 
     if custom_domain.blank?
-      redirect_to project_path(@project, anchor: "settings/custom-domain"), alert: "Please enter a custom domain."
+      redirect_to settings_page_project_path(@project, anchor: "custom-domain"), alert: "Please enter a custom domain."
       return
     end
 
@@ -776,7 +801,7 @@ class ProjectsController < ApplicationController
             locals: { project: @project, saved: true }
           )
         end
-        format.html { redirect_to project_path(@project, anchor: "settings/custom-domain"), notice: "Custom domain added. Follow the DNS instructions to complete setup." }
+        format.html { redirect_to settings_page_project_path(@project, anchor: "custom-domain"), notice: "Custom domain added. Follow the DNS instructions to complete setup." }
       end
     else
       respond_to do |format|
@@ -787,14 +812,14 @@ class ProjectsController < ApplicationController
             locals: { project: @project, saved: false }
           )
         end
-        format.html { redirect_to project_path(@project, anchor: "settings/custom-domain"), alert: @project.errors.full_messages.join(", ") }
+        format.html { redirect_to settings_page_project_path(@project, anchor: "custom-domain"), alert: @project.errors.full_messages.join(", ") }
       end
     end
   end
 
   def verify_custom_domain
     unless @project.custom_domain.present? && @project.custom_domain_cloudflare_id.present?
-      redirect_to project_path(@project, anchor: "settings/custom-domain"), alert: "No custom domain configured."
+      redirect_to settings_page_project_path(@project, anchor: "custom-domain"), alert: "No custom domain configured."
       return
     end
 
@@ -809,7 +834,7 @@ class ProjectsController < ApplicationController
           locals: { project: @project, saved: false, checking: true }
         )
       end
-      format.html { redirect_to project_path(@project, anchor: "settings/custom-domain"), notice: "Checking domain status..." }
+      format.html { redirect_to settings_page_project_path(@project, anchor: "custom-domain"), notice: "Checking domain status..." }
     end
   end
 
@@ -838,7 +863,7 @@ class ProjectsController < ApplicationController
           locals: { project: @project, saved: true }
         )
       end
-      format.html { redirect_to project_path(@project, anchor: "settings/custom-domain"), notice: "Custom domain removed." }
+      format.html { redirect_to settings_page_project_path(@project, anchor: "custom-domain"), notice: "Custom domain removed." }
     end
   end
 
@@ -849,7 +874,7 @@ class ProjectsController < ApplicationController
     target_commit = params[:target_commit].presence || fetch_latest_commit_sha
 
     unless target_commit.present?
-      redirect_to project_path(@project, anchor: "settings/maintenance"), alert: "Could not determine target commit."
+      redirect_to settings_page_project_path(@project, anchor: "maintenance"), alert: "Could not determine target commit."
       return
     end
 
@@ -860,7 +885,7 @@ class ProjectsController < ApplicationController
 
     CheckArticleUpdatesJob.perform_later(check_id: check.id)
 
-    redirect_to project_path(@project, anchor: "settings/maintenance"), notice: "Checking for article updates..."
+    redirect_to settings_page_project_path(@project, anchor: "maintenance"), notice: "Checking for article updates..."
   end
 
   def article_update_check
@@ -874,7 +899,7 @@ class ProjectsController < ApplicationController
           locals: { check: @check }
         )
       end
-      format.html { redirect_to project_path(@project, anchor: "settings/maintenance") }
+      format.html { redirect_to settings_page_project_path(@project, anchor: "maintenance") }
     end
   end
 
@@ -901,7 +926,7 @@ class ProjectsController < ApplicationController
       when "sections_suggested"
         "/onboarding/projects/#{@project.slug}/sections"
       else
-        "/projects/#{@project.slug}"
+        "/projects/#{@project.slug}/inbox"
       end
 
       PendingNotification.new(

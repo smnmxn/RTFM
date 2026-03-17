@@ -1,12 +1,14 @@
-<header class="app-surface app-shadow-sm">
-  <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex justify-between items-center">
-    <div class="flex items-center gap-4">
+<header class="h-12 flex-shrink-0 app-surface border-b app-border">
+  <div class="h-full px-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
       <%= link_to projects_path, class: "hover:opacity-80 transition-opacity" do %>
         <%= render "shared/logo", theme: "auto" %>
       <% end %>
       <% if local_assigns[:project] %>
         <span class="app-text-muted select-none">/</span>
-        <h1 class="text-lg font-semibold app-text" style="font-family: var(--app-font-display);"><%= link_to project.name, inbox_project_path(project), class: "hover:opacity-80 transition-opacity" %></h1>
+        <h1 class="text-base font-semibold app-text" style="font-family: var(--app-font-display);">
+          <%= link_to project.name, inbox_project_path(project), class: "hover:opacity-80 transition-opacity" %>
+        </h1>
       <% end %>
     </div>
     <div class="flex items-center gap-2">

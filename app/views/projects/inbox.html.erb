@@ -1,0 +1,12 @@
+<%= turbo_stream_from @project, :inbox %>
+<%= turbo_stream_from @project, :recommendations %>
+
+<div class="flex-1 flex flex-col overflow-hidden">
+  <%= render "projects/inbox_panel",
+      project: @project,
+      pending_recommendations: @pending_recommendations,
+      inbox_articles: @inbox_articles,
+      selected_article: @selected_article,
+      selected_recommendation: @selected_recommendation,
+      inbox_empty: @inbox_empty %>
+</div>
