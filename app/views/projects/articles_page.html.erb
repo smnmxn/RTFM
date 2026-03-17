@@ -1,0 +1,10 @@
+<%= turbo_stream_from @project, :articles %>
+
+<div class="flex-1 flex flex-col overflow-hidden">
+  <%= render "projects/articles_panel",
+      project: @project,
+      sections: @articles_sections,
+      uncategorized_count: @uncategorized_articles_count,
+      preselected_article: @preselected_article,
+      preselected_section: @preselected_section %>
+</div>

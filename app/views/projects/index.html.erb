@@ -69,7 +69,7 @@
           <% else %>
             <!-- Completed project card (stretched-link pattern for multiple clickable targets) -->
             <div class="relative app-surface rounded-xl border app-border app-shadow-sm hover-lift">
-              <%= link_to project_path(project), class: "absolute inset-0 z-0 rounded-xl", "aria-label": "Open #{project.name}" do %><% end %>
+              <%= link_to inbox_project_path(project), class: "absolute inset-0 z-0 rounded-xl", "aria-label": "Open #{project.name}" do %><% end %>
               <div class="relative z-10 pointer-events-none p-5">
                 <!-- Top row: logo + name + repo + chevron -->
                 <div class="flex items-center gap-3">

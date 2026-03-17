@@ -46,7 +46,7 @@
             </p>
           </div>
           <div class="flex items-center gap-3">
-            <%= link_to "#{project_path(project)}#code-history",
+            <%= link_to code_history_page_project_path(project),
                 class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-md transition-colors",
                 data: { turbo: false } do %>
               Review changes

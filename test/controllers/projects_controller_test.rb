@@ -40,10 +40,17 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
-  test "show renders project page" do
+  test "show redirects to inbox" do
     sign_in_as(@user)
     project = projects(:one)
     get project_path(project)
+    assert_redirected_to inbox_project_path(project)
+  end
+
+  test "inbox renders project page" do
+    sign_in_as(@user)
+    project = projects(:one)
+    get inbox_project_path(project)
     assert_response :success
   end
 
@@ -108,7 +115,7 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
 
     post analyze_project_path(project)
 
-    assert_redirected_to project_path(project)
+    assert_redirected_to code_history_page_project_path(project)
     assert_match(/analysis started/i, flash[:notice])
 
     project.reload
@@ -122,7 +129,7 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
 
     post analyze_project_path(project)
 
-    assert_redirected_to project_path(project)
+    assert_redirected_to code_history_page_project_path(project)
     assert_match(/already in progress/i, flash[:alert])
   end
 
@@ -306,14 +313,13 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_not project.seo_indexing_enabled?
   end
 
-  test "show renders inbox and articles tab badge partials" do
+  test "inbox renders inbox tab badge partial" do
     sign_in_as(@user)
     project = projects(:one)
 
-    get project_path(project)
+    get inbox_project_path(project)
 
     assert_response :success
-    assert_includes response.body, 'id="inbox-tab-badge"'
-    assert_includes response.body, 'id="articles-tab-badge"'
+    assert_includes response.body, "Inbox"
   end
 end

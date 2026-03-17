@@ -13,10 +13,6 @@ export default class extends Controller {
     this.boundBeforeMorph = this.beforeMorph.bind(this)
     document.addEventListener("turbo:before-morph-element", this.boundBeforeMorph)
 
-    // Listen for tab changes to refresh when inbox becomes visible
-    this.boundTabChanged = this.handleTabChange.bind(this)
-    document.addEventListener("tabs:changed", this.boundTabChanged)
-
     // Listen for edit events from inline-edit controllers
     this.element.addEventListener("inline-edit:editstart", () => this.startEditing())
     this.element.addEventListener("inline-edit:editend", () => this.stopEditing())
@@ -30,19 +26,11 @@ export default class extends Controller {
 
   disconnect() {
     document.removeEventListener("turbo:before-morph-element", this.boundBeforeMorph)
-    document.removeEventListener("tabs:changed", this.boundTabChanged)
     if (this.mutationObserver) {
       this.mutationObserver.disconnect()
     }
     if (this.listObserver) {
       this.listObserver.disconnect()
-    }
-  }
-
-  // When switching to inbox tab, refresh the articles list
-  handleTabChange(event) {
-    if (event.detail.tab === "inbox") {
-      this.refreshArticlesList()
     }
   }
 

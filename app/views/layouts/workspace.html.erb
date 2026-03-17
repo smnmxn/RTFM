@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "supportpages.io" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="supportpages.io">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%# Prevent flash of wrong theme — must run before stylesheet %>
+    <script>
+      (function(){
+        var t = localStorage.getItem('theme') ||
+          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (t === 'dark') document.documentElement.classList.add('dark');
+      })();
+    </script>
+
+    <%# Inter (body) + Space Grotesk (headlines/logo) %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tippy.js@6.3.7/dist/tippy.css">
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="h-screen flex flex-col overflow-hidden" style="font-family: var(--app-font-body);">
+    <div data-controller="presence"></div>
+
+    <%# Global notification stream — always active in workspace %>
+    <%= turbo_stream_from @project, :notifications %>
+
+    <%# Slim workspace header %>
+    <%= render "shared/workspace_header", project: @project %>
+
+    <%# Main workspace: sidebar + content %>
+    <div class="flex-1 flex overflow-hidden app-bg">
+      <%= render "shared/workspace_sidebar", project: @project %>
+
+      <main class="flex-1 flex flex-col overflow-hidden">
+        <%= yield %>
+      </main>
+    </div>
+
+    <%= render "shared/toasts" %>
+  </body>
+</html>

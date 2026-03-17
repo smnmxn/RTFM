@@ -1,0 +1,87 @@
+<%
+  # Badge counts
+  inbox_count = project.articles.where(review_status: :unreviewed)
+    .where(generation_status: [:generation_pending, :generation_running, :generation_completed, :generation_failed]).count +
+    project.recommendations.pending.count
+  articles_count = project.articles.for_folder_tree.count
+%>
+
+<aside data-controller="sidebar"
+       data-sidebar-collapsed-value="false"
+       class="flex-shrink-0 app-surface border-r app-border flex flex-col transition-all duration-200 overflow-hidden"
+       data-sidebar-target="sidebar"
+       style="width: 200px;">
+
+  <%# Navigation items %>
+  <nav class="flex-1 flex flex-col py-2 overflow-y-auto">
+    <%# Main section %>
+    <div class="px-2 space-y-0.5">
+      <%= link_to inbox_project_path(project),
+          class: "group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors #{request.path == inbox_project_path(project) ? 'app-surface-alt app-text' : 'app-text-secondary hover:app-text hover:app-surface-alt'}",
+          data: { sidebar_target: "link", tooltip_content_value: "Inbox", controller: "tooltip", tooltip_position_value: "right" } do %>
+        <%= heroicon "inbox", options: { class: "w-5 h-5 flex-shrink-0" } %>
+        <span data-sidebar-target="label" class="truncate">Inbox</span>
+        <% if inbox_count > 0 %>
+          <span data-sidebar-target="badge" class="ml-auto inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-medium bg-[color:var(--app-accent)] text-white">
+            <%= inbox_count %>
+          </span>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%# Help Centre section %>
+    <div class="mt-4 px-2">
+      <p data-sidebar-target="label" class="px-3 mb-1 text-xs font-semibold app-text-muted uppercase tracking-wider">Help Centre</p>
+      <div class="space-y-0.5">
+        <%= link_to articles_page_project_path(project),
+            class: "group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors #{request.path == articles_page_project_path(project) ? 'app-surface-alt app-text' : 'app-text-secondary hover:app-text hover:app-surface-alt'}",
+            data: { sidebar_target: "link", tooltip_content_value: "Articles", controller: "tooltip", tooltip_position_value: "right" } do %>
+          <%= heroicon "document-text", options: { class: "w-5 h-5 flex-shrink-0" } %>
+          <span data-sidebar-target="label" class="truncate">Articles</span>
+          <% if articles_count > 0 %>
+            <span data-sidebar-target="badge" class="ml-auto inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-medium app-surface-alt app-text-muted">
+              <%= articles_count %>
+            </span>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Source section %>
+    <div class="mt-4 px-2">
+      <p data-sidebar-target="label" class="px-3 mb-1 text-xs font-semibold app-text-muted uppercase tracking-wider">Source</p>
+      <div class="space-y-0.5">
+        <%= link_to code_history_page_project_path(project),
+            class: "group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors #{request.path == code_history_page_project_path(project) ? 'app-surface-alt app-text' : 'app-text-secondary hover:app-text hover:app-surface-alt'}",
+            data: { sidebar_target: "link", tooltip_content_value: "Code History", controller: "tooltip", tooltip_position_value: "right" } do %>
+          <%= heroicon "clock", options: { class: "w-5 h-5 flex-shrink-0" } %>
+          <span data-sidebar-target="label" class="truncate">Code History</span>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Spacer %>
+    <div class="flex-1"></div>
+
+    <%# Bottom: Settings + Collapse toggle %>
+    <div class="px-2 pb-2 space-y-0.5">
+      <%= link_to settings_page_project_path(project),
+          class: "group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors #{request.path == settings_page_project_path(project) ? 'app-surface-alt app-text' : 'app-text-secondary hover:app-text hover:app-surface-alt'}",
+          data: { sidebar_target: "link", tooltip_content_value: "Settings", controller: "tooltip", tooltip_position_value: "right" } do %>
+        <%= heroicon "cog-6-tooth", options: { class: "w-5 h-5 flex-shrink-0" } %>
+        <span data-sidebar-target="label" class="truncate">Settings</span>
+      <% end %>
+
+      <button data-action="click->sidebar#toggle"
+              data-controller="tooltip"
+              data-tooltip-content-value="Collapse sidebar"
+              data-tooltip-position-value="right"
+              class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium app-text-muted hover:app-text hover:app-surface-alt transition-colors">
+        <svg data-sidebar-target="collapseIcon" class="w-5 h-5 flex-shrink-0 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+        </svg>
+        <span data-sidebar-target="label" class="truncate">Collapse</span>
+      </button>
+    </div>
+  </nav>
+</aside>

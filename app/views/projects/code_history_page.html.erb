@@ -1,0 +1,5 @@
+<%= turbo_stream_from @project, :code_history %>
+
+<div class="flex-1 flex flex-col overflow-hidden">
+  <%= render "projects/code_history_panel", project: @project %>
+</div>

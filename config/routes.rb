@@ -145,6 +145,12 @@ Rails.application.routes.draw do
         get :repositories
       end
       member do
+        # Workspace section routes (sidebar navigation)
+        get :inbox
+        get :articles_page
+        get :code_history_page
+        get :settings_page
+
         get :pull_requests
         get :code_history
         post :analyze
