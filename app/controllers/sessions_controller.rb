@@ -5,7 +5,7 @@ class SessionsController < ApplicationController
   skip_forgery_protection only: :create  # OmniAuth callbacks use state param for CSRF; Apple POSTs cross-origin
 
   def new
-    redirect_to app_subdomain_url(default_landing_path), allow_other_host: true if logged_in?
+    redirect_to root_path
   end
 
   def new2

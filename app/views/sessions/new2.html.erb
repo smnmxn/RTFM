@@ -98,18 +98,19 @@
       </div>
     <% end %>
 
-    <!-- CTA buttons -->
-    <div id="hero-cta" class="mt-12 flex flex-col sm:flex-row items-center gap-4">
-      <button data-action="click->login-toggle#open"
-              data-login-toggle-mode-param="signin"
-              class="btn-glow flex items-center justify-center gap-2 px-8 py-4 bg-white text-zinc-950 font-semibold rounded-xl hover:bg-zinc-100 transition-all duration-200 text-lg cursor-pointer min-w-[160px]">
-        Log in
-      </button>
+    <!-- CTA -->
+    <div id="hero-cta" class="mt-12 flex flex-col items-center gap-3">
       <button data-action="click->login-toggle#open"
               data-login-toggle-mode-param="register"
-              class="flex items-center justify-center gap-2 px-8 py-4 bg-zinc-800/50 border border-zinc-700 text-zinc-200 font-semibold rounded-xl hover:bg-zinc-700/50 transition-all duration-200 text-lg cursor-pointer min-w-[160px]">
-        Sign up
+              class="btn-glow flex items-center justify-center px-10 py-4 bg-white text-zinc-950 font-semibold rounded-xl hover:bg-zinc-100 transition-all duration-200 text-lg cursor-pointer">
+        Get started free
       </button>
+      <p class="text-sm text-zinc-500">
+        Already have an account?
+        <button data-action="click->login-toggle#open"
+                data-login-toggle-mode-param="signin"
+                class="text-zinc-300 hover:text-white underline cursor-pointer bg-transparent border-0 p-0 text-sm">Sign in</button>
+      </p>
     </div>
 
     <% if session[:invite_token].present? %>
@@ -120,13 +121,13 @@
 
   <!-- Dark footer -->
   <footer class="relative z-10 border-t border-zinc-800/50">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-zinc-600">
-      <span>&copy; <%= Date.current.year %> Surface Layer Limited (Company No. 17026012) | 128 City Road, London, EC1V 2NX</span>
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between text-xs text-zinc-600">
+      <span>&copy; <%= Date.current.year %> Surface Layer Limited</span>
       <nav class="flex gap-4">
-        <a href="/how-it-works" class="hover:text-zinc-400 transition-colors">How it Works</a>
+        <a href="/pricing" class="hover:text-zinc-400 transition-colors">Pricing</a>
+        <a href="/blog" class="hover:text-zinc-400 transition-colors">Blog</a>
         <a href="/legal/privacy" class="hover:text-zinc-400 transition-colors">Privacy</a>
         <a href="/legal/terms" class="hover:text-zinc-400 transition-colors">Terms</a>
-        <a href="/legal" class="hover:text-zinc-400 transition-colors">Trust Center</a>
       </nav>
     </div>
   </footer>

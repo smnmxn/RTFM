@@ -14,7 +14,7 @@ Rails.application.routes.draw do
 
   # Authentication (bare domain)
   get  "/login",  to: "sessions#new",     as: :login
-  get  "/signin2", to: "sessions#new2",   as: :login2
+
   get  "/logout", to: "sessions#destroy", as: :logout
   delete "/logout", to: "sessions#destroy"
 
@@ -276,6 +276,6 @@ Rails.application.routes.draw do
     get ":section_slug", to: "help_centre#section", as: :help_centre_section
   end
 
-  # Root (bare domain) -> login page
-  root to: "sessions#new"
+  # Root (bare domain) -> landing page with auth
+  root to: "sessions#new2"
 end
