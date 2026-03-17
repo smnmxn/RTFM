@@ -314,7 +314,14 @@ class ArticlesController < ApplicationController
   def duplicate
     article_count = Article.where(project_id: current_user.project_ids).count
     unless current_user.within_plan_limit?(:articles, article_count)
-      redirect_to billing_path, alert: "You've reached your plan limit of #{current_user.plan_limit(:articles)} articles. Upgrade to create more."
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.append("toast-container",
+            partial: "shared/toast",
+            locals: { message: "Article limit reached. Upgrade to create more.", type: "error", action_url: billing_path, action_label: "Upgrade" })
+        end
+        format.html { redirect_to billing_path, alert: "You've reached your plan limit of #{current_user.plan_limit(:articles)} articles. Upgrade to create more." }
+      end
       return
     end
 

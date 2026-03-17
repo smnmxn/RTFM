@@ -173,7 +173,17 @@ class ProjectsController < ApplicationController
   def accept_recommendation
     article_count = Article.where(project_id: current_user.project_ids).count
     unless current_user.within_plan_limit?(:articles, article_count)
-      redirect_to billing_path, alert: "You've reached your plan limit of #{current_user.plan_limit(:articles)} articles. Upgrade to create more."
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace("inbox-editor") {
+            render_to_string(partial: "projects/plan_limit_reached", locals: {
+              project: @project,
+              limit: current_user.plan_limit(:articles)
+            })
+          }
+        end
+        format.html { redirect_to billing_path, alert: "You've reached your plan limit of #{current_user.plan_limit(:articles)} articles. Upgrade to create more." }
+      end
       return
     end
 
