@@ -175,12 +175,9 @@ class ProjectsController < ApplicationController
     unless current_user.within_plan_limit?(:articles, article_count)
       respond_to do |format|
         format.turbo_stream do
-          render turbo_stream: turbo_stream.replace("inbox-editor") {
-            render_to_string(partial: "projects/plan_limit_reached", locals: {
-              project: @project,
-              limit: current_user.plan_limit(:articles)
-            })
-          }
+          render turbo_stream: turbo_stream.replace("inbox-editor",
+            partial: "projects/plan_limit_reached",
+            locals: { project: @project, limit: current_user.plan_limit(:articles) })
         end
         format.html { redirect_to billing_path, alert: "You've reached your plan limit of #{current_user.plan_limit(:articles)} articles. Upgrade to create more." }
       end
