@@ -1,0 +1,48 @@
+<%# Reusable upgrade modal — shown via Stimulus when a plan limit is hit %>
+<%# Include once in the layout; JS dispatches "upgrade-modal:show" to open it %>
+<div data-controller="upgrade-modal"
+     data-action="upgrade-modal:show@window->upgrade-modal#open"
+     class="hidden"
+     data-upgrade-modal-target="container">
+
+  <!-- Backdrop -->
+  <div data-action="click->upgrade-modal#close"
+       class="fixed inset-0 z-40"
+       style="background-color: rgba(0, 0, 0, 0.5);"></div>
+
+  <!-- Dialog -->
+  <div class="fixed inset-0 z-50">
+    <div class="flex min-h-full items-center justify-center p-4">
+      <div class="relative w-full max-w-md app-surface rounded-xl shadow-xl border app-border"
+           data-action="click->upgrade-modal#stopPropagation">
+
+        <div class="px-6 pt-6 pb-2 text-center">
+          <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-500/15">
+            <svg class="h-7 w-7 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+
+          <h3 class="mt-4 text-lg font-semibold app-text">Article limit reached</h3>
+
+          <p class="mt-2 text-sm app-text-secondary" data-upgrade-modal-target="message">
+            You've reached your plan's article limit. Upgrade to Pro for unlimited articles.
+          </p>
+        </div>
+
+        <div class="px-6 py-5 flex flex-col gap-3">
+          <a href="/billing"
+             data-turbo-frame="_top"
+             class="btn-primary-md w-full text-center">
+            View plans
+          </a>
+          <button type="button"
+                  data-action="upgrade-modal#close"
+                  class="btn-secondary-md w-full">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

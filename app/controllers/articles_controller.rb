@@ -18,7 +18,7 @@ class ArticlesController < ApplicationController
     article_count = Article.where(project_id: current_user.project_ids).count
     unless current_user.within_plan_limit?(:articles, article_count)
       respond_to do |format|
-        format.json { render json: { error: "Article limit reached. Upgrade your plan." }, status: :forbidden }
+        format.json { render json: { error: "You've reached your plan limit of #{current_user.plan_limit(:articles)} articles. Upgrade to Pro for unlimited articles.", upgrade: true }, status: :forbidden }
         format.html { redirect_to billing_path, alert: "You've reached your plan limit of #{current_user.plan_limit(:articles)} articles. Upgrade to create more." }
       end
       return

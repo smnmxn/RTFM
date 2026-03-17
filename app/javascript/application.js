@@ -76,6 +76,7 @@ import BillingToggleController from "controllers/billing_toggle_controller"
 import LoginToggleController from "controllers/login_toggle_controller"
 import TooltipController from "controllers/tooltip_controller"
 import SidebarController from "controllers/sidebar_controller"
+import UpgradeModalController from "controllers/upgrade_modal_controller"
 // Color picker — dev tool for experimenting with landing page themes.
 // To re-enable: uncomment the import + registration below, then add
 // data-controller="color-picker" to the landing page wrapper div.
@@ -129,4 +130,5 @@ application.register("billing-toggle", BillingToggleController)
 application.register("login-toggle", LoginToggleController)
 application.register("tooltip", TooltipController)
 application.register("sidebar", SidebarController)
+application.register("upgrade-modal", UpgradeModalController)
 // application.register("color-picker", ColorPickerController)

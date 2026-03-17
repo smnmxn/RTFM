@@ -85,7 +85,13 @@ export default class extends Controller {
           window.Turbo.visit(data.redirect_url)
         }
       } else {
-        console.error("Article creation failed:", response.status)
+        const data = await response.json().catch(() => ({}))
+        this.close()
+        if (data.upgrade) {
+          window.dispatchEvent(new CustomEvent("upgrade-modal:show", {
+            detail: { message: data.error }
+          }))
+        }
         this.resetSubmitButton()
       }
     } catch (error) {
