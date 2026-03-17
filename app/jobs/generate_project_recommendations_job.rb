@@ -114,9 +114,6 @@ class GenerateProjectRecommendationsJob < ApplicationJob
       project_name: project.name,
       project_overview: project.project_overview,
       analysis_summary: project.analysis_summary,
-      tech_stack: project.analysis_metadata&.dig("tech_stack") || [],
-      key_patterns: project.analysis_metadata&.dig("key_patterns") || [],
-      components: project.analysis_metadata&.dig("components") || [],
       existing_changelogs: existing_changelogs,
       existing_recommendation_titles: existing_recommendations
     }.to_json

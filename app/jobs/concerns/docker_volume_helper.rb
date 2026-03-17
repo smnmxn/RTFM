@@ -66,6 +66,66 @@ module DockerVolumeHelper
     end
   end
 
+  # Returns Docker arguments for debug/verbose logging.
+  # When KEEP_ANALYSIS_OUTPUT is set, passes it to the container so scripts
+  # can enable streaming turn logs.
+  def debug_docker_args
+    if ENV["KEEP_ANALYSIS_OUTPUT"] == "true"
+      [ "-e", "KEEP_ANALYSIS_OUTPUT=true" ]
+    else
+      []
+    end
+  end
+
+  # Run a Docker command, streaming stderr to Rails logger line-by-line
+  # when KEEP_ANALYSIS_OUTPUT is enabled. Otherwise behaves like capture3.
+  # Returns [stdout, stderr, status] just like Open3.capture3.
+  def run_docker_cmd(cmd, timeout:, log_prefix: "[Docker]")
+    if ENV["KEEP_ANALYSIS_OUTPUT"] == "true"
+      run_docker_streaming(cmd, timeout: timeout, log_prefix: log_prefix)
+    else
+      Timeout.timeout(timeout) { Open3.capture3(*cmd) }
+    end
+  end
+
+  # Streams stderr line-by-line to Rails logger for real-time progress visibility.
+  # The stream_filter.py inside Docker writes progress lines to stderr.
+  def run_docker_streaming(cmd, timeout:, log_prefix:)
+    stdout_str = +""
+    stderr_str = +""
+    status = nil
+
+    Timeout.timeout(timeout) do
+      Open3.popen3(*cmd) do |stdin, stdout, stderr, wait_thr|
+        stdin.close
+
+        # Read stdout and stderr in separate threads
+        stdout_thread = Thread.new do
+          stdout.each_line { |line| stdout_str << line }
+        rescue IOError
+          # stream closed
+        end
+
+        stderr_thread = Thread.new do
+          stderr.each_line do |line|
+            stderr_str << line
+            # Log each line in real-time (strip ANSI codes for clean logs)
+            clean = line.gsub(/\033\[[0-9;]*m/, "").rstrip
+            Rails.logger.info "#{log_prefix} #{clean}" if clean.present?
+          end
+        rescue IOError
+          # stream closed
+        end
+
+        stdout_thread.join
+        stderr_thread.join
+        status = wait_thr.value
+      end
+    end
+
+    [ stdout_str, stderr_str, status ]
+  end
+
   # Returns Docker arguments for Claude authentication.
   # Supports (in priority order):
   # - CLAUDE_CODE_OAUTH_TOKEN: Token from `claude setup-token` (Max subscription)

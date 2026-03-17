@@ -81,17 +81,6 @@ class GithubRepositoriesService
   end
 
   def format_repo(repo, installation)
-    {
-      id: repo.id,
-      full_name: repo.full_name,
-      name: repo.name,
-      owner: repo.owner.login,
-      private: repo.private,
-      description: repo.description,
-      pushed_at: repo.pushed_at,
-      html_url: repo.html_url,
-      installation_id: installation.github_installation_id,
-      installation_account: installation.account_login
-    }
+    Vcs::Github::Normalizer.repository(repo, installation)
   end
 end

@@ -142,7 +142,6 @@ class CheckArticleUpdatesJob < ApplicationJob
       project_name: project.name,
       project_overview: project.project_overview,
       analysis_summary: project.analysis_summary,
-      tech_stack: project.analysis_metadata&.dig("tech_stack") || [],
       target_commit: check.target_commit_sha,
       base_commit: check.base_commit_sha
     }.to_json

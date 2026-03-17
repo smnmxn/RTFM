@@ -30,7 +30,7 @@ RTFM is a developer-first platform that automatically converts code changes into
 - **Frontend**: Tailwind CSS, Hotwire (Turbo & Stimulus), ERB
 - **Auth**: OmniAuth (GitHub, Google, Apple) + email/password (bcrypt)
 - **AI**: Claude Code CLI (in Docker), Anthropic API
-- **VCS**: GitHub API via Octokit
+- **VCS**: GitHub API via Octokit, wrapped in `Vcs::` adapter layer for multi-provider support
 - **Image Generation**: Puppeteer + Chromium (in Docker)
 - **Testing**: Minitest, Playwright (E2E)
 
@@ -150,6 +150,7 @@ The application follows a **Webhook → Worker → Service** pattern:
 ## Key Directories
 
 - `app/services/` - Business logic (GitHub fetching, AI prompting)
+- `app/services/vcs/` - VCS provider abstraction layer (adapters for GitHub, future providers)
 - `app/jobs/` - Sidekiq workers for async processing
 - `app/controllers/webhooks/` - Incoming API events from GitHub
 - `docker/claude-analyzer/` - Docker image with Claude Code CLI for codebase analysis and article generation

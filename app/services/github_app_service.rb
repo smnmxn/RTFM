@@ -7,93 +7,31 @@ class GithubAppService
 
   class << self
     def installation_token(installation_id)
-      new.installation_token(installation_id)
+      Vcs::Github::AppService.installation_token(installation_id)
     end
 
     def client_for_installation(installation_id)
-      new.client_for_installation(installation_id)
+      Vcs::Github::AppService.client_for_installation(installation_id)
     end
 
     def app_client
-      new.app_client
+      Vcs::Github::AppService.app_client
     end
   end
 
   def installation_token(installation_id)
-    cached = Rails.cache.read(cache_key(installation_id))
-    if cached && cached[:expires_at] > Time.current + TOKEN_EXPIRY_BUFFER
-      return cached[:token]
-    end
-
-    token_response = app_client.create_app_installation_access_token(installation_id)
-
-    Rails.cache.write(
-      cache_key(installation_id),
-      { token: token_response.token, expires_at: token_response.expires_at },
-      expires_in: 50.minutes
-    )
-
-    token_response.token
+    Vcs::Github::AppService.new.installation_token(installation_id)
   end
 
   def client_for_installation(installation_id)
-    token = installation_token(installation_id)
-    Octokit::Client.new(access_token: token)
+    Vcs::Github::AppService.new.client_for_installation(installation_id)
   end
 
   def app_client
-    Octokit::Client.new(bearer_token: generate_jwt)
+    Vcs::Github::AppService.new.app_client
   end
 
   def verify_webhook_signature(payload, signature)
-    return false if signature.blank?
-
-    secret = webhook_secret
-    return false if secret.blank?
-
-    expected = "sha256=" + OpenSSL::HMAC.hexdigest(
-      OpenSSL::Digest.new("sha256"),
-      secret,
-      payload
-    )
-
-    ActiveSupport::SecurityUtils.secure_compare(expected, signature)
-  end
-
-  private
-
-  def cache_key(installation_id)
-    "#{TOKEN_CACHE_PREFIX}:#{installation_id}"
-  end
-
-  def generate_jwt
-    key_content = app_private_key
-    Rails.logger.info "[GithubAppService] Generating JWT for app_id=#{app_id}, key length=#{key_content.length}, starts with: #{key_content[0..26]}..."
-
-    private_key = OpenSSL::PKey::RSA.new(key_content)
-
-    payload = {
-      iat: Time.current.to_i - 60,
-      exp: Time.current.to_i + (10 * 60),
-      iss: app_id
-    }
-
-    JWT.encode(payload, private_key, "RS256")
-  rescue OpenSSL::PKey::RSAError => e
-    Rails.logger.error "[GithubAppService] Failed to parse private key: #{e.message}"
-    raise
-  end
-
-  def app_id
-    ENV.fetch("GITHUB_APP_ID").to_i
-  end
-
-  def app_private_key
-    # Handle both actual newlines and escaped \n in env var
-    ENV.fetch("GITHUB_APP_PRIVATE_KEY").gsub('\n', "\n")
-  end
-
-  def webhook_secret
-    ENV["GITHUB_APP_WEBHOOK_SECRET"]
+    Vcs::Github::AppService.new.verify_webhook_signature(payload, signature)
   end
 end

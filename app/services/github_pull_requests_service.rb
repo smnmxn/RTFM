@@ -6,13 +6,16 @@ class GithubPullRequestsService
   end
 
   def call(page: 1, per_page: 30)
-    client = @project.github_client
+    repo = @project.primary_repository
+    adapter = repo&.vcs_adapter || Vcs::Provider.for(:github)
+    client = repo&.vcs_client || @project.github_client
     unless client
-      return Result.new(success?: false, error: "No GitHub App installation found for this project.")
+      return Result.new(success?: false, error: "No VCS installation found for this project.")
     end
 
-    prs = client.pull_requests(
-      @project.github_repo,
+    prs = adapter.pull_requests(
+      @project.primary_github_repo,
+      client: client,
       state: "closed",
       sort: "updated",
       direction: "desc",
@@ -20,33 +23,14 @@ class GithubPullRequestsService
       per_page: per_page
     )
 
-    merged_prs = prs.select { |pr| pr.merged_at.present? }
+    merged_prs = prs.select { |pr| pr[:merged_at].present? }
 
-    Result.new(
-      success?: true,
-      pull_requests: merged_prs.map { |pr| format_pull_request(pr) }
-    )
-  rescue Octokit::Unauthorized, Octokit::Forbidden => e
-    Result.new(success?: false, error: "GitHub access denied. The app may have been uninstalled.")
-  rescue Octokit::NotFound => e
+    Result.new(success?: true, pull_requests: merged_prs)
+  rescue Vcs::AuthenticationError => e
+    Result.new(success?: false, error: "Access denied. The app may have been uninstalled.")
+  rescue Vcs::NotFoundError => e
     Result.new(success?: false, error: "Repository not found or the app doesn't have access.")
-  rescue Octokit::Error => e
-    Result.new(success?: false, error: "GitHub API error: #{e.message}")
-  end
-
-  private
-
-  def format_pull_request(pr)
-    {
-      number: pr.number,
-      title: pr.title,
-      html_url: pr.html_url,
-      merged_at: pr.merged_at,
-      merge_commit_sha: pr.merge_commit_sha,
-      user: {
-        login: pr.user.login,
-        avatar_url: pr.user.avatar_url
-      }
-    }
+  rescue Vcs::Error => e
+    Result.new(success?: false, error: "VCS API error: #{e.message}")
   end
 end

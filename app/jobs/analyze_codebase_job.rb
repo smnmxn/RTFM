@@ -38,9 +38,6 @@ class AnalyzeCodebaseJob < ApplicationJob
         track_product_event("analysis.codebase_analyzed", user: project.user, project: project)
         Rails.logger.info "[AnalyzeCodebaseJob] Analysis completed for project #{project.id}"
 
-        # Apply style_context colors to branding as a fallback (won't overwrite existing values)
-        apply_style_context_to_branding(project, result[:metadata]&.dig("style_context"))
-
         broadcast_toast(project, message: "We've finished analysing your codebase", action_url: "/onboarding/projects/#{project.slug}/analyze", action_label: "View", event_type: "analysis_complete", notification_metadata: { repo_count: project.project_repositories.count })
         if result[:contextual_questions].present?
           Rails.logger.info "[AnalyzeCodebaseJob] Generated #{result[:contextual_questions].size} contextual questions"
@@ -142,26 +139,15 @@ class AnalyzeCodebaseJob < ApplicationJob
         Rails.logger.info "[AnalyzeCodebaseJob] Output files: #{files.join(', ')}"
       end
 
-      # Record usage for main analysis
+      # Record usage
       record_claude_usage(
         output_dir: output_dir,
         job_type: "analyze_codebase",
         project: project,
-        metadata: { phase: "main_analysis" },
+        metadata: {},
         success: status.success?,
         error_message: status.success? ? nil : stderr,
         usage_filename: "usage_main.json"
-      )
-
-      # Record usage for style analysis
-      record_claude_usage(
-        output_dir: output_dir,
-        job_type: "analyze_codebase",
-        project: project,
-        metadata: { phase: "style_analysis" },
-        success: status.success?,
-        error_message: status.success? ? nil : stderr,
-        usage_filename: "usage_style.json"
       )
 
       unless status.success?
@@ -178,40 +164,10 @@ class AnalyzeCodebaseJob < ApplicationJob
 
       # Read the output files
       summary = File.read(File.join(output_dir, "summary.md")).strip rescue nil
-      metadata_raw = File.read(File.join(output_dir, "metadata.json")).strip rescue nil
       commit_sha = File.read(File.join(output_dir, "commit_sha.txt")).strip rescue nil
       overview = File.read(File.join(output_dir, "overview.txt")).strip rescue nil
-      target_users_raw = File.read(File.join(output_dir, "target_users.json")).strip rescue nil
       contextual_questions_raw = File.read(File.join(output_dir, "contextual_questions.json")).strip rescue nil
-
-      # Parse metadata JSON (strip markdown code fences if present)
-      metadata = begin
-        if metadata_raw.present?
-          # Remove ```json and ``` if Claude wrapped it in code fences
-          clean_json = metadata_raw
-            .gsub(/\A\s*```json\s*/i, "")
-            .gsub(/\s*```\s*\z/, "")
-            .strip
-          JSON.parse(clean_json)
-        end
-      rescue JSON::ParserError => e
-        Rails.logger.warn "[AnalyzeCodebaseJob] Failed to parse metadata JSON: #{e.message}"
-        Rails.logger.warn "[AnalyzeCodebaseJob] Raw metadata: #{metadata_raw[0..200]}"
-        nil
-      end
-
-      # Parse target users JSON and add to metadata
-      if target_users_raw.present? && metadata
-        begin
-          clean_json = target_users_raw
-            .gsub(/\A\s*```json\s*/i, "")
-            .gsub(/\s*```\s*\z/, "")
-            .strip
-          metadata["target_users"] = JSON.parse(clean_json)
-        rescue JSON::ParserError => e
-          Rails.logger.warn "[AnalyzeCodebaseJob] Failed to parse target_users JSON: #{e.message}"
-        end
-      end
+      file_tree = File.read(File.join(output_dir, "file_tree.txt")).strip rescue nil
 
       # Parse contextual questions JSON
       contextual_questions = nil
@@ -228,42 +184,13 @@ class AnalyzeCodebaseJob < ApplicationJob
         end
       end
 
-      # Parse style context JSON and add to metadata
-      style_context_path = File.join(output_dir, "style_context.json")
-      Rails.logger.info "[AnalyzeCodebaseJob] Looking for style_context at: #{style_context_path}"
-      Rails.logger.info "[AnalyzeCodebaseJob] File exists: #{File.exist?(style_context_path)}"
-
-      style_context_raw = File.read(style_context_path).strip rescue nil
-      Rails.logger.info "[AnalyzeCodebaseJob] style_context_raw present: #{style_context_raw.present?}, metadata present: #{metadata.present?}"
-
-      if style_context_raw.present? && metadata
-        begin
-          # Extract JSON from markdown code fences if present, or find raw JSON object
-          clean_json = if style_context_raw =~ /```json\s*(.*?)\s*```/m
-            $1.strip
-          elsif style_context_raw =~ /(\{[\s\S]*\})/
-            $1.strip
-          else
-            style_context_raw
-              .gsub(/\A\s*```json\s*/i, "")
-              .gsub(/\s*```\s*\z/, "")
-              .strip
-          end
-          metadata["style_context"] = JSON.parse(clean_json)
-          Rails.logger.info "[AnalyzeCodebaseJob] Extracted style context: app_type=#{metadata['style_context']['app_type']}, framework=#{metadata['style_context']['framework']}"
-        rescue JSON::ParserError => e
-          Rails.logger.warn "[AnalyzeCodebaseJob] Failed to parse style_context JSON: #{e.message}"
-          Rails.logger.warn "[AnalyzeCodebaseJob] Raw style_context: #{style_context_raw[0..200]}"
-        end
-      else
-        Rails.logger.warn "[AnalyzeCodebaseJob] Skipping style_context: raw=#{style_context_raw.present?}, metadata=#{metadata.present?}"
-      end
-
       # Parse repository relationships JSON (for multi-repo projects)
+      metadata = {}
+      metadata["file_tree"] = file_tree if file_tree.present?
       repo_relationships_path = File.join(output_dir, "repository_relationships.json")
       repo_relationships_raw = File.read(repo_relationships_path).strip rescue nil
 
-      if repo_relationships_raw.present? && metadata
+      if repo_relationships_raw.present?
         begin
           clean_json = if repo_relationships_raw =~ /```json\s*(.*?)\s*```/m
             $1.strip
@@ -286,7 +213,7 @@ class AnalyzeCodebaseJob < ApplicationJob
         {
           success: true,
           summary: summary,
-          metadata: metadata,
+          metadata: metadata.presence,
           commit_sha: commit_sha,
           overview: overview,
           contextual_questions: contextual_questions
@@ -319,14 +246,15 @@ class AnalyzeCodebaseJob < ApplicationJob
   end
 
   def build_repos_json(project)
-    # Build repos array with tokens for multi-repo Docker analysis
     project.project_repositories.filter_map do |pr|
       begin
-        token = GithubAppService.installation_token(pr.github_installation_id)
+        adapter = pr.vcs_adapter
+        token = adapter.installation_token(pr.github_installation_id)
         entry = {
           repo: pr.github_repo,
           directory: pr.clone_directory_name,
-          token: token
+          token: token,
+          clone_url: adapter.clone_url(pr.github_repo, token)
         }
         entry[:branch] = pr.branch if pr.branch.present?
         entry
@@ -358,41 +286,6 @@ class AnalyzeCodebaseJob < ApplicationJob
   rescue => e
     Rails.logger.error "[AnalyzeCodebaseJob] Failed to get GitHub App token: #{e.message}"
     nil
-  end
-
-  # Default branding colors that should be treated as "not yet configured"
-  DEFAULT_BRANDING_COLORS = %w[#4f46e5 #7c3aed].freeze
-
-  def apply_style_context_to_branding(project, style_context)
-    return unless style_context.is_a?(Hash)
-
-    colors = style_context["brand_colors"] || style_context["colors"] || {}
-    primary = colors["primary"] || colors["main"]
-    accent = colors["secondary"] || colors["accent"]
-
-    return if primary.blank? && accent.blank?
-
-    branding = project.branding || {}
-
-    # Only fill in colors that aren't already set by the user (defaults are fair game)
-    branding["primary_color"] = normalize_hex_color(primary) if color_is_default?(branding["primary_color"]) && primary.present?
-    branding["accent_color"] = normalize_hex_color(accent) if color_is_default?(branding["accent_color"]) && accent.present?
-
-    project.update!(branding: branding)
-    Rails.logger.info "[AnalyzeCodebaseJob] Applied style_context colors to branding for project #{project.id}"
-  rescue StandardError => e
-    Rails.logger.warn "[AnalyzeCodebaseJob] Failed to apply style_context: #{e.message}"
-  end
-
-  def normalize_hex_color(color)
-    return nil if color.blank?
-    color = "##{color}" unless color.start_with?("#")
-    return color if color.match?(/\A#[0-9a-fA-F]{6}\z/)
-    nil
-  end
-
-  def color_is_default?(color)
-    color.blank? || DEFAULT_BRANDING_COLORS.include?(color)
   end
 
   def broadcast_onboarding_update(project)

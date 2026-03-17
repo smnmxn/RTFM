@@ -28,19 +28,61 @@ fi
 
 cd /repo
 
-SECTION_NAME=$(cat /input/context.json | grep -o '"section_name":"[^"]*"' | cut -d'"' -f4 || echo "unknown")
-SECTION_SLUG=$(cat /input/context.json | grep -o '"section_slug":"[^"]*"' | cut -d'"' -f4 || echo "unknown")
+SECTION_NAME=$(jq -r '.section_name // empty' /input/context.json || echo "unknown")
+SECTION_SLUG=$(jq -r '.section_slug // empty' /input/context.json || echo "unknown")
 echo "Generating recommendations for section: ${SECTION_NAME} (${SECTION_SLUG})"
+
+# Load file tree if available
+if [ -f /input/file_tree.txt ] && [ -s /input/file_tree.txt ]; then
+    FILE_TREE=$(cat /input/file_tree.txt)
+    TREE_LINES=$(wc -l < /input/file_tree.txt)
+    echo "File tree loaded: ${TREE_LINES} lines"
+else
+    FILE_TREE=""
+fi
+
+# Read analysis context from context.json
+ANALYSIS_SUMMARY=$(jq -r '.analysis_summary // empty' /input/context.json)
+PROJECT_OVERVIEW=$(jq -r '.project_overview // empty' /input/context.json)
 
 echo "Running Claude Code analysis..."
 echo "API Key set: ${ANTHROPIC_API_KEY:+yes}"
 
-cat <<'PROMPT' | claude -p --output-format json --allowedTools "Read,Write,Edit,Glob,Grep,Bash,Agent" > /tmp/claude_output.json
+# Build the prompt with context
+PROMPT_FILE=$(mktemp)
+cat > "$PROMPT_FILE" <<'PROMPT_HEADER'
 You are a help centre content strategist. Your job is to suggest how-to guide articles for END USERS.
 
 CRITICAL: These articles are for END USERS, not developers.
 - End users = People who USE this software to accomplish their goals (customers, operators, admins)
 - NOT developers = People who BUILD, maintain, or contribute code to this project
+PROMPT_HEADER
+
+# Add project context if available
+if [ -n "$PROJECT_OVERVIEW" ] || [ -n "$ANALYSIS_SUMMARY" ] || [ -n "$FILE_TREE" ]; then
+    cat >> "$PROMPT_FILE" <<'CONTEXT_HEADER'
+
+=== PROJECT CONTEXT ===
+Use this context to understand the project. Go directly to relevant files using Read instead of exploring broadly.
+CONTEXT_HEADER
+
+    if [ -n "$PROJECT_OVERVIEW" ]; then
+        printf "\nPROJECT OVERVIEW:\n%s\n" "$PROJECT_OVERVIEW" >> "$PROMPT_FILE"
+    fi
+
+    if [ -n "$ANALYSIS_SUMMARY" ]; then
+        printf "\nCODEBASE ANALYSIS SUMMARY:\n%s\n" "$ANALYSIS_SUMMARY" >> "$PROMPT_FILE"
+    fi
+
+    if [ -n "$FILE_TREE" ]; then
+        printf "\nFILE TREE:\n%s\n" "$FILE_TREE" >> "$PROMPT_FILE"
+    fi
+
+    echo "" >> "$PROMPT_FILE"
+    echo "=== END PROJECT CONTEXT ===" >> "$PROMPT_FILE"
+fi
+
+cat >> "$PROMPT_FILE" <<'PROMPT_BODY'
 
 STEP 1: Read the project context file:
 /input/context.json
@@ -58,7 +100,8 @@ This file contains:
 STEP 2: Understand the FULL help centre structure from all_sections.
 Each section serves a different purpose. Articles for OTHER sections will be generated separately.
 
-STEP 3: Explore the codebase at /repo to find END USER features relevant to THIS SPECIFIC SECTION ONLY.
+STEP 3: Using the PROJECT CONTEXT above and the codebase at /repo, find END USER features relevant to THIS SPECIFIC SECTION ONLY.
+Use the file tree and analysis summary to jump directly to relevant files (routes, views, controllers) rather than exploring broadly.
 Focus on what END USERS can DO with the software:
 - User interface elements and screens
 - User-facing features and workflows
@@ -107,8 +150,26 @@ OUTPUT FORMAT - Return ONLY a valid JSON object:
 }
 
 Output ONLY the JSON object. No markdown, no commentary - just valid JSON.
-PROMPT
+PROMPT_BODY
 
+echo "  Calling Claude..."
+set +e
+if [ "${KEEP_ANALYSIS_OUTPUT}" = "true" ]; then
+    echo "  Streaming mode (debug) — turn log at /output/claude_raw.turns.log"
+    cat "$PROMPT_FILE" | claude -p --verbose --output-format stream-json \
+        --allowedTools "Read,Write,Edit,Glob,Grep,Bash,Agent" | \
+        python3 /stream_filter.py /output/claude_raw.json
+    CLAUDE_EXIT=${PIPESTATUS[1]}
+    cp /output/claude_raw.json /tmp/claude_output.json 2>/dev/null || true
+else
+    cat "$PROMPT_FILE" | claude -p --output-format json \
+        --allowedTools "Read,Write,Edit,Glob,Grep,Bash,Agent" > /tmp/claude_output.json
+    CLAUDE_EXIT=$?
+fi
+set -e
+rm -f "$PROMPT_FILE"
+
+echo "  Claude exit status: $CLAUDE_EXIT"
 echo "Recommendation generation complete!"
 
 # Extract the result content from JSON output

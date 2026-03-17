@@ -86,6 +86,12 @@ class SessionsController < ApplicationController
     session[:user_id] = user.id
     session.delete(:invite_token)
 
+    # Sync plan from Stripe in case webhooks were missed or delayed
+    if user.payment_processor
+      user.payment_processor.sync_subscriptions
+      user.sync_plan_from_subscription!
+    end
+
     identify_visitor(user)
 
     redirect_path = session.delete(:redirect_after_login) || default_landing_path(user)

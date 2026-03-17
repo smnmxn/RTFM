@@ -12,7 +12,7 @@
 | [Phase 3.5](phases/phase-3.5-article-recommendations.md) | Support Article Recommendations | Complete |
 | [Phase 3.6](phases/phase-3.6-article-mockups.md) | AI-Generated UI Mockups | Complete |
 | [Phase 4](phases/phase-4-custom-domains.md) | Custom Domain Support | Complete |
-| Phase 5 | Public Changelog Page | Pending |
+| [Phase 5](phases/phase-5-vcs-abstraction.md) | VCS Provider Abstraction Layer | Complete |
 | Phase 6 | Polish & Deployment | Pending |
 
 ## Quick Start

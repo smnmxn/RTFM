@@ -93,6 +93,7 @@ module Onboarding
         # Create ProjectRepository record (new system)
         @project.project_repositories.find_or_create_by!(github_repo: repo_full_name) do |pr|
           pr.github_installation_id = installation.github_installation_id
+          pr.provider = "github"
           pr.is_primary = @project.project_repositories.empty?
         end
 
@@ -120,7 +121,8 @@ module Onboarding
       @project.project_repositories.each do |pr|
         result = GithubBranchesService.new(
           github_repo: pr.github_repo,
-          installation_id: pr.github_installation_id
+          installation_id: pr.github_installation_id,
+          provider: pr.provider
         ).call
 
         if result.success? && result.branches.size > 1
@@ -150,7 +152,8 @@ module Onboarding
       @project_repositories.each do |pr|
         result = GithubBranchesService.new(
           github_repo: pr.github_repo,
-          installation_id: pr.github_installation_id
+          installation_id: pr.github_installation_id,
+          provider: pr.provider
         ).call
 
         if result.success?
@@ -376,11 +379,8 @@ module Onboarding
       repo = @project.primary_repository
       return nil unless repo
 
-      client = repo.client
-      return nil unless client
-
-      github_repo_info = client.repository(repo.github_repo)
-      github_repo_info&.homepage.presence
+      info = repo.vcs_adapter.repository_info(repo.github_repo, client: repo.vcs_client)
+      info[:homepage].presence
     rescue => e
       Rails.logger.debug "[Onboarding] Could not fetch repo homepage: #{e.message}"
       nil

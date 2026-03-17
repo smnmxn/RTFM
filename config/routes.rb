@@ -166,6 +166,8 @@ Rails.application.routes.draw do
         # Settings actions
         post :start_over
         post :test_toast
+        # Maintenance actions
+        post :reanalyze
         # Branding settings
         patch :update_branding
         post :upload_logo

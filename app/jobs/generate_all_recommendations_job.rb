@@ -88,6 +88,12 @@ class GenerateAllRecommendationsJob < ApplicationJob
 
       File.write(File.join(input_dir, "context.json"), build_context_json(project, accepted_sections))
 
+      # Write file tree for context (reduces Claude exploration turns)
+      if project.analysis_metadata&.dig("file_tree").present?
+        File.write(File.join(input_dir, "file_tree.txt"), project.analysis_metadata["file_tree"])
+        Rails.logger.info "[GenerateAllRecommendationsJob] Wrote file_tree.txt (#{project.analysis_metadata['file_tree'].length} bytes)"
+      end
+
       github_token = get_github_token(project)
       return { success: false, error: "No GitHub token available" } unless github_token
 
@@ -95,6 +101,7 @@ class GenerateAllRecommendationsJob < ApplicationJob
         "docker", "run",
         "--rm",
         *claude_auth_docker_args,
+        *debug_docker_args,
         "-e", "GITHUB_TOKEN=#{github_token}",
         "-e", "GITHUB_REPO=#{project.github_repo}",
         "-v", "#{host_volume_path(input_dir)}:/input:ro",
@@ -106,9 +113,7 @@ class GenerateAllRecommendationsJob < ApplicationJob
 
       Rails.logger.info "[GenerateAllRecommendationsJob] Running Docker for project #{project.id} with #{accepted_sections.size} sections"
 
-      stdout, stderr, status = Timeout.timeout(GENERATION_TIMEOUT) do
-        Open3.capture3(*cmd)
-      end
+      stdout, stderr, status = run_docker_cmd(cmd, timeout: GENERATION_TIMEOUT, log_prefix: "[GenerateAllRecommendationsJob]")
 
       Rails.logger.info "[GenerateAllRecommendationsJob] Exit status: #{status.exitstatus}"
       Rails.logger.debug "[GenerateAllRecommendationsJob] Stdout: #{stdout[0..500]}" if stdout.present?
@@ -160,10 +165,6 @@ class GenerateAllRecommendationsJob < ApplicationJob
       project_name: project.name,
       project_overview: project.project_overview,
       analysis_summary: project.analysis_summary,
-      tech_stack: project.analysis_metadata&.dig("tech_stack") || [],
-      key_patterns: project.analysis_metadata&.dig("key_patterns") || [],
-      components: project.analysis_metadata&.dig("components") || [],
-      target_users: project.analysis_metadata&.dig("target_users") || [],
       # All accepted sections to generate recommendations for
       sections: accepted_sections.map { |s|
         { name: s.name, slug: s.slug, description: s.description }

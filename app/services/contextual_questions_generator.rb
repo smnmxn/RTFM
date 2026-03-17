@@ -24,7 +24,6 @@ class ContextualQuestionsGenerator
   private
 
   def build_prompt
-    analysis_metadata = @project.analysis_metadata || {}
     user_context = @project.user_context || {}
 
     <<~PROMPT
@@ -33,9 +32,7 @@ class ContextualQuestionsGenerator
       ## Codebase Analysis
       - Project: #{@project.name}
       - Overview: #{@project.project_overview}
-      - Tech Stack: #{analysis_metadata['tech_stack']&.join(', ') || 'Unknown'}
-      - Components: #{analysis_metadata['components']&.join(', ') || 'Unknown'}
-      - Key Patterns: #{analysis_metadata['key_patterns']&.join(', ') || 'Unknown'}
+      - Analysis Summary: #{@project.analysis_summary || 'Not available'}
 
       ## User Context (from previous questions)
       - Target Audience: #{user_context['target_audience'] || 'Not specified'}

@@ -67,9 +67,9 @@ class Project < ApplicationRecord
   ], coder: JSON
 
   CLAUDE_MODELS = [
-    [ "Claude Opus 4.5 (Most capable)", "claude-opus-4-5" ],
-    [ "Claude Sonnet 4.5 (Balanced)", "claude-sonnet-4-5" ],
-    [ "Claude Haiku 4.5 (Fastest)", "claude-haiku-4-5" ]
+    [ "Most capable", "claude-opus-4-6" ],
+    [ "Balanced", "claude-sonnet-4-6" ],
+    [ "Fastest", "claude-haiku-4-5" ]
   ].freeze
 
   CLAUDE_MAX_TURNS_OPTIONS = [
@@ -87,7 +87,7 @@ class Project < ApplicationRecord
   ].freeze
 
   DEFAULT_UPDATE_STRATEGY = "pull_request".freeze
-  DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-5".freeze
+  DEFAULT_CLAUDE_MODEL = "claude-opus-4-6".freeze
   DEFAULT_CLAUDE_MAX_TURNS = 15
 
   validates :name, presence: true
@@ -234,9 +234,13 @@ class Project < ApplicationRecord
     update!(onboarding_step: nil)
   end
 
+  def vcs_client
+    primary_repository&.vcs_client || github_app_installation&.client
+  end
+
   def github_client
-    # Use primary repository's installation client, fall back to project's installation
-    primary_repository&.client || github_app_installation&.client
+    # Legacy alias — delegates to vcs_client
+    vcs_client
   end
 
   # Multi-repository support methods
@@ -269,7 +273,8 @@ class Project < ApplicationRecord
       {
         repo: pr.github_repo,
         directory: pr.clone_directory_name,
-        installation_id: pr.github_installation_id
+        installation_id: pr.github_installation_id,
+        provider: pr.provider
       }
     end
   end
@@ -289,8 +294,8 @@ class Project < ApplicationRecord
 
       comparison = client.compare(primary_github_repo, analysis_commit_sha, "HEAD")
       comparison.ahead_by
-    rescue Octokit::Error => e
-      Rails.logger.warn "[Project#commits_since_baseline] GitHub API error: #{e.message}"
+    rescue Vcs::Error, Octokit::Error => e
+      Rails.logger.warn "[Project#commits_since_baseline] VCS API error: #{e.message}"
       nil
     end
   end

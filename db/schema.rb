@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_12_112031) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_13_113609) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -229,8 +229,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_112031) do
     t.datetime "created_at", null: false
     t.string "currency"
     t.bigint "customer_id", null: false
-    t.json "data"
-    t.json "metadata"
+    t.jsonb "data"
+    t.jsonb "metadata"
     t.string "processor_id", null: false
     t.string "stripe_account"
     t.bigint "subscription_id"
@@ -241,7 +241,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_112031) do
 
   create_table "pay_customers", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.json "data"
+    t.jsonb "data"
     t.boolean "default"
     t.datetime "deleted_at", precision: nil
     t.bigint "owner_id"
@@ -256,7 +256,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_112031) do
 
   create_table "pay_merchants", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.json "data"
+    t.jsonb "data"
     t.boolean "default"
     t.bigint "owner_id"
     t.string "owner_type"
@@ -269,7 +269,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_112031) do
   create_table "pay_payment_methods", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "customer_id", null: false
-    t.json "data"
+    t.jsonb "data"
     t.boolean "default"
     t.string "processor_id", null: false
     t.string "stripe_account"
@@ -284,9 +284,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_112031) do
     t.datetime "current_period_end", precision: nil
     t.datetime "current_period_start", precision: nil
     t.bigint "customer_id", null: false
-    t.json "data"
+    t.jsonb "data"
     t.datetime "ends_at", precision: nil
-    t.json "metadata"
+    t.jsonb "metadata"
     t.boolean "metered"
     t.string "name", null: false
     t.string "pause_behavior"
@@ -307,7 +307,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_112031) do
 
   create_table "pay_webhooks", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.json "event"
+    t.jsonb "event"
     t.string "event_type"
     t.string "processor"
     t.datetime "updated_at", null: false
@@ -347,9 +347,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_112031) do
     t.string "github_repo", null: false
     t.boolean "is_primary", default: false, null: false
     t.bigint "project_id", null: false
+    t.string "provider", default: "github", null: false
     t.datetime "updated_at", null: false
     t.index ["github_repo"], name: "index_project_repositories_on_github_repo"
     t.index ["project_id"], name: "index_project_repositories_on_project_id"
+    t.index ["provider"], name: "index_project_repositories_on_provider"
   end
 
   create_table "projects", force: :cascade do |t|

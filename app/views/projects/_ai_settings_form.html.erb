@@ -16,17 +16,30 @@
         <div>
           <label class="block text-sm font-medium app-text mb-1">Model for Article Generation</label>
           <p class="text-sm app-text-secondary mb-2">
-            Choose which Claude model to use when generating articles.
+            Choose which AI model to use when generating articles.
           </p>
           <%= form.select :claude_model,
               options_for_select(Project::CLAUDE_MODELS, project.claude_model_id),
               {},
               class: "w-full px-3 py-2 app-input rounded-lg text-sm" %>
           <p class="text-xs app-text-muted mt-2">
-            <strong>Opus 4.5:</strong> Most capable, best for complex documentation.
-            <strong>Sonnet 4.5:</strong> Balanced speed and quality.
-            <strong>Haiku 4.5:</strong> Fastest, ideal for simple articles.
+            More capable models produce higher quality articles but take longer to generate.
           </p>
+        </div>
+      </div>
+
+      <!-- Writing Style -->
+      <div class="p-4 space-y-4">
+        <div>
+          <label class="block text-sm font-medium app-text mb-1">Writing Style</label>
+          <p class="text-sm app-text-secondary mb-2">
+            Describe the tone and style for generated articles. This guides how SupportPages AI writes your documentation.
+          </p>
+          <%= form.text_area :tone_preference,
+              value: project.tone_preference,
+              placeholder: "e.g. Friendly and conversational, avoid jargon. Use short sentences and address the reader directly.",
+              rows: 3,
+              class: "w-full px-3 py-2 app-input rounded-lg text-sm" %>
         </div>
       </div>
 

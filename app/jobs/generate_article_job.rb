@@ -87,17 +87,6 @@ class GenerateArticleJob < ApplicationJob
       # Write input files
       File.write(File.join(input_dir, "context.json"), build_context_json(project, recommendation, source_update))
 
-      # Write style context from stored project analysis
-      if project.analysis_metadata&.dig("style_context").present?
-        File.write(
-          File.join(input_dir, "style_context.json"),
-          project.analysis_metadata["style_context"].to_json
-        )
-        Rails.logger.info "[GenerateArticleJob] Wrote style_context.json from stored analysis"
-      else
-        Rails.logger.warn "[GenerateArticleJob] No style_context found in project analysis_metadata"
-      end
-
       # Write compiled CSS for accurate mockup generation
       if project.analysis_metadata&.dig("compiled_css").present?
         File.write(
@@ -109,6 +98,21 @@ class GenerateArticleJob < ApplicationJob
         # Write empty file so the script knows there's no compiled CSS
         File.write(File.join(input_dir, "compiled_css.txt"), "")
         Rails.logger.info "[GenerateArticleJob] No compiled CSS available - mockups will use style context fallback"
+      end
+
+      # Write file tree for context (reduces Claude exploration turns)
+      if project.analysis_metadata&.dig("file_tree").present?
+        File.write(File.join(input_dir, "file_tree.txt"), project.analysis_metadata["file_tree"])
+        Rails.logger.info "[GenerateArticleJob] Wrote file_tree.txt (#{project.analysis_metadata['file_tree'].length} bytes)"
+      end
+
+      # Write extracted images for mockup generation
+      if project.analysis_metadata&.dig("images_base64").present?
+        File.write(
+          File.join(input_dir, "images_base64.json"),
+          project.analysis_metadata["images_base64"].to_json
+        )
+        Rails.logger.info "[GenerateArticleJob] Wrote images_base64.json (#{project.analysis_metadata['images_base64']['count']} images)"
       end
 
       # If there's a source PR, include the diff
@@ -129,6 +133,7 @@ class GenerateArticleJob < ApplicationJob
         "docker", "run",
         "--rm",
         *claude_auth_docker_args,
+        *debug_docker_args,
         "-e", "GITHUB_TOKEN=#{github_token}",
         "-e", "GITHUB_REPO=#{project.github_repo}",
         "-e", "CLAUDE_MODEL=#{project.claude_model_id}",
@@ -141,9 +146,7 @@ class GenerateArticleJob < ApplicationJob
 
       Rails.logger.info "[GenerateArticleJob] Running Docker article generation for recommendation #{recommendation.id}"
 
-      stdout, stderr, status = Timeout.timeout(GENERATION_TIMEOUT) do
-        Open3.capture3(*cmd)
-      end
+      stdout, stderr, status = run_docker_cmd(cmd, timeout: GENERATION_TIMEOUT, log_prefix: "[GenerateArticleJob]")
 
       Rails.logger.info "[GenerateArticleJob] Exit status: #{status.exitstatus}"
       Rails.logger.info "[GenerateArticleJob] Stdout (last 2000 chars): #{stdout[-2000..]}" if stdout.present?
@@ -329,10 +332,10 @@ class GenerateArticleJob < ApplicationJob
       project_name: project.name,
       project_overview: project.project_overview,
       analysis_summary: project.analysis_summary,
-      tech_stack: project.analysis_metadata&.dig("tech_stack") || [],
       article_title: recommendation.title,
       article_description: recommendation.description,
-      article_justification: recommendation.justification
+      article_justification: recommendation.justification,
+      writing_style: project.tone_preference
     }
 
     # Include regeneration guidance if present (user-provided instructions for improvement)

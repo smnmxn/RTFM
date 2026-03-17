@@ -11,6 +11,7 @@ class AnalyzeCommitJob < ApplicationJob
 
   queue_as :analysis
 
+  retry_on Vcs::Error, wait: :polynomially_longer, attempts: 3
   retry_on Octokit::Error, wait: :polynomially_longer, attempts: 3
 
   ANALYSIS_TIMEOUT = 300
@@ -212,8 +213,6 @@ class AnalyzeCommitJob < ApplicationJob
       project_name: project.name,
       project_overview: project.project_overview,
       analysis_summary: project.analysis_summary,
-      tech_stack: project.analysis_metadata&.dig("tech_stack") || [],
-      key_patterns: project.analysis_metadata&.dig("key_patterns") || [],
       commit_sha: update.commit_sha,
       commit_title: commit_title,
       commit_message: commit_message,
@@ -317,15 +316,18 @@ class AnalyzeCommitJob < ApplicationJob
   end
 
   def build_repos_json(project)
-    # Build repos array with tokens for multi-repo Docker analysis
     project.project_repositories.filter_map do |pr|
       begin
-        token = GithubAppService.installation_token(pr.github_installation_id)
-        {
+        adapter = pr.vcs_adapter
+        token = adapter.installation_token(pr.github_installation_id)
+        entry = {
           repo: pr.github_repo,
           directory: pr.clone_directory_name,
-          token: token
+          token: token,
+          clone_url: adapter.clone_url(pr.github_repo, token)
         }
+        entry[:branch] = pr.branch if pr.branch.present?
+        entry
       rescue => e
         Rails.logger.error "[AnalyzeCommitJob] Failed to get token for repo #{pr.github_repo}: #{e.message}"
         nil

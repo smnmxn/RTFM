@@ -38,8 +38,9 @@ class SuggestSectionsJob < ApplicationJob
         # Broadcast update to refresh the onboarding view
         broadcast_onboarding_update(project)
 
-        # Trigger CSS generation for mockup styling
+        # Trigger CSS generation and image extraction for mockup styling
         GenerateCssJob.perform_later(project_id: project.id)
+        ExtractImagesJob.perform_later(project_id: project.id)
       else
         project.reload.update!(sections_generation_status: "failed")
         Rails.logger.warn "[SuggestSectionsJob] Suggestion failed for project #{project.id}: #{result[:error]}"
@@ -73,6 +74,12 @@ class SuggestSectionsJob < ApplicationJob
 
       File.write(File.join(input_dir, "context.json"), build_context_json(project))
 
+      # Write file tree for context (reduces Claude exploration turns)
+      if project.analysis_metadata&.dig("file_tree").present?
+        File.write(File.join(input_dir, "file_tree.txt"), project.analysis_metadata["file_tree"])
+        Rails.logger.info "[SuggestSectionsJob] Wrote file_tree.txt (#{project.analysis_metadata['file_tree'].length} bytes)"
+      end
+
       # Get installation token for Docker
       github_token = get_github_token(project)
       return { success: false, error: "No GitHub token available" } unless github_token
@@ -81,6 +88,7 @@ class SuggestSectionsJob < ApplicationJob
         "docker", "run",
         "--rm",
         *claude_auth_docker_args,
+        *debug_docker_args,
         "-e", "GITHUB_TOKEN=#{github_token}",
         "-e", "GITHUB_REPO=#{project.github_repo}",
         "-v", "#{host_volume_path(input_dir)}:/input:ro",
@@ -92,9 +100,7 @@ class SuggestSectionsJob < ApplicationJob
 
       Rails.logger.info "[SuggestSectionsJob] Running Docker for project #{project.id}"
 
-      stdout, stderr, status = Timeout.timeout(GENERATION_TIMEOUT) do
-        Open3.capture3(*cmd)
-      end
+      stdout, stderr, status = run_docker_cmd(cmd, timeout: GENERATION_TIMEOUT, log_prefix: "[SuggestSectionsJob]")
 
       Rails.logger.info "[SuggestSectionsJob] Exit status: #{status.exitstatus}"
       Rails.logger.debug "[SuggestSectionsJob] Stdout: #{stdout[0..500]}" if stdout.present?
@@ -141,10 +147,6 @@ class SuggestSectionsJob < ApplicationJob
       project_name: project.name,
       project_overview: project.project_overview,
       analysis_summary: project.analysis_summary,
-      tech_stack: project.analysis_metadata&.dig("tech_stack") || [],
-      key_patterns: project.analysis_metadata&.dig("key_patterns") || [],
-      components: project.analysis_metadata&.dig("components") || [],
-      target_users: project.analysis_metadata&.dig("target_users") || [],
       existing_section_slugs: existing_section_slugs,
       # User-provided context from onboarding questions
       user_context: user_context,

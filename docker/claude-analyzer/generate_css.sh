@@ -1,184 +1,415 @@
 #!/bin/bash
 set -e
 
+# generate_css.sh — Detect and compile CSS from a repository
+#
+# Uses Claude only for detection (outputs JSON build plan), then compiles
+# deterministically using npm tools (sass, tailwindcss, postcss) or CDN fetch.
+# Falls back to CDN + theme overrides if source compilation fails.
+#
 # Required environment variables:
 # - GITHUB_REPO: owner/repo format
 # - GITHUB_TOKEN: GitHub access token
 # - ANTHROPIC_API_KEY: Anthropic API key
+#
+# Optional:
+# - CLAUDE_MODEL: Model for detection (default: sonnet)
+#
+# Output:
+# - /output/compiled_css.txt — Compiled CSS
+# - /output/css_detect_parsed.json — Detection metadata
+# - /output/usage.json — API usage tracking
 
 echo "Starting CSS generation..."
 echo "Repository: ${GITHUB_REPO}"
 
-# Clone the repository
-echo "Cloning repository..."
-if ! git clone --depth 1 "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" /repo 2>&1; then
-    echo "ERROR: Failed to clone repository ${GITHUB_REPO}"
-    exit 1
-fi
+CLAUDE_MODEL="${CLAUDE_MODEL:-sonnet}"
+
+# ─── Helpers ─────────────────────────────────────────────────────────────────
+
+_timeout() {
+    if command -v gtimeout &>/dev/null; then
+        gtimeout "$@"
+    elif command -v timeout &>/dev/null; then
+        timeout "$@"
+    else
+        shift
+        "$@"
+    fi
+}
+
+# ─── Clone ───────────────────────────────────────────────────────────────────
 
 if [ ! -d /repo/.git ]; then
-    echo "ERROR: Repository clone failed - /repo/.git not found"
+    echo "Cloning repository..."
+    if ! git clone --depth 1 "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" /repo 2>&1; then
+        echo "ERROR: Failed to clone repository ${GITHUB_REPO}"
+        exit 1
+    fi
+fi
+cd /repo
+
+# ─── Phase 1: Detection ─────────────────────────────────────────────────────
+
+echo "Phase 1: Detecting CSS framework..."
+echo "API Key set: ${ANTHROPIC_API_KEY:+yes}"
+echo "Model: ${CLAUDE_MODEL}"
+
+set +e
+cat <<'DETECT_PROMPT' | claude -p --model "$CLAUDE_MODEL" --output-format json --allowedTools "Read,Glob,Grep" > /output/css_detect_raw.json
+Analyze this codebase to detect its CSS build setup.
+
+CHECK (in order):
+1. package.json / Gemfile / composer.json for CSS dependencies
+2. Config files: tailwind.config.js, postcss.config.js, webpack.config.js, vite.config.ts
+3. CSS/SCSS/Less entry files — find the MAIN entry point that imports everything
+4. package.json "scripts" — look for build commands that reference sass, tailwindcss, postcss
+5. Layout templates for CDN links and font imports
+6. SCSS variable files — extract theme color values
+
+For the SCSS/CSS entry point, find the single file that serves as the root of the CSS build.
+This is the file that @imports everything else. Examples:
+- app/frontend/packs/application.scss
+- src/index.css (with @tailwind directives)
+- app/assets/stylesheets/application.scss
+- styles/main.scss
+
+Output ONLY this JSON (no preamble text, no explanation before the JSON):
+{
+  "framework": "tailwind|bootstrap|bulma|foundation|scss|postcss|plain_css|css_in_js|none",
+  "version": "version string or null",
+  "scss_entry": "path to main SCSS/Sass entry file that @imports everything, or null",
+  "tailwind_entry": "path to CSS file with @tailwind directives, or null",
+  "tailwind_config": "path to tailwind config, or null",
+  "postcss_config": "path to postcss config, or null",
+  "css_files": ["paths to plain .css files in dependency order"],
+  "cdn_links": ["CDN stylesheet URLs found in layout templates"],
+  "font_links": ["Google Fonts or other font CDN URLs"],
+  "has_package_json": true,
+  "package_manager": "npm|yarn|pnpm|null",
+  "theme_overrides": {
+    "colors": {
+      "primary": "#hex or null",
+      "secondary": "#hex or null",
+      "success": "#hex or null",
+      "danger": "#hex or null",
+      "warning": "#hex or null",
+      "info": "#hex or null"
+    },
+    "custom_colors": { "name": "#hex" },
+    "fonts": { "body": "font-family or null", "heading": "font-family or null" },
+    "border_radius": "value or null",
+    "extra_css": "critical non-variable CSS overrides (max 50 lines) or null"
+  },
+  "notes": "brief explanation"
+}
+
+For theme_overrides:
+- Resolve SCSS variable chains (e.g., $primary: $brand-green; $brand-green: #004a56 → "#004a56")
+- Include ALL custom color variables in custom_colors
+DETECT_PROMPT
+set -e
+
+# Extract usage
+jq '{session_id, total_cost_usd, duration_ms, num_turns, usage}' /output/css_detect_raw.json > /output/usage.json 2>/dev/null || true
+
+# Parse detection result
+CSS_DETECT=$(jq -r '.result // empty' /output/css_detect_raw.json 2>/dev/null | sed '/^```json$/d; /^```$/d' | sed -n '/^{/,/^}/p')
+echo "$CSS_DETECT" > /output/css_detect_parsed.json
+
+if [ -z "$CSS_DETECT" ]; then
+    echo "ERROR: CSS detection failed — no result"
+    echo "" > /output/compiled_css.txt
     exit 1
 fi
 
-cd /repo
+FRAMEWORK=$(echo "$CSS_DETECT" | jq -r '.framework // "none"' 2>/dev/null || echo "none")
+VERSION=$(echo "$CSS_DETECT" | jq -r '.version // ""' 2>/dev/null || echo "")
+SCSS_ENTRY=$(echo "$CSS_DETECT" | jq -r '.scss_entry // empty' 2>/dev/null)
+TW_ENTRY=$(echo "$CSS_DETECT" | jq -r '.tailwind_entry // empty' 2>/dev/null)
+TW_CONFIG=$(echo "$CSS_DETECT" | jq -r '.tailwind_config // empty' 2>/dev/null)
+POSTCSS_CONFIG=$(echo "$CSS_DETECT" | jq -r '.postcss_config // empty' 2>/dev/null)
+HAS_PKG=$(echo "$CSS_DETECT" | jq -r '.has_package_json // false' 2>/dev/null)
+PKG_MGR=$(echo "$CSS_DETECT" | jq -r '.package_manager // "npm"' 2>/dev/null)
 
-echo "Analyzing codebase and generating CSS..."
-echo "API Key set: ${ANTHROPIC_API_KEY:+yes}"
+echo "  Framework: $FRAMEWORK $VERSION"
+[ -n "$SCSS_ENTRY" ] && echo "  SCSS entry: $SCSS_ENTRY"
+[ -n "$TW_ENTRY" ] && echo "  Tailwind entry: $TW_ENTRY"
 
-cat <<'CSS_PROMPT' | claude -p --output-format json --allowedTools "Read,Write,Edit,Glob,Grep,Bash,Agent" > /tmp/claude_output.json
-Analyze this codebase and generate comprehensive CSS for accurate UI mockup rendering.
+# ─── Phase 2: Source Compilation ─────────────────────────────────────────────
 
-=== STEP 1: DETECT THE CSS FRAMEWORK ===
+CSS_FILE="/output/compiled_css.txt"
+> "$CSS_FILE"
+COMPILE_METHOD="none"
 
-Check for these frameworks in order of priority:
+echo ""
+echo "Phase 2: Compiling CSS..."
 
-A) UTILITY-FIRST FRAMEWORKS (Tailwind CSS, UnoCSS, Windi CSS)
-   Detection:
-   - tailwind.config.js, tailwind.config.ts
-   - uno.config.ts, windi.config.js
-   - @tailwind directives in CSS files
-   - Utility classes in templates: flex, pt-4, bg-blue-500, text-lg, etc.
+try_source_compile() {
+    echo "  Attempting source compilation..."
 
-   Strategy: Generate CSS rules for ALL utility classes found in templates.
-   Scan .erb, .html, .jsx, .tsx, .vue, .svelte files for class attributes.
-   For each class like "px-4", generate: .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    if [ "$HAS_PKG" = "true" ] && [ -f /repo/package.json ]; then
+        local install_cmd="npm install"
+        if [ "$PKG_MGR" = "yarn" ] && command -v yarn &>/dev/null; then
+            install_cmd="yarn install"
+        elif [ "$PKG_MGR" = "pnpm" ] && command -v pnpm &>/dev/null; then
+            install_cmd="pnpm install"
+        fi
+        echo "  Running $install_cmd --ignore-scripts..."
+        cd /repo
+        if ! _timeout 120 $install_cmd --ignore-scripts 2>/tmp/npm_error.log; then
+            echo "  $install_cmd failed"
+            tail -5 /tmp/npm_error.log
+            return 1
+        fi
+        echo "  Install OK"
+    else
+        echo "  No package.json — skipping install"
+        return 1
+    fi
 
-B) COMPONENT FRAMEWORKS (Bootstrap, Bulma, Foundation)
-   Detection:
-   - package.json: "bootstrap", "bulma", "foundation-sites"
-   - CDN links: cdn.jsdelivr.net/npm/bootstrap, cdnjs.cloudflare.com/ajax/libs/bulma
-   - Class patterns: .btn, .container, .row, .col- (Bootstrap)
-   - Class patterns: .button, .columns, .column (Bulma)
+    case "$FRAMEWORK" in
+        tailwind)
+            if [ -n "$TW_ENTRY" ] && [ -f "/repo/$TW_ENTRY" ]; then
+                echo "  Compiling Tailwind: npx tailwindcss..."
+                local tw_args="-i /repo/$TW_ENTRY -o $CSS_FILE"
+                [ -n "$TW_CONFIG" ] && [ -f "/repo/$TW_CONFIG" ] && tw_args="-c /repo/$TW_CONFIG $tw_args"
+                if _timeout 120 npx tailwindcss $tw_args 2>/tmp/compile_error.log; then
+                    COMPILE_METHOD="tailwind_npx"
+                    return 0
+                fi
+                echo "  Tailwind compilation failed"
+                tail -5 /tmp/compile_error.log
+            fi
+            return 1
+            ;;
+        bootstrap|bulma|foundation|scss)
+            if [ -n "$SCSS_ENTRY" ] && [ -f "/repo/$SCSS_ENTRY" ]; then
+                echo "  Compiling SCSS: npx sass..."
+                if _timeout 120 npx sass "/repo/$SCSS_ENTRY" "$CSS_FILE" \
+                    --load-path=/repo/node_modules \
+                    --load-path=/repo \
+                    --no-source-map --style=expanded 2>/tmp/compile_error.log; then
+                    COMPILE_METHOD="sass_npx"
+                    return 0
+                fi
+                echo "  Sass compilation failed"
+                tail -5 /tmp/compile_error.log
+            fi
+            return 1
+            ;;
+        postcss)
+            if [ -n "$POSTCSS_CONFIG" ]; then
+                local pc_entry="${TW_ENTRY:-${SCSS_ENTRY}}"
+                if [ -n "$pc_entry" ] && [ -f "/repo/$pc_entry" ]; then
+                    echo "  Compiling PostCSS: npx postcss..."
+                    if _timeout 120 npx postcss "/repo/$pc_entry" -o "$CSS_FILE" \
+                        --config "/repo/$POSTCSS_CONFIG" 2>/tmp/compile_error.log; then
+                        COMPILE_METHOD="postcss_npx"
+                        return 0
+                    fi
+                    echo "  PostCSS compilation failed"
+                    tail -5 /tmp/compile_error.log
+                fi
+            fi
+            return 1
+            ;;
+        plain_css)
+            # Concatenate plain CSS files
+            local css_files
+            css_files=$(echo "$CSS_DETECT" | jq -r '.css_files[]? // empty' 2>/dev/null)
+            if [ -n "$css_files" ]; then
+                while IFS= read -r css_path; do
+                    if [ -f "/repo/$css_path" ]; then
+                        echo "  Including: $css_path"
+                        cat "/repo/$css_path" >> "$CSS_FILE"
+                        echo "" >> "$CSS_FILE"
+                    fi
+                done <<< "$css_files"
+                if [ -s "$CSS_FILE" ]; then
+                    COMPILE_METHOD="plain_css"
+                    return 0
+                fi
+            fi
+            return 1
+            ;;
+        *)
+            echo "  No source compilation strategy for: $FRAMEWORK"
+            return 1
+            ;;
+    esac
+}
 
-   Strategy: Include the CDN @import URL AND generate common component CSS as fallback.
+try_cdn_fallback() {
+    echo ""
+    echo "  Falling back to CDN + theme overrides..."
+    > "$CSS_FILE"
 
-   Bootstrap CDN:
-   @import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css');
+    case "$FRAMEWORK" in
+        bootstrap)
+            local bs_ver="${VERSION:-5.3.0}"
+            bs_ver=$(echo "$bs_ver" | sed 's/^v//')
+            echo "  Fetching Bootstrap $bs_ver from CDN..."
+            curl -sL "https://cdn.jsdelivr.net/npm/bootstrap@${bs_ver}/dist/css/bootstrap.min.css" >> "$CSS_FILE" 2>/dev/null || \
+            curl -sL "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" >> "$CSS_FILE" 2>/dev/null || true
+            echo "" >> "$CSS_FILE"
+            ;;
+        bulma)
+            local bl_ver="${VERSION:-0.9.4}"
+            echo "  Fetching Bulma $bl_ver from CDN..."
+            curl -sL "https://cdn.jsdelivr.net/npm/bulma@${bl_ver}/css/bulma.min.css" >> "$CSS_FILE" 2>/dev/null || true
+            echo "" >> "$CSS_FILE"
+            ;;
+        foundation)
+            local fd_ver="${VERSION:-6.8.1}"
+            echo "  Fetching Foundation $fd_ver from CDN..."
+            curl -sL "https://cdn.jsdelivr.net/npm/foundation-sites@${fd_ver}/dist/css/foundation.min.css" >> "$CSS_FILE" 2>/dev/null || true
+            echo "" >> "$CSS_FILE"
+            ;;
+    esac
 
-   Bulma CDN:
-   @import url('https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css');
+    # Generate theme overrides from detected SCSS variables
+    DETECT_TMP=$(mktemp)
+    echo "$CSS_DETECT" > "$DETECT_TMP"
 
-   Foundation CDN:
-   @import url('https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/css/foundation.min.css');
+    python3 - "$DETECT_TMP" "$FRAMEWORK" >> "$CSS_FILE" 2>/dev/null <<'PYEOF'
+import json, sys
 
-C) REACT COMPONENT LIBRARIES (Material UI, Chakra UI, Ant Design, shadcn/ui)
-   Detection:
-   - package.json: "@mui/material", "@chakra-ui/react", "antd"
-   - Import patterns in .tsx/.jsx files
-   - components/ui/*.tsx with cn() function (shadcn)
+with open(sys.argv[1]) as f:
+    detect = json.load(f)
 
-   Strategy: Generate CSS that mimics the library's default theme appearance.
+framework = sys.argv[2]
+overrides = detect.get("theme_overrides", {})
+colors = overrides.get("colors", {})
+custom = overrides.get("custom_colors", {})
+fonts = overrides.get("fonts", {})
+radius = overrides.get("border_radius")
 
-   For Material UI: Generate CSS for .MuiButton-root, .MuiTextField-root, etc.
-   For Chakra: Generate CSS using their default blue color scheme
-   For Ant Design: Generate CSS for .ant-btn, .ant-input, etc.
-   For shadcn/ui: Copy the EXACT class names from components/ui/*.tsx files
+def hex_to_rgb(h):
+    h = h.lstrip("#")
+    if len(h) != 6: return (0, 0, 0)
+    return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
 
-D) CSS-IN-JS (styled-components, Emotion)
-   Detection:
-   - package.json: "styled-components", "@emotion/react", "@emotion/styled"
-   - Import patterns: import styled from 'styled-components'
-   - css`` template literals
+lines = ["", "/* Theme overrides from project SCSS variables */", ":root {"]
 
-   Strategy: Find style objects/template literals and convert to CSS classes.
+for name, val in colors.items():
+    if val and val != "null":
+        r, g, b = hex_to_rgb(val)
+        lines.append(f"  --bs-{name}: {val};")
+        lines.append(f"  --bs-{name}-rgb: {r}, {g}, {b};")
 
-E) TRADITIONAL CSS/SCSS/SASS/LESS
-   Detection:
-   - .css, .scss, .sass, .less files in the project
-   - No CSS framework detected
+body_font = fonts.get("body")
+heading_font = fonts.get("heading")
+if body_font and body_font != "null":
+    lines.append(f"  --bs-body-font-family: {body_font};")
+if heading_font and heading_font != "null":
+    lines.append(f"  --bs-heading-font-family: {heading_font};")
+if radius and radius != "null":
+    lines.append(f"  --bs-border-radius: {radius};")
 
-   Strategy: Copy relevant styles directly from source files.
+lines.append("}")
 
-F) NO CSS FRAMEWORK
-   Detection:
-   - No CSS dependencies in package.json/Gemfile
-   - Only inline styles used
+for name, val in custom.items():
+    if val and val != "null":
+        safe = name.replace("_", "-")
+        lines.append(f".text-{safe} {{ color: {val} !important; }}")
+        lines.append(f".bg-{safe} {{ background-color: {val} !important; }}")
 
-   Strategy: Generate sensible defaults based on inline styles found.
+primary = colors.get("primary")
+secondary = colors.get("secondary")
+if primary and primary != "null":
+    lines.append(f".btn-primary {{ background-color: {primary}; border-color: {primary}; }}")
+    lines.append(f".btn-primary:hover {{ background-color: {primary}; border-color: {primary}; opacity: 0.9; }}")
+    lines.append(f".btn-outline-primary {{ color: {primary}; border-color: {primary}; }}")
+    lines.append(f".btn-outline-primary:hover {{ background-color: {primary}; border-color: {primary}; color: #fff; }}")
+    lines.append(f"a {{ color: {primary}; }}")
+    lines.append(f".text-primary {{ color: {primary} !important; }}")
+    lines.append(f".bg-primary {{ background-color: {primary} !important; }}")
+if secondary and secondary != "null":
+    lines.append(f".btn-secondary {{ background-color: {secondary}; border-color: {secondary}; }}")
 
-=== STEP 2: FIND WEB FONTS ===
+print("\n".join(lines))
 
-Search these locations:
-- Layout templates: application.html.erb, _document.tsx, index.html, app.html, layout.html
-- CSS files: @import or @font-face declarations
-- CDN links: fonts.googleapis.com, fonts.bunny.net, use.typekit.net
+extra = overrides.get("extra_css", "")
+if extra and extra != "null":
+    print(f"\n/* Extra project overrides */\n{extra}")
+PYEOF
 
-Common fonts to look for: Inter, Roboto, Open Sans, Lato, Poppins, Montserrat, Source Sans Pro
+    rm -f "$DETECT_TMP"
+    COMPILE_METHOD="cdn_fallback"
+}
 
-=== STEP 3: SCAN ALL TEMPLATES FOR CLASSES ===
-
-CRITICAL: Scan ALL template files and extract EVERY class name used:
-- .erb files (Rails)
-- .html files
-- .jsx/.tsx files (React)
-- .vue files (Vue)
-- .svelte files (Svelte)
-
-For EACH class found, generate the corresponding CSS rule.
-
-Example: If you find class="flex items-center justify-between px-4 py-2 bg-white rounded-lg shadow-md"
-
-Generate:
-.flex { display: flex; }
-.items-center { align-items: center; }
-.justify-between { justify-content: space-between; }
-.px-4 { padding-left: 1rem; padding-right: 1rem; }
-.py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-.bg-white { background-color: #ffffff; }
-.rounded-lg { border-radius: 0.5rem; }
-.shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
-
-=== STEP 4: GENERATE COMPLETE CSS ===
-
-OUTPUT FORMAT - Valid CSS only, no markdown, no explanations:
-
-1. @import statements FIRST (fonts and CDN frameworks):
-   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-   @import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css');
-
-2. CSS Reset/Base styles:
-   *, *::before, *::after { box-sizing: border-box; }
-   html { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-   body { margin: 0; line-height: 1.5; }
-
-3. Framework-specific utility classes (if Tailwind/utility-first)
-
-4. Component styles (buttons, inputs, cards, etc.)
-
-5. Layout utilities (flexbox, grid)
-
-6. Color utilities (text colors, backgrounds, borders)
-
-7. Spacing utilities (padding, margin)
-
-8. Typography utilities (font sizes, weights)
-
-=== IMPORTANT RULES ===
-
-- @import statements MUST be at the very top (CSS requirement)
-- Generate CSS for EVERY class found in templates
-- Use actual values from tailwind.config.js or theme files if present
-- Include hover states: .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
-- Include focus states: .focus\:ring-2:focus { box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); }
-- Include responsive prefixes if found: .md\:flex { display: flex; } at appropriate breakpoint
-- Output ONLY valid CSS - no markdown code fences, no comments, no explanations
-CSS_PROMPT
-
-# Extract the result content from JSON output
-jq -r 'if .result then (if .result | type == "string" then .result else (.result // "") end) else "" end' /tmp/claude_output.json > /output/compiled_css.txt
-
-# Extract usage data for tracking
-jq '{session_id, total_cost_usd, duration_ms, num_turns, usage}' /tmp/claude_output.json > /output/usage.json
-
-CSS_SIZE=$(wc -c < /output/compiled_css.txt 2>/dev/null || echo "0")
-echo "Generated CSS: ${CSS_SIZE} bytes"
-
-# Validate the CSS output starts correctly (basic check)
-if head -1 /output/compiled_css.txt | grep -q "^\`\`\`"; then
-    echo "Warning: CSS output contains markdown - attempting to clean"
-    # Remove markdown code fences if present
-    sed -i 's/^```css//; s/^```//' /output/compiled_css.txt
+# Execute: try source first, then CDN fallback
+if try_source_compile; then
+    echo "  Source compilation succeeded ($COMPILE_METHOD)"
+else
+    try_cdn_fallback
+    echo "  Using CDN fallback ($COMPILE_METHOD)"
 fi
 
+# ─── Phase 3: Post-processing ───────────────────────────────────────────────
+
+# Append additional CDN links
+CDN_LINKS=$(echo "$CSS_DETECT" | jq -r '.cdn_links[]? // empty' 2>/dev/null)
+if [ -n "$CDN_LINKS" ]; then
+    while IFS= read -r url; do
+        if [ -n "$url" ] && [ "$url" != "null" ]; then
+            echo "  Fetching CDN: $url"
+            curl -sL "$url" >> "$CSS_FILE" 2>/dev/null || true
+            echo "" >> "$CSS_FILE"
+        fi
+    done <<< "$CDN_LINKS"
+fi
+
+# Append plain CSS files not already included
+if [ "$COMPILE_METHOD" != "plain_css" ]; then
+    CSS_FILES=$(echo "$CSS_DETECT" | jq -r '.css_files[]? // empty' 2>/dev/null)
+    if [ -n "$CSS_FILES" ]; then
+        while IFS= read -r css_path; do
+            case "$css_path" in
+                *.css)
+                    if [ -f "/repo/$css_path" ]; then
+                        echo "  Including: $css_path"
+                        cat "/repo/$css_path" >> "$CSS_FILE"
+                        echo "" >> "$CSS_FILE"
+                    fi
+                    ;;
+            esac
+        done <<< "$CSS_FILES"
+    fi
+fi
+
+# Font @imports (must be at top of file per CSS spec)
+FONT_LINKS=$(echo "$CSS_DETECT" | jq -r '.font_links[]? // empty' 2>/dev/null)
+FONT_IMPORTS=""
+if [ -n "$FONT_LINKS" ]; then
+    while IFS= read -r url; do
+        if [ -n "$url" ] && [ "$url" != "null" ]; then
+            FONT_IMPORTS="${FONT_IMPORTS}@import url('${url}');\n"
+        fi
+    done <<< "$FONT_LINKS"
+fi
+if [ -n "$FONT_IMPORTS" ]; then
+    TMP_CSS=$(mktemp)
+    printf '%b\n' "$FONT_IMPORTS" > "$TMP_CSS"
+    cat "$CSS_FILE" >> "$TMP_CSS"
+    mv "$TMP_CSS" "$CSS_FILE"
+fi
+
+# Clean markdown fences if present
+if head -1 "$CSS_FILE" | grep -q '^\`\`\`'; then
+    echo "Warning: CSS contains markdown — cleaning"
+    sed -i 's/^```css//; s/^```//' "$CSS_FILE"
+fi
+
+# ─── Summary ─────────────────────────────────────────────────────────────────
+
+CSS_SIZE=$(wc -c < "$CSS_FILE" 2>/dev/null || echo "0")
+echo ""
 echo "CSS generation complete!"
+echo "  Framework: $FRAMEWORK $VERSION"
+echo "  Method: $COMPILE_METHOD"
+echo "  Size: ${CSS_SIZE} bytes"
+echo ""
+echo "Output files:"
+ls -la /output/compiled_css.txt /output/css_detect_parsed.json /output/usage.json 2>/dev/null || true

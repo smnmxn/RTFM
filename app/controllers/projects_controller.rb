@@ -464,7 +464,14 @@ class ProjectsController < ApplicationController
 
   def start_over
     track_event("project.start_over")
-    # Clear all generated content
+    # Clear all generated content (order matters due to foreign keys)
+    conn = ActiveRecord::Base.connection
+    conn.execute(ActiveRecord::Base.sanitize_sql(
+      ["DELETE FROM announcement_images WHERE announcement_id IN (SELECT id FROM announcements WHERE project_id = ?)", @project.id]
+    ))
+    conn.execute(ActiveRecord::Base.sanitize_sql(
+      ["DELETE FROM announcements WHERE project_id = ?", @project.id]
+    ))
     @project.articles.destroy_all
     @project.recommendations.destroy_all
     @project.sections.destroy_all
@@ -477,6 +484,21 @@ class ProjectsController < ApplicationController
     )
 
     redirect_to analyze_onboarding_project_path(@project)
+  end
+
+  # Maintenance actions
+  def reanalyze
+    if @project.analysis_status == "running"
+      redirect_to project_path(@project, tab: "settings"), alert: "Analysis is already in progress."
+      return
+    end
+
+    @project.update!(analysis_status: "pending")
+    AnalyzeCodebaseJob.perform_later(@project.id)
+    GenerateCssJob.perform_later(project_id: @project.id)
+    ExtractImagesJob.perform_later(project_id: @project.id)
+
+    redirect_to project_path(@project, tab: "settings"), notice: "Re-analysis started. This may take a few minutes."
   end
 
   # Branding settings
@@ -546,7 +568,15 @@ class ProjectsController < ApplicationController
     current_ai_settings = @project.ai_settings || {}
     new_ai_settings = current_ai_settings.merge(ai_settings_params.to_h.stringify_keys)
 
-    if @project.update(ai_settings: new_ai_settings)
+    # Save tone_preference to user_context (separate JSON column)
+    update_attrs = { ai_settings: new_ai_settings }
+    if params[:project].key?(:tone_preference)
+      current_context = @project.user_context || {}
+      current_context["tone_preference"] = params[:project][:tone_preference].presence
+      update_attrs[:user_context] = current_context
+    end
+
+    if @project.update(update_attrs)
       track_event("settings.ai_settings_updated")
       @project.reload
       respond_to do |format|

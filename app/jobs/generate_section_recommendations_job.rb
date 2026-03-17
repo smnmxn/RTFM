@@ -77,6 +77,12 @@ class GenerateSectionRecommendationsJob < ApplicationJob
 
       File.write(File.join(input_dir, "context.json"), build_context_json(project, section))
 
+      # Write file tree for context (reduces Claude exploration turns)
+      if project.analysis_metadata&.dig("file_tree").present?
+        File.write(File.join(input_dir, "file_tree.txt"), project.analysis_metadata["file_tree"])
+        Rails.logger.info "[GenerateSectionRecommendationsJob] Wrote file_tree.txt (#{project.analysis_metadata['file_tree'].length} bytes)"
+      end
+
       github_token = get_github_token(project)
       return { success: false, error: "No GitHub token available" } unless github_token
 
@@ -84,6 +90,7 @@ class GenerateSectionRecommendationsJob < ApplicationJob
         "docker", "run",
         "--rm",
         *claude_auth_docker_args,
+        *debug_docker_args,
         "-e", "GITHUB_TOKEN=#{github_token}",
         "-e", "GITHUB_REPO=#{project.github_repo}",
         "-v", "#{host_volume_path(input_dir)}:/input:ro",
@@ -95,9 +102,7 @@ class GenerateSectionRecommendationsJob < ApplicationJob
 
       Rails.logger.info "[GenerateSectionRecommendationsJob] Running Docker for section #{section.id} (#{section.name})"
 
-      stdout, stderr, status = Timeout.timeout(GENERATION_TIMEOUT) do
-        Open3.capture3(*cmd)
-      end
+      stdout, stderr, status = run_docker_cmd(cmd, timeout: GENERATION_TIMEOUT, log_prefix: "[GenerateSectionRecommendationsJob]")
 
       Rails.logger.info "[GenerateSectionRecommendationsJob] Exit status: #{status.exitstatus}"
       Rails.logger.debug "[GenerateSectionRecommendationsJob] Stdout: #{stdout[0..500]}" if stdout.present?
@@ -148,10 +153,6 @@ class GenerateSectionRecommendationsJob < ApplicationJob
       project_name: project.name,
       project_overview: project.project_overview,
       analysis_summary: project.analysis_summary,
-      tech_stack: project.analysis_metadata&.dig("tech_stack") || [],
-      key_patterns: project.analysis_metadata&.dig("key_patterns") || [],
-      components: project.analysis_metadata&.dig("components") || [],
-      target_users: project.analysis_metadata&.dig("target_users") || [],
       all_sections: project.sections.accepted.ordered.map { |s|
         { name: s.name, slug: s.slug, description: s.description }
       },

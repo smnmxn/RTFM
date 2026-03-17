@@ -33,7 +33,10 @@ class BillingController < ApplicationController
   end
 
   def success
-    # Post-checkout confirmation — plan sync happens via webhook
+    # Eagerly sync plan from Stripe — the webhook may not have arrived yet
+    current_user.payment_processor.sync_subscriptions
+    current_user.sync_plan_from_subscription!
+
     if current_user.projects.where(onboarding_step: nil).empty?
       redirect_to new_onboarding_project_path, notice: "Pro trial started! Let's set up your first project."
     end

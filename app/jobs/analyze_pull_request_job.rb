@@ -12,6 +12,7 @@ class AnalyzePullRequestJob < ApplicationJob
 
   queue_as :analysis
 
+  retry_on Vcs::Error, wait: :polynomially_longer, attempts: 3
   retry_on Octokit::Error, wait: :polynomially_longer, attempts: 3
 
   # Shorter timeout than codebase analysis (5 minutes)
@@ -212,8 +213,6 @@ class AnalyzePullRequestJob < ApplicationJob
       project_name: project.name,
       project_overview: project.project_overview,
       analysis_summary: project.analysis_summary,
-      tech_stack: project.analysis_metadata&.dig("tech_stack") || [],
-      key_patterns: project.analysis_metadata&.dig("key_patterns") || [],
       pr_number: update.pull_request_number,
       pr_title: pr_title,
       pr_body: pr_body,
@@ -308,14 +307,15 @@ class AnalyzePullRequestJob < ApplicationJob
   end
 
   def build_repos_json(project)
-    # Build repos array with tokens for multi-repo Docker analysis
     project.project_repositories.filter_map do |pr|
       begin
-        token = GithubAppService.installation_token(pr.github_installation_id)
+        adapter = pr.vcs_adapter
+        token = adapter.installation_token(pr.github_installation_id)
         entry = {
           repo: pr.github_repo,
           directory: pr.clone_directory_name,
-          token: token
+          token: token,
+          clone_url: adapter.clone_url(pr.github_repo, token)
         }
         entry[:branch] = pr.branch if pr.branch.present?
         entry
