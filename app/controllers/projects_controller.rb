@@ -491,12 +491,16 @@ class ProjectsController < ApplicationController
     track_event("project.start_over")
     # Clear all generated content (order matters due to foreign keys)
     conn = ActiveRecord::Base.connection
-    conn.execute(ActiveRecord::Base.sanitize_sql(
-      ["DELETE FROM announcement_images WHERE announcement_id IN (SELECT id FROM announcements WHERE project_id = ?)", @project.id]
-    ))
-    conn.execute(ActiveRecord::Base.sanitize_sql(
-      ["DELETE FROM announcements WHERE project_id = ?", @project.id]
-    ))
+    if conn.table_exists?(:announcements)
+      if conn.table_exists?(:announcement_images)
+        conn.execute(ActiveRecord::Base.sanitize_sql(
+          ["DELETE FROM announcement_images WHERE announcement_id IN (SELECT id FROM announcements WHERE project_id = ?)", @project.id]
+        ))
+      end
+      conn.execute(ActiveRecord::Base.sanitize_sql(
+        ["DELETE FROM announcements WHERE project_id = ?", @project.id]
+      ))
+    end
     @project.articles.destroy_all
     @project.recommendations.destroy_all
     @project.sections.destroy_all
