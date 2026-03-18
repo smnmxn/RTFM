@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700&family=Raleway:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bp:#4f46e5;--ba:#7c3aed;--bt:#fff;--bgp:#f9fafb;--bgs:#fff;--tp:#111827;--ts:#6b7280;--tt:#9ca3af;--bc:#e5e7eb;--bl:#f3f4f6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Nunito Sans',system-ui,sans-serif;background:var(--bgp);color:var(--tp);width:1200px;height:800px;overflow:hidden}
+.hdr{background:var(--bgs);border-bottom:1px solid var(--bc);padding:12px 40px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Raleway',sans-serif;font-weight:700;font-size:18px;color:var(--bp)}
+.search{width:220px;padding:8px 14px 8px 34px;border:1px solid var(--bc);border-radius:8px;font-size:13px;color:var(--ts);background:var(--bgs)}
+.hero{background:linear-gradient(135deg,var(--bp),var(--ba));padding:52px 40px 64px;text-align:center;color:var(--bt);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;opacity:.08;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:128px}
+.hero::after{content:'';position:absolute;inset:0;opacity:.5;background-image:radial-gradient(circle,rgba(255,255,255,.1) 1px,transparent 1px);background-size:20px 20px}
+.hero *{position:relative;z-index:1}
+.orb1{position:absolute;top:-60px;right:-60px;width:300px;height:300px;border-radius:50%;background:var(--ba);opacity:.15;filter:blur(60px)}
+.orb2{position:absolute;bottom:-80px;left:-80px;width:250px;height:250px;border-radius:50%;background:var(--bp);opacity:.2;filter:blur(60px)}
+.hero h1{font-family:'Raleway',sans-serif;font-size:34px;font-weight:700;margin-bottom:8px}
+.hero p{font-size:15px;opacity:.85;margin-bottom:24px}
+.hero-search{max-width:520px;margin:0 auto;position:relative}
+.hero-search input{width:100%;padding:14px 20px 14px 44px;border-radius:12px;border:none;font-size:15px;background:rgba(255,255,255,.95);box-shadow:0 6px 24px rgba(0,0,0,.12);color:var(--tp);font-family:'Nunito Sans',sans-serif}
+.hero-search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--tt)}
+.wave{position:absolute;bottom:0;left:0;right:0}
+.wave svg{display:block;width:100%;height:32px}
+.content{max-width:860px;margin:0 auto;padding:32px 24px}
+.sec-title{font-family:'Raleway',sans-serif;font-size:18px;font-weight:600;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{background:var(--bgs);border:1px solid var(--bc);border-radius:12px;padding:18px}
+.card-top{display:flex;align-items:flex-start;gap:12px}
+.card-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.card-icon.pu{background:#ede9fe;color:#7c3aed}
+.card-icon.bl{background:#dbeafe;color:#3b82f6}
+.card-icon.am{background:#fef3c7;color:#d97706}
+.card-icon.gn{background:#d1fae5;color:#059669}
+.card-name{font-family:'Raleway',sans-serif;font-weight:600;font-size:14px}
+.card-desc{font-size:12px;color:var(--ts);margin-top:2px}
+.card-count{font-size:11px;color:var(--tt);margin-top:3px}
+.card-articles{margin-top:12px;padding-top:12px;border-top:1px solid var(--bl)}
+.ca{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ts);padding:4px 0}
+.ca svg{width:14px;height:14px;color:var(--tt);flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="hdr"><div class="logo">Acme App</div><input class="search" placeholder="Ask a question..." readonly></div>
+<div class="hero">
+  <div class="orb1"></div><div class="orb2"></div>
+  <h1>How can we help?</h1>
+  <p>Search our guides or browse by category below</p>
+  <div class="hero-search">
+    <input placeholder="Ask a question..." readonly>
+    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
+  </div>
+  <div class="wave"><svg viewBox="0 0 1440 48" fill="none" preserveAspectRatio="none"><path d="M0 48h1440V24c-180 20-360 24-540 12S540 8 360 16 180 40 0 32v16z" fill="#f9fafb"/></svg></div>
+</div>
+<div class="content">
+  <div class="sec-title">Browse by category</div>
+  <div class="grid">
+    <div class="card"><div class="card-top"><div class="card-icon pu">&#128640;</div><div><div class="card-name">Getting Started</div><div class="card-desc">Set up your account and get running</div><div class="card-count">5 articles</div></div></div><div class="card-articles"><div class="ca"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>Creating your first project</div><div class="ca"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>Connecting your GitHub repo</div><div class="ca"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>Inviting team members</div></div></div>
+    <div class="card"><div class="card-top"><div class="card-icon bl">&#9881;&#65039;</div><div><div class="card-name">Configuration</div><div class="card-desc">Customise your workspace settings</div><div class="card-count">4 articles</div></div></div><div class="card-articles"><div class="ca"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>Custom domain setup</div><div class="ca"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>Notification preferences</div></div></div>
+    <div class="card"><div class="card-top"><div class="card-icon am">&#128279;</div><div><div class="card-name">Integrations</div><div class="card-desc">Connect with your favourite tools</div><div class="card-count">3 articles</div></div></div></div>
+    <div class="card"><div class="card-top"><div class="card-icon gn">&#128272;</div><div><div class="card-name">Account & Billing</div><div class="card-desc">Manage your plan and payments</div><div class="card-count">3 articles</div></div></div></div>
+  </div>
+</div>
+</body>
+</html>

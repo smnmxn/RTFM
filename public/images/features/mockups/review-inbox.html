@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f172a;--sf:#1e293b;--sa:#334155;--tx:#f1f5f9;--ts:#94a3b8;--tm:#64748b;--bd:#334155;--bs:#475569}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--tx);width:1200px;height:800px;overflow:hidden;display:flex;flex-direction:column}
+.hdr{background:var(--sf);border-bottom:1px solid var(--bd);height:48px;display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0}
+.logo{width:24px;height:24px;background:#0d9488;border-radius:5px;display:flex;align-items:center;justify-content:center;font:700 12px 'Space Grotesk',sans-serif;color:#fff}
+.sep{color:var(--tm);font-size:18px}.pname{font:600 14px 'Space Grotesk',sans-serif}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+.hdr-r svg{width:20px;height:20px;color:var(--tm)}
+.av{width:28px;height:28px;border-radius:50%;background:var(--sa);display:flex;align-items:center;justify-content:center;font:500 12px Inter;color:var(--ts)}
+.wrap{flex:1;display:flex;overflow:hidden}
+.side{width:200px;background:var(--sf);border-right:1px solid var(--bd);padding:8px;display:flex;flex-direction:column;flex-shrink:0}
+.ni{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;color:var(--ts);font-weight:500}
+.ni.on{background:var(--sa);color:var(--tx)}
+.ni svg{width:18px;height:18px;flex-shrink:0}
+.ni .bg{margin-left:auto;background:#3f3f46;color:#fff;font-size:10px;font-weight:600;padding:1px 7px;border-radius:10px;min-width:20px;text-align:center}
+.nl{padding:8px 12px 4px;font-size:10px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.06em;margin-top:12px}
+.ss{flex:1}
+.content{flex:1;display:flex;overflow:hidden}
+/* Inbox list */
+.inbox-list{width:360px;border-right:1px solid var(--bd);display:flex;flex-direction:column;flex-shrink:0}
+.inbox-hdr{padding:16px 18px;border-bottom:1px solid var(--bd)}
+.inbox-title{font:600 15px 'Space Grotesk',sans-serif}
+.inbox-sub{font-size:12px;color:var(--tm);margin-top:3px}
+.inbox-items{flex:1;overflow:hidden}
+.ii{display:flex;align-items:flex-start;gap:10px;padding:12px 18px;border-bottom:1px solid var(--bd);cursor:pointer}
+.ii.on{background:var(--sa)}
+.ii:hover:not(.on){background:rgba(30,41,59,.5)}
+.ii-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.ii-dot.new{background:#3b82f6}.ii-dot.gen{background:#a78bfa;animation:pu 2s infinite}.ii-dot.done{background:#34d399}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.3}}
+.ii-info{flex:1;min-width:0}
+.ii-t{font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ii-m{font-size:11px;color:var(--tm);margin-top:2px}
+.ii-s{display:inline-block;font-size:10px;color:var(--ts);background:var(--bg);padding:2px 6px;border-radius:4px;margin-top:4px}
+/* Editor */
+.editor{flex:1;display:flex;flex-direction:column}
+.ed-bar{padding:12px 20px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px}
+.ed-title{font:600 15px 'Space Grotesk',sans-serif}
+.ed-section{font-size:11px;font-weight:500;color:var(--ts);background:rgba(59,130,246,.1);padding:3px 8px;border-radius:6px}
+.ed-sp{flex:1}
+.btn{padding:6px 14px;border-radius:7px;font-size:12px;font-weight:500;border:1px solid var(--bs);color:var(--ts);background:transparent;cursor:pointer}
+.btn-g{background:#22c55e;color:#052e16;border-color:#22c55e}
+.ed-body{flex:1;padding:24px 28px;overflow-y:auto;max-width:640px}
+.ed-intro{font-size:13px;color:var(--ts);line-height:1.7;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--bd)}
+.stp{margin-bottom:18px}
+.stp-n{font-size:10px;font-weight:600;color:#3b82f6;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.stp-t{font-weight:600;font-size:14px;margin-bottom:4px}
+.stp-c{font-size:13px;color:var(--ts);line-height:1.6}
+.stp-img{background:var(--sa);border-radius:6px;height:80px;margin-top:8px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--tm)}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="logo">s</div><span class="sep">/</span><span class="pname">Acme App</span>
+  <div class="hdr-r"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg><div class="av">S</div></div>
+</div>
+<div class="wrap">
+  <div class="side">
+    <div class="ni on"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859"/></svg>Inbox<span class="bg">5</span></div>
+    <div class="nl">Help Centre</div>
+    <div class="ni"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>Articles</div>
+    <div class="nl">Source</div>
+    <div class="ni"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Code History</div>
+    <div class="ss"></div>
+    <div class="ni"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/></svg>Settings</div>
+  </div>
+  <div class="content">
+    <div class="inbox-list">
+      <div class="inbox-hdr"><div class="inbox-title">Inbox</div><div class="inbox-sub">5 items to review</div></div>
+      <div class="inbox-items">
+        <div class="ii on"><div class="ii-dot new"></div><div class="ii-info"><div class="ii-t">How to invite team members</div><div class="ii-m">From PR #247 · 3 min ago</div><div class="ii-s">Getting Started</div></div></div>
+        <div class="ii"><div class="ii-dot new"></div><div class="ii-info"><div class="ii-t">Setting up two-factor authentication</div><div class="ii-m">From PR #245 · 12 min ago</div><div class="ii-s">Account & Security</div></div></div>
+        <div class="ii"><div class="ii-dot gen"></div><div class="ii-info"><div class="ii-t">Configuring webhook notifications</div><div class="ii-m">Generating...</div><div class="ii-s">Integrations</div></div></div>
+        <div class="ii"><div class="ii-dot new"></div><div class="ii-info"><div class="ii-t">Managing billing and subscriptions</div><div class="ii-m">Generated 1 hour ago</div><div class="ii-s">Account & Billing</div></div></div>
+        <div class="ii"><div class="ii-dot done"></div><div class="ii-info"><div class="ii-t">Connecting your GitHub repository</div><div class="ii-m">Approved yesterday</div><div class="ii-s">Getting Started</div></div></div>
+      </div>
+    </div>
+    <div class="editor">
+      <div class="ed-bar">
+        <div class="ed-title">How to invite team members</div>
+        <div class="ed-section">Getting Started</div>
+        <div class="ed-sp"></div>
+        <button class="btn">Preview</button>
+        <button class="btn">Reject</button>
+        <button class="btn btn-g">Approve</button>
+      </div>
+      <div class="ed-body">
+        <div class="ed-intro">Learn how to invite colleagues to your project and manage their permissions. Team members can help review articles, manage your help centre, and collaborate on content.</div>
+        <div class="stp"><div class="stp-n">Step 1</div><div class="stp-t">Open Team Settings</div><div class="stp-c">Navigate to your project settings and click the "Team" tab in the sidebar.</div><div class="stp-img">UI mockup</div></div>
+        <div class="stp"><div class="stp-n">Step 2</div><div class="stp-t">Send an invitation</div><div class="stp-c">Click "Invite member", enter their email address, and choose a role (Editor, Publisher, or Admin).</div></div>
+        <div class="stp"><div class="stp-n">Step 3</div><div class="stp-t">Track invitation status</div><div class="stp-c">Pending invitations appear at the bottom of the team list. Links expire after 7 days.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

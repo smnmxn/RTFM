@@ -12,6 +12,10 @@ class PagesController < ApplicationController
     @nav_active = "pricing"
   end
 
+  def features
+    redirect_to root_path
+  end
+
   def brand
   end
 end

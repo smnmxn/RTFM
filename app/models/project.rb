@@ -27,10 +27,14 @@ class Project < ApplicationRecord
     # Nullify product_events FK before destroy (belt-and-suspenders with has_many :dependent)
     conn.execute(ActiveRecord::Base.sanitize_sql(["UPDATE product_events SET project_id = NULL WHERE project_id = ?", id]))
     # announcement_images FK → announcements FK → projects
-    conn.execute(ActiveRecord::Base.sanitize_sql([
-      "DELETE FROM announcement_images WHERE announcement_id IN (SELECT id FROM announcements WHERE project_id = ?)", id
-    ]))
-    conn.execute(ActiveRecord::Base.sanitize_sql(["DELETE FROM announcements WHERE project_id = ?", id]))
+    if conn.table_exists?(:announcements)
+      if conn.table_exists?(:announcement_images)
+        conn.execute(ActiveRecord::Base.sanitize_sql([
+          "DELETE FROM announcement_images WHERE announcement_id IN (SELECT id FROM announcements WHERE project_id = ?)", id
+        ]))
+      end
+      conn.execute(ActiveRecord::Base.sanitize_sql(["DELETE FROM announcements WHERE project_id = ?", id]))
+    end
   end
 
   # Logo and favicon uploads via Active Storage

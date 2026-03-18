@@ -14,9 +14,11 @@
 
       <!-- Desktop nav -->
       <nav class="hidden sm:flex items-center gap-6 text-sm">
-        <a href="/how-it-works"
-           class="<%= dark ? (active == 'how-it-works' ? 'text-white font-semibold' : 'text-zinc-400 hover:text-white') : (active == 'how-it-works' ? 'text-slate-900 font-semibold' : 'text-slate-600 hover:text-slate-900') %> transition-colors">
-          How it Works
+        <a href="/#features"
+           data-controller="smooth-scroll"
+           data-action="click->smooth-scroll#scroll"
+           class="<%= dark ? (active == 'features' ? 'text-white font-semibold' : 'text-zinc-400 hover:text-white') : (active == 'features' ? 'text-slate-900 font-semibold' : 'text-slate-600 hover:text-slate-900') %> transition-colors">
+          Features
         </a>
         <a href="/pricing"
            class="<%= dark ? (active == 'pricing' ? 'text-white font-semibold' : 'text-zinc-400 hover:text-white') : (active == 'pricing' ? 'text-slate-900 font-semibold' : 'text-slate-600 hover:text-slate-900') %> transition-colors">
@@ -70,9 +72,11 @@
   <nav data-mobile-menu-target="menu"
        class="hidden sm:hidden border-t <%= dark ? 'border-zinc-700/50 bg-zinc-900/95 backdrop-blur-sm' : 'border-slate-200 bg-white' %>">
     <div class="max-w-4xl mx-auto px-4 py-3 space-y-1">
-      <a href="/how-it-works"
-         class="block px-3 py-2.5 rounded-lg text-sm font-medium <%= dark ? (active == 'how-it-works' ? 'text-white bg-white/10' : 'text-zinc-300 hover:text-white hover:bg-white/5') : (active == 'how-it-works' ? 'text-slate-900 bg-slate-100' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50') %> transition-colors">
-        How it Works
+      <a href="/#features"
+         data-controller="smooth-scroll"
+         data-action="click->smooth-scroll#scroll"
+         class="block px-3 py-2.5 rounded-lg text-sm font-medium <%= dark ? (active == 'features' ? 'text-white bg-white/10' : 'text-zinc-300 hover:text-white hover:bg-white/5') : (active == 'features' ? 'text-slate-900 bg-slate-100' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50') %> transition-colors">
+        Features
       </a>
       <a href="/pricing"
          class="block px-3 py-2.5 rounded-lg text-sm font-medium <%= dark ? (active == 'pricing' ? 'text-white bg-white/10' : 'text-zinc-300 hover:text-white hover:bg-white/5') : (active == 'pricing' ? 'text-slate-900 bg-slate-100' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50') %> transition-colors">

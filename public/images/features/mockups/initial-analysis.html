@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+:root {
+  --app-bg: #0f172a; --app-surface: #1e293b; --app-surface-alt: #334155;
+  --app-text: #f1f5f9; --app-text-secondary: #94a3b8; --app-text-muted: #64748b;
+  --app-border: #334155; --app-border-strong: #475569;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--app-bg); color: var(--app-text); width: 1200px; height: 800px; overflow: hidden; display: flex; flex-direction: column; }
+.header { background: var(--app-surface); border-bottom: 1px solid var(--app-border); padding: 0 24px; height: 48px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.logo { width: 24px; height: 24px; background: #0d9488; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: white; font-family: 'Space Grotesk', sans-serif; }
+.logo-text { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14px; color: var(--app-text); }
+.steps { display: flex; align-items: center; gap: 6px; margin-left: auto; font-size: 12px; color: var(--app-text-muted); }
+.step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--app-border-strong); }
+.step-dot.done { background: #34d399; }
+.step-dot.active { background: #3b82f6; }
+.main { flex: 1; display: flex; align-items: center; justify-content: center; }
+.card { background: var(--app-surface); border: 1px solid var(--app-border); border-radius: 12px; width: 580px; padding: 32px; }
+.card-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 20px; color: var(--app-text); margin-bottom: 6px; }
+.card-subtitle { font-size: 13px; color: var(--app-text-secondary); margin-bottom: 24px; }
+.progress-track { height: 6px; background: var(--app-surface-alt); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+.progress-fill { height: 100%; width: 75%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); border-radius: 3px; }
+.progress-label { font-size: 12px; color: var(--app-text-muted); margin-bottom: 24px; }
+.progress-label span { color: var(--app-text-secondary); font-weight: 500; }
+.sections { display: flex; flex-direction: column; gap: 8px; }
+.section { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--app-bg); border: 1px solid var(--app-border); border-radius: 8px; }
+.section-emoji { font-size: 18px; width: 36px; height: 36px; background: var(--app-surface-alt); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.section-info { flex: 1; }
+.section-name { font-weight: 500; font-size: 13px; color: var(--app-text); }
+.section-count { font-size: 11px; color: var(--app-text-muted); margin-top: 2px; }
+.status-check { color: #34d399; font-size: 18px; }
+.status-spin { width: 16px; height: 16px; border: 2px solid var(--app-border-strong); border-top-color: #8b5cf6; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.status-wait { font-size: 14px; color: var(--app-text-muted); }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="header">
+  <div class="logo">s</div>
+  <span class="logo-text">supportpages.io</span>
+  <div class="steps">
+    <div class="step-dot done"></div>
+    <div class="step-dot done"></div>
+    <div class="step-dot done"></div>
+    <div class="step-dot active"></div>
+    <div class="step-dot"></div>
+    <span style="margin-left: 4px;">Step 4 of 5</span>
+  </div>
+</div>
+<div class="main">
+  <div class="card">
+    <div class="card-title">Generating your help centre</div>
+    <div class="card-subtitle">Analysing your codebase and writing help articles...</div>
+    <div class="progress-track"><div class="progress-fill"></div></div>
+    <div class="progress-label">Generated <span>9 of 12 articles</span> across 4 sections</div>
+    <div class="sections">
+      <div class="section">
+        <div class="section-emoji">&#128640;</div>
+        <div class="section-info"><div class="section-name">Getting Started</div><div class="section-count">3 articles</div></div>
+        <div class="status-check">&#10003;</div>
+      </div>
+      <div class="section">
+        <div class="section-emoji">&#9881;&#65039;</div>
+        <div class="section-info"><div class="section-name">Configuration</div><div class="section-count">3 articles</div></div>
+        <div class="status-check">&#10003;</div>
+      </div>
+      <div class="section">
+        <div class="section-emoji">&#128279;</div>
+        <div class="section-info"><div class="section-name">Integrations</div><div class="section-count">2 of 3 articles</div></div>
+        <div class="status-spin"></div>
+      </div>
+      <div class="section">
+        <div class="section-emoji">&#128272;</div>
+        <div class="section-info"><div class="section-name">Account & Billing</div><div class="section-count">1 of 3 articles</div></div>
+        <div class="status-wait">&#9202;</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

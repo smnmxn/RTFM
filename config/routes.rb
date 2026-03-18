@@ -47,6 +47,7 @@ Rails.application.routes.draw do
 
   # How it works (bare domain, public)
   get "/how-it-works", to: "pages#how_it_works", as: :how_it_works
+  get "/features", to: "pages#features", as: :features
   get "/pricing", to: "pages#pricing", as: :pricing
   get "/brand", to: "pages#brand", as: :brand
 

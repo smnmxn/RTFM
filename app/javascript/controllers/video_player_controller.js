@@ -3,6 +3,13 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["poster", "video"]
 
+  connect() {
+    // Autoplay doesn't fire on Turbo navigation, so trigger it manually
+    if (this.hasVideoTarget && this.videoTarget.paused) {
+      this.videoTarget.play().catch(() => {})
+    }
+  }
+
   play() {
     this.posterTarget.classList.add("hidden")
     this.videoTarget.muted = false

@@ -74,6 +74,7 @@ import BetaWaitlistModalController from "controllers/beta_waitlist_modal_control
 import AccordionController from "controllers/accordion_controller"
 import BillingToggleController from "controllers/billing_toggle_controller"
 import LoginToggleController from "controllers/login_toggle_controller"
+import SmoothScrollController from "controllers/smooth_scroll_controller"
 import TooltipController from "controllers/tooltip_controller"
 import SidebarController from "controllers/sidebar_controller"
 import UpgradeModalController from "controllers/upgrade_modal_controller"
@@ -128,6 +129,7 @@ application.register("beta-waitlist-modal", BetaWaitlistModalController)
 application.register("accordion", AccordionController)
 application.register("billing-toggle", BillingToggleController)
 application.register("login-toggle", LoginToggleController)
+application.register("smooth-scroll", SmoothScrollController)
 application.register("tooltip", TooltipController)
 application.register("sidebar", SidebarController)
 application.register("upgrade-modal", UpgradeModalController)
