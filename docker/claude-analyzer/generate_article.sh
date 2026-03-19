@@ -314,7 +314,9 @@ IMPORTANT — TECHNICAL:
 - Do NOT read the images JSON file — use {{img:filename}} placeholders
 - Generate 1-4 mockup images total
 
-Your final output must be ONLY the JSON article object.
+OUTPUT FORMAT — CRITICAL:
+Your final message must be ONLY the raw JSON article object. No preamble, no explanation, no markdown fences, no "Here is the article" — just the JSON starting with { and ending with }.
+If you write anything before or after the JSON, the pipeline will fail.
 PROMPT_BODY
 
 echo "  Calling Claude ($CLAUDE_MODEL)..."
