@@ -122,45 +122,29 @@
 
       <!-- Colors -->
       <div class="p-4 space-y-4 <%= 'opacity-50 pointer-events-none' unless current_user.pro_or_above? %>">
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium app-text mb-1">Primary Color</label>
+            <p class="text-xs app-text-muted mb-2">Used for links, buttons, and interactive elements.</p>
             <div class="flex items-center gap-2">
               <div class="relative w-10 h-10 flex-shrink-0">
                 <input type="color"
                        id="primary_color_picker"
                        value="<%= project.primary_color_or_default %>"
                        class="absolute inset-0 w-full h-full cursor-pointer rounded border app-border-strong"
-                       oninput="document.getElementById('project_primary_color').value = this.value; updateColorPreview();">
+                       oninput="document.getElementById('project_primary_color').value = this.value;">
               </div>
               <%= form.text_field :primary_color,
                   value: project.primary_color_or_default,
-                  placeholder: "#3f3f46",
-                  oninput: "if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('primary_color_picker').value=this.value}; updateColorPreview();",
-                  class: "flex-1 px-3 py-2 app-input rounded-lg text-sm font-mono" %>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium app-text mb-1">Accent Color</label>
-            <div class="flex items-center gap-2">
-              <div class="relative w-10 h-10 flex-shrink-0">
-                <input type="color"
-                       id="accent_color_picker"
-                       value="<%= project.accent_color_or_default %>"
-                       class="absolute inset-0 w-full h-full cursor-pointer rounded border app-border-strong"
-                       oninput="document.getElementById('project_accent_color').value = this.value; updateColorPreview();">
-              </div>
-              <%= form.text_field :accent_color,
-                  value: project.accent_color_or_default,
-                  placeholder: "#71717a",
-                  oninput: "if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('accent_color_picker').value=this.value}; updateColorPreview();",
+                  placeholder: "#4f46e5",
+                  oninput: "if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('primary_color_picker').value=this.value};",
                   class: "flex-1 px-3 py-2 app-input rounded-lg text-sm font-mono" %>
             </div>
           </div>
 
           <div>
             <label class="block text-sm font-medium app-text mb-1">Title Text Color</label>
+            <p class="text-xs app-text-muted mb-2">Color of the title text over the hero gradient.</p>
             <div class="flex items-center gap-2">
               <div class="relative w-10 h-10 flex-shrink-0">
                 <input type="color"
@@ -171,26 +155,68 @@
               </div>
               <%= form.text_field :title_text_color,
                   value: project.title_text_color_or_default,
-                  placeholder: "#111827",
+                  placeholder: "#ffffff",
                   oninput: "if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('title_text_color_picker').value=this.value};",
                   class: "flex-1 px-3 py-2 app-input rounded-lg text-sm font-mono" %>
             </div>
           </div>
         </div>
 
-        <!-- Color Preview -->
-        <div class="app-bg rounded-lg p-3">
-          <p class="text-xs app-text-secondary mb-2">Preview</p>
+        <div class="mt-4">
+          <label class="block text-sm font-medium app-text mb-1">Hero Gradient</label>
+          <p class="text-xs app-text-muted mb-3">The gradient used for the help centre hero banner, article accent stripes, and step connectors.</p>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs app-text-secondary mb-1">Start Color</label>
+              <div class="flex items-center gap-2">
+                <div class="relative w-10 h-10 flex-shrink-0">
+                  <input type="color"
+                         id="gradient_start_color_picker"
+                         value="<%= project.gradient_start_color_or_default %>"
+                         class="absolute inset-0 w-full h-full cursor-pointer rounded border app-border-strong"
+                         oninput="document.getElementById('project_gradient_start_color').value = this.value; updateColorPreview();">
+                </div>
+                <%= form.text_field :gradient_start_color,
+                    value: project.gradient_start_color_or_default,
+                    placeholder: "#4f46e5",
+                    oninput: "if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('gradient_start_color_picker').value=this.value}; updateColorPreview();",
+                    class: "flex-1 px-3 py-2 app-input rounded-lg text-sm font-mono" %>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs app-text-secondary mb-1">End Color</label>
+              <div class="flex items-center gap-2">
+                <div class="relative w-10 h-10 flex-shrink-0">
+                  <input type="color"
+                         id="accent_color_picker"
+                         value="<%= project.accent_color_or_default %>"
+                         class="absolute inset-0 w-full h-full cursor-pointer rounded border app-border-strong"
+                         oninput="document.getElementById('project_accent_color').value = this.value; updateColorPreview();">
+                </div>
+                <%= form.text_field :accent_color,
+                    value: project.accent_color_or_default,
+                    placeholder: "#7c3aed",
+                    oninput: "if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('accent_color_picker').value=this.value}; updateColorPreview();",
+                    class: "flex-1 px-3 py-2 app-input rounded-lg text-sm font-mono" %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gradient Preview -->
+        <div class="app-bg rounded-lg p-3 mt-4">
+          <p class="text-xs app-text-secondary mb-2">Gradient Preview</p>
           <div id="color_preview" class="h-8 rounded"
-               style="background: linear-gradient(to right, <%= project.primary_color_or_default %>, <%= project.accent_color_or_default %>)">
+               style="background: linear-gradient(to right, <%= project.gradient_start_color_or_default %>, <%= project.accent_color_or_default %>)">
           </div>
         </div>
 
         <script>
           function updateColorPreview() {
-            var primary = document.getElementById('project_primary_color').value || '#3f3f46';
-            var accent = document.getElementById('project_accent_color').value || '#71717a';
-            document.getElementById('color_preview').style.background = 'linear-gradient(to right, ' + primary + ', ' + accent + ')';
+            var gradientStart = document.getElementById('project_gradient_start_color').value || '<%= project.primary_color_or_default %>';
+            var accent = document.getElementById('project_accent_color').value || '#7c3aed';
+            document.getElementById('color_preview').style.background = 'linear-gradient(to right, ' + gradientStart + ', ' + accent + ')';
           }
         </script>
       </div>

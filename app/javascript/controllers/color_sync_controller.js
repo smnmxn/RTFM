@@ -27,13 +27,13 @@ export default class extends Controller {
     const preview = document.getElementById("color_preview")
     if (!preview) return
 
-    const primaryInput = document.getElementById("project_primary_color")
+    const gradientStartInput = document.getElementById("project_gradient_start_color")
     const accentInput = document.getElementById("project_accent_color")
 
-    if (primaryInput && accentInput) {
-      const primary = this.isValidHex(primaryInput.value) ? primaryInput.value : "#3f3f46"
-      const accent = this.isValidHex(accentInput.value) ? accentInput.value : "#71717a"
-      preview.style.background = `linear-gradient(to right, ${primary}, ${accent})`
+    if (gradientStartInput && accentInput) {
+      const gradientStart = this.isValidHex(gradientStartInput.value) ? gradientStartInput.value : "#4f46e5"
+      const accent = this.isValidHex(accentInput.value) ? accentInput.value : "#7c3aed"
+      preview.style.background = `linear-gradient(to right, ${gradientStart}, ${accent})`
     }
   }
 }

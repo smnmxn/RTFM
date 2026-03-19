@@ -31,10 +31,12 @@ class ExtractBrandingJob < ApplicationJob
     if @force
       branding["primary_color"] = result.primary_color if result.primary_color.present?
       branding["accent_color"] = result.accent_color if result.accent_color.present?
+      branding["gradient_start_color"] = result.primary_color if result.primary_color.present?
       branding["dark_mode"] = result.dark_mode
     else
       branding["primary_color"] = result.primary_color if color_is_default?(branding["primary_color"]) && result.primary_color.present?
       branding["accent_color"] = result.accent_color if color_is_default?(branding["accent_color"]) && result.accent_color.present?
+      branding["gradient_start_color"] = result.primary_color if branding["gradient_start_color"].blank? && result.primary_color.present?
       branding["dark_mode"] = result.dark_mode if branding["dark_mode"].nil?
     end
 

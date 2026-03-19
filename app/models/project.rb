@@ -54,6 +54,7 @@ class Project < ApplicationRecord
   store :branding, accessors: [
     :primary_color,
     :accent_color,
+    :gradient_start_color,
     :title_text_color,
     :help_centre_title,
     :help_centre_tagline,
@@ -104,6 +105,7 @@ class Project < ApplicationRecord
   # Branding validations
   validates :primary_color, format: { with: /\A#[0-9a-fA-F]{6}\z/, message: "must be a valid hex color" }, allow_blank: true
   validates :accent_color, format: { with: /\A#[0-9a-fA-F]{6}\z/, message: "must be a valid hex color" }, allow_blank: true
+  validates :gradient_start_color, format: { with: /\A#[0-9a-fA-F]{6}\z/, message: "must be a valid hex color" }, allow_blank: true
   validates :title_text_color, format: { with: /\A#[0-9a-fA-F]{6}\z/, message: "must be a valid hex color" }, allow_blank: true
   validates :support_email, format: { with: URI::MailTo::EMAIL_REGEXP, message: "must be a valid email address" }, allow_blank: true
   validates :support_phone, length: { maximum: 30 }, allow_blank: true
@@ -311,6 +313,10 @@ class Project < ApplicationRecord
 
   def accent_color_or_default
     accent_color.presence || "#7c3aed"
+  end
+
+  def gradient_start_color_or_default
+    gradient_start_color.presence || primary_color_or_default
   end
 
   def title_text_color_or_default
