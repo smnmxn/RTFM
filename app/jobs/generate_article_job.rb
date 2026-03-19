@@ -202,7 +202,7 @@ class GenerateArticleJob < ApplicationJob
               { success: false, error: "Claude returned narrative text instead of structured JSON" }
             end
           rescue JSON::ParserError => e
-            Rails.logger.warn "[GenerateArticleJob] JSON parse error: #{e.message} — treating as failure. Content preview: #{json_content&.slice(0, 200).inspect}"
+            Rails.logger.warn "[GenerateArticleJob] JSON parse error: #{e.message} — Claude likely returned prose instead of JSON. Raw output starts with: #{json_content&.slice(0, 300).inspect}"
             cleanup_analysis_dir(input_dir)
             cleanup_analysis_dir(output_dir)
             { success: false, error: "Claude output was not valid JSON: #{e.message}" }
