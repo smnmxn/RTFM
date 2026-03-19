@@ -266,7 +266,9 @@ A file tree and analysis summary are provided above in PROJECT CONTEXT. Use thes
 - Check relevant models, services, or configuration
 Do NOT use Glob or Grep to discover project structure — the file tree already gives you that. Use Read to open specific files you've identified.
 
-STEP 2: Write a help article as JSON:
+STEP 2: Write the article content and output it as a JSON object.
+Your FINAL message must be ONLY this JSON — no commentary, no summary of what you did.
+JSON schema:
 {
   "title": "Article title",
   "introduction": "1-2 sentences explaining what users will learn",
@@ -325,12 +327,14 @@ set +e
 if [ "${KEEP_ANALYSIS_OUTPUT}" = "true" ]; then
     echo "  Streaming mode (debug) — turn log at /output/article_raw.turns.log"
     cat "$PROMPT_FILE" | claude -p --verbose --model "$CLAUDE_MODEL" --max-turns "$CLAUDE_MAX_TURNS" \
-        --output-format stream-json --allowedTools "Read,Glob,Grep,Bash,Write" | \
+        --output-format stream-json --allowedTools "Read,Glob,Grep,Bash,Write" \
+        --append-system-prompt "CRITICAL: Your final message must be ONLY the raw JSON article object. No preamble, no summary, no explanation — just JSON starting with { and ending with }. Any other output will break the pipeline." | \
         python3 /stream_filter.py /output/article_raw.json
     CLAUDE_EXIT=${PIPESTATUS[1]}
 else
     cat "$PROMPT_FILE" | claude -p --model "$CLAUDE_MODEL" --max-turns "$CLAUDE_MAX_TURNS" \
-        --output-format json --allowedTools "Read,Glob,Grep,Bash,Write" > /output/article_raw.json
+        --output-format json --allowedTools "Read,Glob,Grep,Bash,Write" \
+        --append-system-prompt "CRITICAL: Your final message must be ONLY the raw JSON article object. No preamble, no summary, no explanation — just JSON starting with { and ending with }. Any other output will break the pipeline." > /output/article_raw.json
     CLAUDE_EXIT=$?
 fi
 set -e
