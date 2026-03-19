@@ -180,10 +180,31 @@ ARTICLE TOPIC: ${ARTICLE_TOPIC}
 PROMPT_HEADER
 
 if [ -n "$WRITING_STYLE" ]; then
+    # Expand preset style keywords into detailed guidance
+    STYLE_GUIDE=""
+    case "$WRITING_STYLE" in
+        technical)
+            STYLE_GUIDE="Technical & precise. Use exact terminology (field names, menu paths, error codes). Assume the reader is comfortable with software. Prefer specificity over friendliness — say \"Configure the SMTP relay\" not \"Let's set up your email.\" Keep sentences short and declarative. Avoid pleasantries, encouragement, and filler."
+            ;;
+        friendly)
+            STYLE_GUIDE="Friendly & conversational. Address the reader as \"you.\" Use everyday language — say \"hook up\" not \"integrate,\" \"set up\" not \"configure.\" It's okay to be warm but stay brief. One short friendly sentence beats three wordy ones. Avoid corporate cheerfulness (\"We're excited to...\") — just be natural and helpful."
+            ;;
+        minimal)
+            STYLE_GUIDE="Minimal & scannable. Absolute minimum words. Strip every sentence to its core action. Prefer sentence fragments and imperative verbs: \"Click **Save**.\" \"Enter your email.\" No introductions, no transitions, no encouragement. If a step can be three words, use three words. Think quick-reference card, not tutorial."
+            ;;
+        formal)
+            STYLE_GUIDE="Formal & professional. Use complete sentences with proper structure. Avoid contractions (\"do not\" not \"don't\"). Maintain a neutral, authoritative tone — no slang, humour, or casual asides. Suitable for enterprise, regulated, or compliance-oriented documentation. Still be concise — formal does not mean verbose."
+            ;;
+        *)
+            # Custom free-text style — pass through as-is
+            STYLE_GUIDE="$WRITING_STYLE"
+            ;;
+    esac
+
     cat >> "$PROMPT_FILE" <<STYLE_SECTION
 
-WRITING STYLE: ${WRITING_STYLE}
-Write the entire article in this style. Let it influence your tone, word choice, and how you address the reader.
+WRITING STYLE: ${STYLE_GUIDE}
+Apply this style consistently across the entire article — tone, word choice, sentence length, and how you address the reader.
 STYLE_SECTION
 fi
 
@@ -275,9 +296,20 @@ For mockups:
 
 Write each mockup to: /output/html/step_N.html (N is 0-based)
 
-IMPORTANT:
+IMPORTANT — WRITING STYLE RULES:
 - Write for END USERS, not developers
-- Use clear, simple language
+- Be CONCISE. Every sentence must earn its place. If a step can be said in one sentence, do not use three.
+- Each step content should be 1-3 short sentences MAX. Never write a wall of text for a single step.
+- Break complex actions into SEPARATE STEPS rather than cramming everything into one step.
+- Focus on what to DO, not how it works behind the scenes. Users don't need to know about OAuth flows, data residency, or system internals.
+- Skip edge cases, advanced options, and "if your organization..." qualifiers. Cover the happy path only.
+- Don't explain WHY fields exist or what the system does with the data. Just tell the user what to enter.
+- Use direct instructions: "Enter your email" not "The Email field is where you provide your email address"
+- Avoid filler phrases: "You will be redirected to...", "The system performs...", "This determines where..."
+- Bold UI elements (button names, field labels) but don't over-explain them
+- Aim for a tone like Stripe's docs: clean, direct, minimal
+
+IMPORTANT — TECHNICAL:
 - Do NOT read the compiled CSS file — it will be injected automatically
 - Do NOT read the images JSON file — use {{img:filename}} placeholders
 - Generate 1-4 mockup images total
