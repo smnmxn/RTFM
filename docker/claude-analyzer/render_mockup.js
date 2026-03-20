@@ -225,7 +225,9 @@ async function renderMockup(outputPath, htmlFile) {
             (renderMetrics.visibleElementCount === 0 && renderMetrics.textLength === 0);
 
         // Screenshot with padding, capped at reasonable dimensions
-        const screenshotHeight = Math.min(Math.ceil(boundingBox.height) + 48, 1200);
+        // Enforce minimum height so short mockups (e.g. just a nav bar) don't render as thin slivers
+        const MIN_HEIGHT = 300;
+        const screenshotHeight = Math.min(Math.max(Math.ceil(boundingBox.height) + 48, MIN_HEIGHT), 1200);
         const screenshotWidth = Math.min(Math.ceil(boundingBox.width) + 48, viewport.width);
 
         await page.screenshot({
