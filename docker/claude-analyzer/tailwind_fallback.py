@@ -170,6 +170,12 @@ UTILITIES.update({
 for n in list(range(0, 13)) + [14, 16, 20, 24, 32, 40, 48, 56, 64]:
     UTILITIES[f"w-{n}"] = f"width: {spacing(n)}"
     UTILITIES[f"h-{n}"] = f"height: {spacing(n)}"
+    UTILITIES[f"size-{n}"] = f"width: {spacing(n)}; height: {spacing(n)}"
+# Fractional sizes
+for cls, val in [("0.5", "0.125rem"), ("1.5", "0.375rem"), ("2.5", "0.625rem"), ("3.5", "0.875rem")]:
+    UTILITIES[f"size-{cls}"] = f"width: {val}; height: {val}"
+UTILITIES["size-full"] = "width: 100%; height: 100%"
+UTILITIES["size-fit"] = "width: fit-content; height: fit-content"
 for num, den in [(1,2), (1,3), (2,3), (1,4), (3,4), (1,5), (2,5), (3,5), (4,5), (1,6), (5,6)]:
     pct = f"{round(num/den*100, 4)}%"
     UTILITIES[f"w-{num}/{den}"] = f"width: {pct}"
