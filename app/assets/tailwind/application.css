@@ -496,6 +496,8 @@ a, button, [role="button"], input[type="button"], input[type="submit"], input[ty
   overflow-x: auto;
   margin: 1rem 0;
   border: 1px solid var(--app-border);
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 .prose pre code,
@@ -506,6 +508,8 @@ a, button, [role="button"], input[type="button"], input[type="submit"], input[ty
   line-height: 1.6;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   color: var(--app-text);
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 .prose code,
