@@ -21,6 +21,7 @@ class GenerateCssJob < ApplicationJob
 
     begin
       docker_image = "rtfm/claude-analyzer:latest"
+      build_docker_image_if_needed(docker_image)
 
       github_token = get_github_token(project)
       return unless github_token
@@ -88,6 +89,23 @@ class GenerateCssJob < ApplicationJob
   end
 
   private
+
+  def build_docker_image_if_needed(image_name)
+    stdout, _, status = Open3.capture3("docker", "images", "-q", image_name)
+
+    if stdout.strip.empty?
+      dockerfile_path = Rails.root.join("docker", "claude-analyzer")
+      Rails.logger.info "[GenerateCssJob] Building Docker image #{image_name}"
+
+      _, stderr, status = Open3.capture3(
+        "docker", "build", "-t", image_name, dockerfile_path.to_s
+      )
+
+      unless status.success?
+        raise "Failed to build Docker image: #{stderr}"
+      end
+    end
+  end
 
   def get_github_token(project)
     installation = project.github_app_installation

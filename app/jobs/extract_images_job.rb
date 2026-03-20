@@ -20,6 +20,7 @@ class ExtractImagesJob < ApplicationJob
 
     begin
       docker_image = "rtfm/claude-analyzer:latest"
+      build_docker_image_if_needed(docker_image)
 
       # Build repos JSON for multi-repo support
       repos_json = build_repos_json(project)
@@ -109,6 +110,23 @@ class ExtractImagesJob < ApplicationJob
       rescue => e
         Rails.logger.error "[ExtractImagesJob] Failed to get token for repo #{pr.github_repo}: #{e.message}"
         nil
+      end
+    end
+  end
+
+  def build_docker_image_if_needed(image_name)
+    stdout, _, status = Open3.capture3("docker", "images", "-q", image_name)
+
+    if stdout.strip.empty?
+      dockerfile_path = Rails.root.join("docker", "claude-analyzer")
+      Rails.logger.info "[ExtractImagesJob] Building Docker image #{image_name}"
+
+      _, stderr, status = Open3.capture3(
+        "docker", "build", "-t", image_name, dockerfile_path.to_s
+      )
+
+      unless status.success?
+        raise "Failed to build Docker image: #{stderr}"
       end
     end
   end
