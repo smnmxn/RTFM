@@ -70,8 +70,13 @@ class GenerateCssJob < ApplicationJob
         else
           Rails.logger.warn "[GenerateCssJob] No CSS content generated for project #{project.id}"
         end
+
+        # Extract images after CSS is saved to avoid race condition on analysis_metadata
+        ExtractImagesJob.perform_later(project_id: project.id)
       else
         Rails.logger.error "[GenerateCssJob] CSS generation failed for project #{project.id}: #{stderr}"
+        # Still extract images even if CSS fails
+        ExtractImagesJob.perform_later(project_id: project.id)
       end
     rescue Timeout::Error
       Rails.logger.error "[GenerateCssJob] CSS generation timed out for project #{project.id}"

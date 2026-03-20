@@ -38,9 +38,8 @@ class SuggestSectionsJob < ApplicationJob
         # Broadcast update to refresh the onboarding view
         broadcast_onboarding_update(project)
 
-        # Trigger CSS generation and image extraction for mockup styling
+        # Trigger CSS generation (which chains image extraction after saving)
         GenerateCssJob.perform_later(project_id: project.id)
-        ExtractImagesJob.perform_later(project_id: project.id)
       else
         project.reload.update!(sections_generation_status: "failed")
         Rails.logger.warn "[SuggestSectionsJob] Suggestion failed for project #{project.id}: #{result[:error]}"

@@ -14,8 +14,11 @@ module Onboarding
         return
       end
 
-      # Clean up any incomplete onboarding projects so user starts fresh
-      current_user.projects.onboarding_incomplete.destroy_all
+      # Clean up stale onboarding projects (older than 30 minutes)
+      # Avoids destroying projects actively being set up in another browser tab
+      current_user.projects.onboarding_incomplete
+        .where("onboarding_started_at < ?", 30.minutes.ago)
+        .destroy_all
 
       # Create a bare project with temporary values — name/subdomain collected in setup step
       @project = current_user.projects.build(

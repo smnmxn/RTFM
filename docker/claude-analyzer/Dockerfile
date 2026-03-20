@@ -56,6 +56,7 @@ COPY --chmod=755 render_mockup.sh /render_mockup.sh
 COPY --chmod=644 render_mockup.js /render_mockup.js
 COPY --chmod=755 validate_html.js /validate_html.js
 COPY --chmod=644 stream_filter.py /stream_filter.py
+COPY --chmod=644 tailwind_fallback.py /tailwind_fallback.py
 COPY --chmod=755 entrypoint.sh /entrypoint.sh
 
 # Switch to non-root user

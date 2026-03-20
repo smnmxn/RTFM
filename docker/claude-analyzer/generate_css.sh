@@ -67,6 +67,12 @@ CHECK (in order):
 5. Layout templates for CDN links and font imports
 6. SCSS variable files — extract theme color values
 
+For Tailwind: determine the MAJOR VERSION (3 or 4):
+- Check package.json "tailwindcss" dependency version
+- If the CSS entry uses @import "tailwindcss" or @import 'tailwindcss' → v4
+- If the CSS entry uses @tailwind base; @tailwind components; @tailwind utilities; → v3
+Report the version accurately (e.g. "4.1.0" or "3.4.17").
+
 For the SCSS/CSS entry point, find the single file that serves as the root of the CSS build.
 This is the file that @imports everything else. Examples:
 - app/frontend/packs/application.scss
@@ -171,14 +177,40 @@ try_source_compile() {
     case "$FRAMEWORK" in
         tailwind)
             if [ -n "$TW_ENTRY" ] && [ -f "/repo/$TW_ENTRY" ]; then
-                echo "  Compiling Tailwind: npx tailwindcss..."
+                # Detect Tailwind version
+                local tw_ver
+                tw_ver=$(node -e "try{console.log(require('/repo/node_modules/tailwindcss/package.json').version)}catch(e){}" 2>/dev/null || echo "")
+                local tw_major="${tw_ver%%.*}"
+
+                # Also detect v4 by entry file syntax if version check failed
+                if [ -z "$tw_major" ] && grep -q '@import.*tailwindcss' "/repo/$TW_ENTRY" 2>/dev/null; then
+                    tw_major="4"
+                fi
+
+                if [ "$tw_major" = "4" ]; then
+                    echo "  Compiling Tailwind v4: npx @tailwindcss/cli..."
+                    # Ensure @tailwindcss/cli is available
+                    if ! npm ls @tailwindcss/cli 2>/dev/null | grep -q '@tailwindcss/cli'; then
+                        echo "  Installing @tailwindcss/cli..."
+                        npm install --no-save @tailwindcss/cli 2>/dev/null || true
+                    fi
+                    if _timeout 120 npx @tailwindcss/cli -i "/repo/$TW_ENTRY" -o "$CSS_FILE" 2>/tmp/compile_error.log; then
+                        COMPILE_METHOD="tailwind_v4_npx"
+                        return 0
+                    fi
+                    echo "  Tailwind v4 compilation failed"
+                    tail -5 /tmp/compile_error.log
+                    # Fall through to try v3 as last resort
+                fi
+
+                echo "  Compiling Tailwind v3: npx tailwindcss..."
                 local tw_args="-i /repo/$TW_ENTRY -o $CSS_FILE"
                 [ -n "$TW_CONFIG" ] && [ -f "/repo/$TW_CONFIG" ] && tw_args="-c /repo/$TW_CONFIG $tw_args"
                 if _timeout 120 npx tailwindcss $tw_args 2>/tmp/compile_error.log; then
-                    COMPILE_METHOD="tailwind_npx"
+                    COMPILE_METHOD="tailwind_v3_npx"
                     return 0
                 fi
-                echo "  Tailwind compilation failed"
+                echo "  Tailwind v3 compilation failed"
                 tail -5 /tmp/compile_error.log
             fi
             return 1
@@ -266,6 +298,11 @@ try_cdn_fallback() {
             curl -sL "https://cdn.jsdelivr.net/npm/foundation-sites@${fd_ver}/dist/css/foundation.min.css" >> "$CSS_FILE" 2>/dev/null || true
             echo "" >> "$CSS_FILE"
             ;;
+        tailwind)
+            echo "  Generating Tailwind utility fallback CSS..."
+            python3 /tailwind_fallback.py >> "$CSS_FILE" 2>/dev/null
+            echo "" >> "$CSS_FILE"
+            ;;
     esac
 
     # Generate theme overrides from detected SCSS variables
@@ -273,7 +310,7 @@ try_cdn_fallback() {
     echo "$CSS_DETECT" > "$DETECT_TMP"
 
     python3 - "$DETECT_TMP" "$FRAMEWORK" >> "$CSS_FILE" 2>/dev/null <<'PYEOF'
-import json, sys
+import json, sys, re
 
 with open(sys.argv[1]) as f:
     detect = json.load(f)
@@ -290,49 +327,108 @@ def hex_to_rgb(h):
     if len(h) != 6: return (0, 0, 0)
     return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
 
-lines = ["", "/* Theme overrides from project SCSS variables */", ":root {"]
-
-for name, val in colors.items():
-    if val and val != "null":
-        r, g, b = hex_to_rgb(val)
-        lines.append(f"  --bs-{name}: {val};")
-        lines.append(f"  --bs-{name}-rgb: {r}, {g}, {b};")
+def is_valid(val):
+    return val and val != "null"
 
 body_font = fonts.get("body")
 heading_font = fonts.get("heading")
-if body_font and body_font != "null":
-    lines.append(f"  --bs-body-font-family: {body_font};")
-if heading_font and heading_font != "null":
-    lines.append(f"  --bs-heading-font-family: {heading_font};")
-if radius and radius != "null":
-    lines.append(f"  --bs-border-radius: {radius};")
 
-lines.append("}")
+lines = ["", "/* Theme overrides from project variables */", ":root {"]
 
-for name, val in custom.items():
-    if val and val != "null":
-        safe = name.replace("_", "-")
-        lines.append(f".text-{safe} {{ color: {val} !important; }}")
-        lines.append(f".bg-{safe} {{ background-color: {val} !important; }}")
+if framework in ("bootstrap",):
+    # Bootstrap-style: --bs-* variables and .btn-* classes
+    for name, val in colors.items():
+        if is_valid(val):
+            r, g, b = hex_to_rgb(val)
+            lines.append(f"  --bs-{name}: {val};")
+            lines.append(f"  --bs-{name}-rgb: {r}, {g}, {b};")
+    if is_valid(body_font):
+        lines.append(f"  --bs-body-font-family: {body_font};")
+    if is_valid(heading_font):
+        lines.append(f"  --bs-heading-font-family: {heading_font};")
+    if is_valid(radius):
+        lines.append(f"  --bs-border-radius: {radius};")
+    lines.append("}")
 
-primary = colors.get("primary")
-secondary = colors.get("secondary")
-if primary and primary != "null":
-    lines.append(f".btn-primary {{ background-color: {primary}; border-color: {primary}; }}")
-    lines.append(f".btn-primary:hover {{ background-color: {primary}; border-color: {primary}; opacity: 0.9; }}")
-    lines.append(f".btn-outline-primary {{ color: {primary}; border-color: {primary}; }}")
-    lines.append(f".btn-outline-primary:hover {{ background-color: {primary}; border-color: {primary}; color: #fff; }}")
-    lines.append(f"a {{ color: {primary}; }}")
-    lines.append(f".text-primary {{ color: {primary} !important; }}")
-    lines.append(f".bg-primary {{ background-color: {primary} !important; }}")
-if secondary and secondary != "null":
-    lines.append(f".btn-secondary {{ background-color: {secondary}; border-color: {secondary}; }}")
+    for name, val in custom.items():
+        if is_valid(val):
+            safe = name.replace("_", "-")
+            lines.append(f".text-{safe} {{ color: {val} !important; }}")
+            lines.append(f".bg-{safe} {{ background-color: {val} !important; }}")
+
+    primary = colors.get("primary")
+    secondary = colors.get("secondary")
+    if is_valid(primary):
+        lines.append(f".btn-primary {{ background-color: {primary}; border-color: {primary}; }}")
+        lines.append(f".btn-primary:hover {{ background-color: {primary}; border-color: {primary}; opacity: 0.9; }}")
+        lines.append(f".btn-outline-primary {{ color: {primary}; border-color: {primary}; }}")
+        lines.append(f".btn-outline-primary:hover {{ background-color: {primary}; border-color: {primary}; color: #fff; }}")
+        lines.append(f"a {{ color: {primary}; }}")
+        lines.append(f".text-primary {{ color: {primary} !important; }}")
+        lines.append(f".bg-primary {{ background-color: {primary} !important; }}")
+    if is_valid(secondary):
+        lines.append(f".btn-secondary {{ background-color: {secondary}; border-color: {secondary}; }}")
+
+elif framework in ("tailwind",):
+    # Tailwind-style: generic CSS variables and utility overrides
+    for name, val in colors.items():
+        if is_valid(val):
+            lines.append(f"  --color-{name}: {val};")
+    if is_valid(body_font):
+        lines.append(f"  font-family: {body_font};")
+    if is_valid(heading_font):
+        lines.append(f"  --font-heading: {heading_font};")
+    if is_valid(radius):
+        lines.append(f"  --radius: {radius};")
+    lines.append("}")
+
+    if is_valid(heading_font):
+        lines.append(f"h1, h2, h3, h4, h5, h6 {{ font-family: {heading_font}; }}")
+
+    for name, val in {**colors, **custom}.items():
+        if is_valid(val):
+            safe = name.replace("_", "-")
+            lines.append(f".text-{safe} {{ color: {val}; }}")
+            lines.append(f".bg-{safe} {{ background-color: {val}; }}")
+
+else:
+    # Generic: plain CSS custom properties
+    for name, val in colors.items():
+        if is_valid(val):
+            lines.append(f"  --color-{name}: {val};")
+    if is_valid(body_font):
+        lines.append(f"  font-family: {body_font};")
+    if is_valid(heading_font):
+        lines.append(f"  --font-heading: {heading_font};")
+    if is_valid(radius):
+        lines.append(f"  --border-radius: {radius};")
+    lines.append("}")
+
+    for name, val in custom.items():
+        if is_valid(val):
+            safe = name.replace("_", "-")
+            lines.append(f".text-{safe} {{ color: {val} !important; }}")
+            lines.append(f".bg-{safe} {{ background-color: {val} !important; }}")
 
 print("\n".join(lines))
 
+# Sanitize extra_css: strip framework directives that browsers cannot parse
 extra = overrides.get("extra_css", "")
-if extra and extra != "null":
-    print(f"\n/* Extra project overrides */\n{extra}")
+if is_valid(extra):
+    BAD_PATTERNS = [
+        r'^@tailwind\b', r'^@theme\b', r'^@plugin\b', r'^@custom-variant\b',
+        r'^@apply\b', r'^@config\b', r'^@source\b', r'^@utility\b', r'^@layer\b',
+        r"^@import\s+[\"']tailwindcss",
+    ]
+    sanitized = []
+    for line in extra.split('\n'):
+        stripped = line.strip()
+        if any(re.match(pat, stripped) for pat in BAD_PATTERNS):
+            continue
+        sanitized.append(line)
+    clean = '\n'.join(sanitized).strip()
+    if clean:
+        print(f"\n/* Extra project overrides */\n{clean}")
 PYEOF
 
     rm -f "$DETECT_TMP"
@@ -361,8 +457,9 @@ if [ -n "$CDN_LINKS" ]; then
     done <<< "$CDN_LINKS"
 fi
 
-# Append plain CSS files not already included
-if [ "$COMPILE_METHOD" != "plain_css" ]; then
+# Append plain CSS files not already included (only for fallback builds —
+# if source compilation succeeded, these are already compiled into the output)
+if [ "$COMPILE_METHOD" = "cdn_fallback" ] || [ "$COMPILE_METHOD" = "none" ]; then
     CSS_FILES=$(echo "$CSS_DETECT" | jq -r '.css_files[]? // empty' 2>/dev/null)
     if [ -n "$CSS_FILES" ]; then
         while IFS= read -r css_path; do
@@ -401,6 +498,64 @@ if head -1 "$CSS_FILE" | grep -q '^\`\`\`'; then
     echo "Warning: CSS contains markdown — cleaning"
     sed -i 's/^```css//; s/^```//' "$CSS_FILE"
 fi
+
+# ─── CSS Sanitization ────────────────────────────────────────────────────────
+# Safety net: strip any un-compilable framework directives from the final output
+
+echo ""
+echo "Sanitizing output CSS..."
+
+python3 - "$CSS_FILE" <<'SANITIZE_PY'
+import re, sys
+
+css_file = sys.argv[1]
+with open(css_file) as f:
+    css = f.read()
+
+original_len = len(css)
+
+BAD_DIRECTIVES = [
+    r'^@tailwind\b[^;]*;?\s*$',
+    r'^@theme\b',
+    r'^@plugin\b[^;]*;?\s*$',
+    r'^@custom-variant\b[^;]*;?\s*$',
+    r'^@apply\b[^;]*;?\s*$',
+    r'^@config\b[^;]*;?\s*$',
+    r'^@source\b[^;]*;?\s*$',
+    r'^@utility\b',
+    r"^@import\s+[\"']tailwindcss[^;]*;?\s*$",
+]
+
+lines = css.split('\n')
+cleaned = []
+removed = 0
+# Track brace depth for multi-line blocks like @theme { ... }
+skip_depth = 0
+for line in lines:
+    stripped = line.strip()
+
+    # If we're inside a block being skipped, track braces
+    if skip_depth > 0:
+        skip_depth += stripped.count('{') - stripped.count('}')
+        removed += 1
+        continue
+
+    if any(re.match(pat, stripped) for pat in BAD_DIRECTIVES):
+        removed += 1
+        # If this line opens a block, skip until it closes
+        if '{' in stripped:
+            skip_depth = stripped.count('{') - stripped.count('}')
+        continue
+    cleaned.append(line)
+
+if removed > 0:
+    css = '\n'.join(cleaned)
+    with open(css_file, 'w') as f:
+        f.write(css)
+    print(f"  Removed {removed} un-compilable directive line(s) ({original_len} -> {len(css)} bytes)")
+else:
+    print(f"  CSS clean — no directives to remove")
+SANITIZE_PY
 
 # ─── Summary ─────────────────────────────────────────────────────────────────
 

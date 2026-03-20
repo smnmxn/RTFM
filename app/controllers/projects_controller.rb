@@ -525,7 +525,6 @@ class ProjectsController < ApplicationController
     @project.update!(analysis_status: "pending")
     AnalyzeCodebaseJob.perform_later(@project.id)
     GenerateCssJob.perform_later(project_id: @project.id)
-    ExtractImagesJob.perform_later(project_id: @project.id)
 
     redirect_to settings_page_project_path(@project), notice: "Re-analysis started. This may take a few minutes."
   end

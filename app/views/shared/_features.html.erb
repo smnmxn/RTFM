@@ -187,7 +187,100 @@
 
   <div class="border-t border-zinc-800/50 mb-8"></div>
 
-  <!-- Feature 5: AI answers (text-left / image-right) -->
+  <!-- Feature 5: Automatic screenshots (text-left / image-right) -->
+  <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center py-16 px-2">
+    <div>
+      <div class="w-10 h-10 bg-zinc-800 border border-zinc-700 rounded-lg flex items-center justify-center mb-4">
+        <svg class="w-5 h-5 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
+        </svg>
+      </div>
+      <p class="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">Screenshots</p>
+      <h2 class="text-2xl sm:text-3xl font-bold text-white mb-4" style="font-family: 'Space Grotesk', system-ui, sans-serif;">
+        Every step gets a screenshot
+      </h2>
+      <p class="text-zinc-400 leading-relaxed mb-6">
+        When SupportPages generates a help article, it also creates UI screenshots for each step. Rendered from your actual styles, each image shows exactly what your users will see. No more manual screenshotting after every release.
+      </p>
+      <ul class="space-y-3">
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Screenshots generated automatically from your codebase</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Uses your project's real CSS for accurate mockups</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Replace any image manually if you prefer your own</span>
+        </li>
+      </ul>
+      <a href="/signup" class="inline-flex items-center gap-1.5 mt-6 text-sm text-zinc-400 hover:text-white transition-colors">
+        Get started free
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+      </a>
+    </div>
+    <img src="/images/features/auto-screenshots.png" alt="Automatic screenshot generation for help articles" class="w-full h-auto rounded-2xl shadow-lg shadow-zinc-950/50 border border-zinc-700/50">
+  </div>
+
+  <div class="border-t border-zinc-800/50 mb-8"></div>
+
+  <!-- Feature 6: Writing style (image-left / text-right) -->
+  <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center py-16 px-2">
+    <div class="order-2 md:order-1">
+      <img src="/images/features/writing-style.png" alt="Writing style configuration" class="w-full h-auto rounded-2xl shadow-lg shadow-zinc-950/50 border border-zinc-700/50">
+    </div>
+    <div class="order-1 md:order-2">
+      <div class="w-10 h-10 bg-zinc-800 border border-zinc-700 rounded-lg flex items-center justify-center mb-4">
+        <svg class="w-5 h-5 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.5 21l5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 016-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 01-3.827-5.802" />
+        </svg>
+      </div>
+      <p class="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">Writing style</p>
+      <h2 class="text-2xl sm:text-3xl font-bold text-white mb-4" style="font-family: 'Space Grotesk', system-ui, sans-serif;">
+        Set the tone, we'll match it
+      </h2>
+      <p class="text-zinc-400 leading-relaxed mb-6">
+        Pick from four preset writing styles or describe your own. Every article SupportPages generates follows your chosen voice consistently, so your help centre reads like your team wrote it.
+      </p>
+      <ul class="space-y-3">
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Four presets: technical, friendly, minimal, or formal</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Or write a custom style description in your own words</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-emerald-500/15 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <span class="text-sm text-zinc-300">Change anytime and regenerate articles in the new voice</span>
+        </li>
+      </ul>
+      <a href="/signup" class="inline-flex items-center gap-1.5 mt-6 text-sm text-zinc-400 hover:text-white transition-colors">
+        Get started free
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="border-t border-zinc-800/50 mb-8"></div>
+
+  <!-- Feature 7: AI answers (text-left / image-right) -->
   <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center py-16 px-2">
     <div>
       <div class="w-10 h-10 bg-zinc-800 border border-zinc-700 rounded-lg flex items-center justify-center mb-4">
@@ -232,7 +325,7 @@
 
   <div class="border-t border-zinc-800/50 mb-8"></div>
 
-  <!-- Feature 6: Custom branding (image-left / text-right) -->
+  <!-- Feature 8: Custom branding (image-left / text-right) -->
   <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center py-16 px-2">
     <div class="order-2 md:order-1">
       <img src="/images/features/branding-settings.png" alt="Custom branding settings" class="w-full h-auto rounded-2xl shadow-lg shadow-zinc-950/50 border border-zinc-700/50">
@@ -279,7 +372,7 @@
 
   <div class="border-t border-zinc-800/50 mb-8"></div>
 
-  <!-- Feature 7: Team collaboration (text-left / image-right) -->
+  <!-- Feature 9: Team collaboration (text-left / image-right) -->
   <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center py-16 px-2">
     <div>
       <div class="w-10 h-10 bg-zinc-800 border border-zinc-700 rounded-lg flex items-center justify-center mb-4">
@@ -324,7 +417,7 @@
 
   <div class="border-t border-zinc-800/50 mb-8"></div>
 
-  <!-- Feature 8: Security & privacy (image-left / text-right) -->
+  <!-- Feature 10: Security & privacy (image-left / text-right) -->
   <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center py-16 px-2">
     <div class="order-2 md:order-1">
       <img src="/images/features/trust-centre.png" alt="Security and privacy controls" class="w-full h-auto rounded-2xl shadow-lg shadow-zinc-950/50 border border-zinc-700/50">
