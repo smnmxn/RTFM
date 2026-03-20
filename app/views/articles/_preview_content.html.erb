@@ -55,7 +55,7 @@
         </div>
 
         <!-- Article Content -->
-        <div class="px-6 py-6">
+        <div class="px-6 py-6" data-controller="code-highlight">
           <% if article.structured? %>
             <%= render "help_centre/content/introduction", article: article %>
             <%= render "help_centre/content/prerequisites", article: article %>

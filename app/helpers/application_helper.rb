@@ -15,7 +15,7 @@ module ApplicationHelper
   def markdown(text)
     return "" if text.blank?
 
-    renderer = Redcarpet::Render::HTML.new(
+    renderer = MarkdownRenderer.new(
       hard_wrap: true,
       link_attributes: { target: "_blank", rel: "noopener" }
     )
@@ -30,6 +30,13 @@ module ApplicationHelper
     )
 
     markdown.render(text).html_safe
+  end
+
+  class MarkdownRenderer < Redcarpet::Render::HTML
+    def block_code(code, language)
+      lang_attr = language.present? ? %( class="language-#{language}") : ""
+      %(<pre><code#{lang_attr}>#{ERB::Util.html_escape(code)}</code></pre>)
+    end
   end
 
   def tooltip_data(text, position: "top")

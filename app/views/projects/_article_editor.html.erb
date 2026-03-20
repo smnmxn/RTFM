@@ -78,7 +78,7 @@
 
     <!-- Article Content (Block Editor) -->
     <div class="flex-1 overflow-y-auto app-bg p-6">
-      <div class="max-w-3xl mx-auto app-surface rounded-lg shadow-sm border app-border px-8 py-8">
+      <div class="max-w-3xl mx-auto app-surface rounded-lg shadow-sm border app-border px-8 py-8" data-controller="code-highlight">
         <% if article.generation_completed? || article.generation_pending? %>
           <% if article.structured? %>
             <!-- Structured Content Rendering (Editable) -->

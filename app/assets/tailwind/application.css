@@ -484,6 +484,54 @@ a, button, [role="button"], input[type="button"], input[type="submit"], input[ty
   touch-action: none;
 }
 
+/* ===== CODE BLOCK STYLING ===== */
+/* Base styles for fenced code blocks rendered by the markdown helper.
+   highlight.js adds syntax colours; these rules handle layout and theming. */
+
+.prose pre,
+.editable-field pre {
+  background-color: var(--app-surface-alt);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  border: 1px solid var(--app-border);
+}
+
+.prose pre code,
+.editable-field pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--app-text);
+}
+
+.prose code,
+.editable-field code {
+  background-color: var(--app-surface-alt);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--app-text-secondary);
+}
+
+/* Don't double-style inline code inside pre blocks */
+.prose pre code,
+.editable-field pre code {
+  border-radius: 0;
+}
+
+/* highlight.js overrides the background on .hljs — let it win */
+.prose pre code.hljs,
+.editable-field pre code.hljs {
+  padding: 1rem;
+  margin: -1rem;
+  border-radius: 0.5rem;
+}
+
 /* ===== LEGAL MARKDOWN CONTENT ===== */
 .legal-content {
   color: var(--app-text-secondary);

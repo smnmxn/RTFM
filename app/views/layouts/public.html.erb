@@ -128,6 +128,18 @@
       <link rel="apple-touch-icon" href="/icon.png">
     <% end %>
 
+    <!-- Code syntax highlighting (JS loaded via importmap, CSS themes here) -->
+    <link rel="stylesheet" id="hljs-light" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
+    <link rel="stylesheet" id="hljs-dark" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css" disabled>
+    <script>
+      // Swap hljs theme based on .dark class
+      (function() {
+        var isDark = document.documentElement.classList.contains('dark');
+        document.getElementById('hljs-light').disabled = isDark;
+        document.getElementById('hljs-dark').disabled = !isDark;
+      })();
+    </script>
+
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>

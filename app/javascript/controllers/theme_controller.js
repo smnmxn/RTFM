@@ -34,5 +34,10 @@ export default class extends Controller {
 
   applyTheme(theme) {
     document.documentElement.classList.toggle("dark", theme === "dark")
+
+    const hljsLight = document.getElementById("hljs-light")
+    const hljsDark = document.getElementById("hljs-dark")
+    if (hljsLight) hljsLight.disabled = theme === "dark"
+    if (hljsDark) hljsDark.disabled = theme !== "dark"
   }
 }
