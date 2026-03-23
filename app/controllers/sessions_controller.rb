@@ -39,6 +39,11 @@ class SessionsController < ApplicationController
   def create_with_password
     user = User.find_by(email: params[:email])
     if user&.authenticate(params[:password])
+      if user.needs_confirmation?
+        redirect_to confirmation_pending_path(email: user.email),
+          alert: "Please confirm your email address before signing in."
+        return
+      end
       log_in_user(user)
     else
       flash.now[:alert] = "Invalid email or password."
@@ -63,8 +68,26 @@ class SessionsController < ApplicationController
     if user.save
       invite&.redeem!(user)
       session.delete(:invite_token)
-      log_in_user(user)
-      record_signup_event
+
+      # Send confirmation email instead of logging in immediately
+      user.generate_confirmation_token
+      user.save!
+      UserMailer.confirmation(user).deliver_later
+
+      # Track signup without session (user not logged in yet)
+      RecordProductEventJob.perform_later(user_id: user.id, event_name: "user.signed_up")
+      if cookies[:_sp_vid].present?
+        RecordAnalyticsEventJob.perform_later(
+          visitor_id: cookies[:_sp_vid],
+          event_type: "signup",
+          page_path: request.path,
+          referrer_url: request.referer,
+          user_agent: request.user_agent
+        )
+      end
+
+      redirect_to confirmation_pending_path(email: user.email),
+        notice: "Please check your email to confirm your account."
     else
       flash.now[:alert] = user.errors.full_messages.join(", ")
       render :new, status: :unprocessable_entity
@@ -197,30 +220,4 @@ class SessionsController < ApplicationController
     visitor&.identify!(email: email)
   end
 
-  def default_landing_path(user = current_user)
-    # Resume incomplete onboarding if no completed projects
-    if user.onboarding_in_progress?
-      completed_projects = user.projects.where(onboarding_step: nil)
-      if completed_projects.empty?
-        project = user.current_onboarding_project
-        if Project::ONBOARDING_STEPS.include?(project.onboarding_step)
-          return send("#{project.onboarding_step}_onboarding_project_path", project)
-        else
-          project.complete_onboarding!
-          return project_path(project)
-        end
-      end
-    end
-
-    projects = user.projects.where(onboarding_step: nil)
-
-    case projects.count
-    when 0
-      choose_plan_path
-    when 1
-      project_path(projects.first)
-    else
-      projects_path
-    end
-  end
 end

@@ -6,6 +6,7 @@ one:
   github_token: token_abc123
   plan: free
   plan_status: active
+  email_confirmed_at: <%= 1.week.ago.to_fs(:db) %>
 
 two:
   email: bob@example.com
@@ -15,3 +16,4 @@ two:
   github_token: token_def456
   plan: free
   plan_status: active
+  email_confirmed_at: <%= 1.week.ago.to_fs(:db) %>

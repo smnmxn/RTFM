@@ -1,0 +1,13 @@
+Confirm your email address
+==========================
+
+Hi<%= @user.name.present? ? " #{@user.name}" : "" %>, thanks for signing up for SupportPages.
+
+Please confirm your email address by visiting the link below:
+
+<%= @confirmation_url %>
+
+This link expires in 24 hours. If you didn't create an account, you can safely ignore this email.
+
+---
+SupportPages.io

@@ -211,7 +211,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   # --- Email/password ---
 
   test "email/password login with valid credentials" do
-    user = User.create!(email: "pwuser@example.com", password: "securepass123", password_confirmation: "securepass123")
+    user = User.create!(email: "pwuser@example.com", password: "securepass123", password_confirmation: "securepass123", email_confirmed_at: Time.current)
 
     use_app_subdomain
     post login_with_password_path, params: { email: "pwuser@example.com", password: "securepass123" }
@@ -219,8 +219,18 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
+  test "email/password login with unconfirmed email redirects to confirmation pending" do
+    user = User.create!(email: "unconfirmed@example.com", password: "securepass123", password_confirmation: "securepass123")
+
+    use_app_subdomain
+    post login_with_password_path, params: { email: "unconfirmed@example.com", password: "securepass123" }
+
+    assert_redirected_to confirmation_pending_path(email: "unconfirmed@example.com")
+    assert_match /confirm your email/, flash[:alert]
+  end
+
   test "email/password login with invalid password" do
-    User.create!(email: "pwuser2@example.com", password: "securepass123", password_confirmation: "securepass123")
+    User.create!(email: "pwuser2@example.com", password: "securepass123", password_confirmation: "securepass123", email_confirmed_at: Time.current)
 
     post login_with_password_path, params: { email: "pwuser2@example.com", password: "wrongpassword" }
 
@@ -235,7 +245,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "div", text: /Invalid email or password/
   end
 
-  test "email registration with valid invite" do
+  test "email registration with valid invite sends confirmation email" do
     invite = Invite.create!(token: "email-invite-#{SecureRandom.hex(4)}")
     use_app_subdomain
     get "/invite/#{invite.token}"
@@ -252,8 +262,10 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     user = User.find_by(email: "emailuser@example.com")
     assert_not_nil user
     assert_equal "Email User", user.name
+    assert_nil user.email_confirmed_at
+    assert_not_nil user.confirmation_token
     assert invite.reload.used_at.present?
-    assert_response :redirect
+    assert_redirected_to confirmation_pending_path(email: "emailuser@example.com")
   end
 
   test "email registration without invite shows invite-only message when REQUIRE_INVITE is set" do
@@ -275,7 +287,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     ENV.delete("REQUIRE_INVITE")
   end
 
-  test "email registration without invite creates user when REQUIRE_INVITE is not set" do
+  test "email registration without invite creates user and redirects to confirmation pending" do
     use_app_subdomain
 
     assert_difference "User.count", 1 do
@@ -287,7 +299,10 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_response :redirect
+    user = User.find_by(email: "opensignup@example.com")
+    assert_nil user.email_confirmed_at
+    assert_not_nil user.confirmation_token
+    assert_redirected_to confirmation_pending_path(email: "opensignup@example.com")
   end
 
   test "email registration with invalid data re-renders form" do

@@ -14,6 +14,28 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: true
   validates :password, length: { minimum: 8 }, if: -> { password.present? }
 
+  # Email confirmation
+  def generate_confirmation_token
+    self.confirmation_token = SecureRandom.urlsafe_base64(16)
+    self.confirmation_sent_at = Time.current
+  end
+
+  def email_confirmed?
+    email_confirmed_at.present?
+  end
+
+  def confirmation_token_expired?
+    confirmation_sent_at.present? && confirmation_sent_at < 24.hours.ago
+  end
+
+  def confirm_email!
+    update!(email_confirmed_at: Time.current, confirmation_token: nil)
+  end
+
+  def needs_confirmation?
+    password_digest.present? && !email_confirmed?
+  end
+
   def admin?
     admin
   end
@@ -93,7 +115,7 @@ class User < ApplicationRecord
 
   # Create new user + identity (called after invite gate passes)
   def self.create_from_omniauth!(auth)
-    user = create!(email: auth.info.email, name: auth.info.name)
+    user = create!(email: auth.info.email, name: auth.info.name, email_confirmed_at: Time.current)
     user.user_identities.create!(
       provider: auth.provider, uid: auth.uid,
       token: auth.credentials&.token,

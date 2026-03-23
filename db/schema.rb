@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_13_113609) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_23_162537) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -483,8 +483,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_13_113609) do
 
   create_table "users", force: :cascade do |t|
     t.boolean "admin", default: false, null: false
+    t.datetime "confirmation_sent_at"
+    t.string "confirmation_token"
     t.datetime "created_at", null: false
     t.string "email"
+    t.datetime "email_confirmed_at"
     t.string "github_token"
     t.string "github_uid"
     t.string "github_username"
@@ -495,6 +498,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_13_113609) do
     t.string "plan_status", default: "active", null: false
     t.datetime "trial_ends_at"
     t.datetime "updated_at", null: false
+    t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["github_uid"], name: "index_users_on_github_uid"
     t.index ["plan"], name: "index_users_on_plan"

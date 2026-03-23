@@ -60,6 +60,11 @@ Rails.application.routes.draw do
   post "/login", to: "sessions#create_with_password", as: :login_with_password
   post "/register", to: "sessions#register", as: :register
 
+  # Email confirmation
+  get  "/confirm_email",         to: "confirmations#show",    as: :confirm_email
+  get  "/confirm_email/pending", to: "confirmations#pending", as: :confirmation_pending
+  post "/confirm_email/resend",  to: "confirmations#resend",  as: :resend_confirmation
+
   # GitHub App installation callback (bare domain fallback)
   get "/github_app/callback", to: "github_app#callback", as: nil
 

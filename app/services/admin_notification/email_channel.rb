@@ -4,7 +4,7 @@ module AdminNotification
       admins = User.where(admin: true)
       return if admins.empty?
 
-      subject = config[:subject]
+      subject = config[:subject].call(event)
       message = config[:message].call(event)
 
       admins.each do |admin|

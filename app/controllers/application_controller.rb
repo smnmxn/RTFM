@@ -62,6 +62,33 @@ class ApplicationController < ActionController::Base
     "#{request.protocol}#{host_with_port}#{path}"
   end
 
+  def default_landing_path(user = current_user)
+    # Resume incomplete onboarding if no completed projects
+    if user.onboarding_in_progress?
+      completed_projects = user.projects.where(onboarding_step: nil)
+      if completed_projects.empty?
+        project = user.current_onboarding_project
+        if Project::ONBOARDING_STEPS.include?(project.onboarding_step)
+          return send("#{project.onboarding_step}_onboarding_project_path", project)
+        else
+          project.complete_onboarding!
+          return project_path(project)
+        end
+      end
+    end
+
+    projects = user.projects.where(onboarding_step: nil)
+
+    case projects.count
+    when 0
+      choose_plan_path
+    when 1
+      project_path(projects.first)
+    else
+      projects_path
+    end
+  end
+
   def rollbar_custom_data
     {
       project_id: @project&.id,
