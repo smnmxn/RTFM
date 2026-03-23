@@ -56,6 +56,7 @@ class GenerateSectionRecommendationsJob < ApplicationJob
       # Project or section was deleted while job was running - this is expected, just log and exit
       Rails.logger.info "[GenerateSectionRecommendationsJob] Project or section deleted during job execution: #{e.message}"
     rescue StandardError => e
+      Rollbar.error(e, section_id: section_id)
       begin
         section.reload.update!(recommendations_status: "failed")
       rescue ActiveRecord::RecordNotFound

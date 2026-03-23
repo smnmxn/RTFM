@@ -32,12 +32,14 @@ class SetupCustomDomainJob < ApplicationJob
     # Schedule a check in 30 seconds
     CheckCustomDomainStatusJob.set(wait: 30.seconds).perform_later(project_id: project.id)
   rescue CloudflareCustomHostnameService::ApiError => e
+    Rollbar.error(e, project_id: project.id)
     Rails.logger.error "[SetupCustomDomainJob] Cloudflare API error: #{e.message}"
     project.update!(
       custom_domain_status: "failed",
       custom_domain_ssl_status: "api_error"
     )
   rescue => e
+    Rollbar.error(e, project_id: project.id)
     Rails.logger.error "[SetupCustomDomainJob] Unexpected error: #{e.message}"
     Rails.logger.error e.backtrace.first(5).join("\n")
     project.update!(custom_domain_status: "failed")

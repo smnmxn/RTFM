@@ -91,6 +91,7 @@ class AnalyzeCommitJob < ApplicationJob
       end
     rescue StandardError => e
       # Fall back to placeholder content on any error
+      Rollbar.error(e, project_id: project.id, commit_sha: commit_sha)
       update.update!(
         content: placeholder_content(commit_sha, commit_title, commit_message, diff),
         analysis_status: "failed"

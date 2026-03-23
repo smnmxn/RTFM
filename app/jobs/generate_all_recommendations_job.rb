@@ -64,6 +64,7 @@ class GenerateAllRecommendationsJob < ApplicationJob
     rescue ActiveRecord::RecordNotFound, ActiveRecord::InvalidForeignKey => e
       Rails.logger.info "[GenerateAllRecommendationsJob] Project or sections deleted during job execution: #{e.message}"
     rescue StandardError => e
+      Rollbar.error(e, project_id: project_id)
       # Mark all sections as failed
       accepted_sections.each do |section|
         begin

@@ -97,6 +97,7 @@ class AnalyzePullRequestJob < ApplicationJob
       end
     rescue StandardError => e
       # Fall back to placeholder content on any error
+      Rollbar.error(e, project_id: project.id, pr_number: pull_request_number)
       update.update!(
         content: placeholder_content(pull_request_number, pull_request_title, pull_request_body, diff),
         analysis_status: "failed"

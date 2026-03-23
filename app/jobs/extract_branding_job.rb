@@ -17,6 +17,7 @@ class ExtractBrandingJob < ApplicationJob
     attach_logo(project, result)
     attach_favicon(project, result)
   rescue StandardError => e
+    Rollbar.error(e, project_id: project_id)
     Rails.logger.error "[ExtractBrandingJob] Error for project #{project_id}: #{e.message}"
   end
 

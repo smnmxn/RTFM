@@ -46,8 +46,10 @@ class RefreshCustomDomainStatusJob < ApplicationJob
     end
 
   rescue CloudflareCustomHostnameService::ApiError => e
+    Rollbar.error(e, project_id: project.id)
     Rails.logger.error "[RefreshCustomDomainStatusJob] Error checking #{project.custom_domain}: #{e.message}"
   rescue => e
+    Rollbar.error(e, project_id: project.id)
     Rails.logger.error "[RefreshCustomDomainStatusJob] Unexpected error for #{project.custom_domain}: #{e.message}"
   end
 end

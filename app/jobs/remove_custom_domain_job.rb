@@ -14,6 +14,7 @@ class RemoveCustomDomainJob < ApplicationJob
 
   rescue CloudflareCustomHostnameService::ApiError => e
     # Log but don't fail - the hostname might already be deleted
+    Rollbar.warning(e)
     Rails.logger.warn "[RemoveCustomDomainJob] Cloudflare API error (may be already deleted): #{e.message}"
   end
 end

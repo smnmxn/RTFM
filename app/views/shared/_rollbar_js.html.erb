@@ -1,0 +1,14 @@
+<% if ENV["ROLLBAR_CLIENT_ACCESS_TOKEN"].present? %>
+<script>
+var _rollbarConfig = <%= {
+  accessToken: ENV["ROLLBAR_CLIENT_ACCESS_TOKEN"],
+  captureUncaught: true,
+  captureUnhandledRejections: true,
+  payload: {
+    environment: Rails.env,
+    person: (defined?(current_user) && current_user) ? { id: current_user.id, email: current_user.email } : nil
+  }.compact
+}.to_json.html_safe %>;
+</script>
+<script src="https://cdn.rollbar.com/rollbarjs/refs/tags/v2.26.4/rollbar.min.js"></script>
+<% end %>

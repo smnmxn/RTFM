@@ -65,6 +65,7 @@ class GenerateArticleJob < ApplicationJob
         broadcast_toast(project, message: "We couldn't generate #{article.title}", type: "error", action_url: "/projects/#{project.slug}?tab=inbox&selected=article_#{article.id}", action_label: "View", event_type: "article_generated", notification_metadata: { article_title: article.title, article_id: article.id })
       end
     rescue StandardError => e
+      Rollbar.error(e, project_id: project.id, article_id: article.id)
       article.update!(
         content: placeholder_content(recommendation),
         generation_status: :generation_failed

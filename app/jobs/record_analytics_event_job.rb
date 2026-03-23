@@ -1,6 +1,8 @@
 class RecordAnalyticsEventJob < ApplicationJob
   queue_as :low
-  discard_on StandardError
+  discard_on(StandardError) do |job, error|
+    Rollbar.warning(error, job_class: job.class.name, job_id: job.job_id)
+  end
 
   def perform(visitor_id:, event_type:, page_path:, ip_address: nil, referrer_url: nil, user_agent: nil,
               utm_source: nil, utm_medium: nil, utm_campaign: nil, utm_term: nil, utm_content: nil,

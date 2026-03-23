@@ -70,6 +70,7 @@ env:
     - STRIPE_PRO_MONTHLY_PRICE_ID
     - STRIPE_PRO_ANNUAL_PRICE_ID
     - ROLLBAR_ACCESS_TOKEN
+    - ROLLBAR_CLIENT_ACCESS_TOKEN
   clear:
     # Base domain for subdomain routing
     BASE_DOMAIN: supportpages.io

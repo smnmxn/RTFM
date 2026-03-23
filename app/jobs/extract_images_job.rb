@@ -85,9 +85,11 @@ class ExtractImagesJob < ApplicationJob
       else
         Rails.logger.error "[ExtractImagesJob] Image extraction failed for project #{project.id}: #{stderr}"
       end
-    rescue Timeout::Error
+    rescue Timeout::Error => e
+      Rollbar.error(e, project_id: project.id)
       Rails.logger.error "[ExtractImagesJob] Image extraction timed out for project #{project.id}"
     rescue StandardError => e
+      Rollbar.error(e, project_id: project.id)
       Rails.logger.error "[ExtractImagesJob] Error extracting images for project #{project.id}: #{e.message}"
     ensure
       cleanup_analysis_dir(output_dir)

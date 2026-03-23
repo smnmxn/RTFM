@@ -9,6 +9,7 @@ class WeeklyAnalysisJob < ApplicationJob
 
       analyze_recent_prs(project)
     rescue => e
+      Rollbar.error(e, project_id: project.id)
       Rails.logger.error "[WeeklyAnalysis] Error processing project #{project.id}: #{e.message}"
     end
   end

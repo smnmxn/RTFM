@@ -25,6 +25,7 @@ class GenerateProjectRecommendationsJob < ApplicationJob
         Rails.logger.warn "[GenerateProjectRecommendationsJob] Generation failed for project #{project.id}: #{result[:error]}"
       end
     rescue StandardError => e
+      Rollbar.error(e, project_id: project.id)
       Rails.logger.error "[GenerateProjectRecommendationsJob] Error for project #{project.id}: #{e.message}"
     end
   end

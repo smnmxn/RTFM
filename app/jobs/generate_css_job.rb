@@ -79,9 +79,11 @@ class GenerateCssJob < ApplicationJob
         # Still extract images even if CSS fails
         ExtractImagesJob.perform_later(project_id: project.id)
       end
-    rescue Timeout::Error
+    rescue Timeout::Error => e
+      Rollbar.error(e, project_id: project.id)
       Rails.logger.error "[GenerateCssJob] CSS generation timed out for project #{project.id}"
     rescue StandardError => e
+      Rollbar.error(e, project_id: project.id)
       Rails.logger.error "[GenerateCssJob] Error generating CSS for project #{project.id}: #{e.message}"
     ensure
       cleanup_analysis_dir(output_dir)

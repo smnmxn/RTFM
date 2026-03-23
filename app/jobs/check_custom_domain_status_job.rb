@@ -52,6 +52,7 @@ class CheckCustomDomainStatusJob < ApplicationJob
     end
 
   rescue CloudflareCustomHostnameService::ApiError => e
+    Rollbar.error(e, project_id: project.id)
     Rails.logger.error "[CheckCustomDomainStatusJob] Cloudflare API error: #{e.message}"
     # Retry on transient errors
     if retry_count < MAX_RETRIES

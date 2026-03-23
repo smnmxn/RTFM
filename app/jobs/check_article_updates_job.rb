@@ -39,6 +39,7 @@ class CheckArticleUpdatesJob < ApplicationJob
         Rails.logger.warn "[CheckArticleUpdatesJob] Check failed for project #{project.id}: #{result[:error]}"
       end
     rescue StandardError => e
+      Rollbar.error(e, project_id: project.id)
       check.update!(
         status: :failed,
         completed_at: Time.current,
