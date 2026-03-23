@@ -58,6 +58,7 @@ class AnalyzeCodebaseJob < ApplicationJob
         # Broadcast update to show contextual questions
         broadcast_onboarding_update(project)
       else
+        Rollbar.error("AnalyzeCodebaseJob failed", project_id: project.id, error: result[:error])
         project.update!(analysis_status: "failed")
         Rails.logger.error "[AnalyzeCodebaseJob] Analysis failed for project #{project.id}: #{result[:error]}"
         broadcast_toast(project, message: "We couldn't analyse your codebase", type: "error", action_url: "/onboarding/projects/#{project.slug}/analyze", action_label: "View", event_type: "analysis_complete")
@@ -94,7 +95,12 @@ class AnalyzeCodebaseJob < ApplicationJob
       Rails.logger.info "[AnalyzeCodebaseJob] repos_json: #{repos_json.inspect}"
 
       if repos_json.empty?
-        # Fall back to legacy single-repo mode
+        # Fall back to legacy single-repo mode (GitHub only)
+        unless project.github_app_installation.present?
+          Rails.logger.error "[AnalyzeCodebaseJob] No VCS connection available for project #{project.id} — repos_json empty and no GitHub App installation"
+          return { success: false, error: "No VCS connection available" }
+        end
+
         Rails.logger.info "[AnalyzeCodebaseJob] Falling back to legacy mode. github_repo=#{project.github_repo.inspect}, installation_id=#{project.github_app_installation_id.inspect}"
         github_token = get_github_token(project)
         return { success: false, error: "No GitHub token available" } unless github_token
@@ -259,7 +265,7 @@ class AnalyzeCodebaseJob < ApplicationJob
         entry[:branch] = pr.branch if pr.branch.present?
         entry
       rescue => e
-        Rails.logger.error "[AnalyzeCodebaseJob] Failed to get token for repo #{pr.github_repo}: #{e.message}"
+        Rails.logger.error "[AnalyzeCodebaseJob] Failed to get token for repo #{pr.github_repo}: #{e.class}: #{e.message}\n#{e.backtrace&.first(3)&.join("\n")}"
         nil
       end
     end

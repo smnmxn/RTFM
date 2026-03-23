@@ -31,6 +31,7 @@ class CheckArticleUpdatesJob < ApplicationJob
         )
         Rails.logger.info "[CheckArticleUpdatesJob] Check completed for project #{project.id}, check #{check.id}"
       else
+        Rollbar.error("CheckArticleUpdatesJob failed", project_id: project.id, error: result[:error])
         check.update!(
           status: :failed,
           completed_at: Time.current,
@@ -63,28 +64,50 @@ class CheckArticleUpdatesJob < ApplicationJob
       File.write(File.join(input_dir, "context.json"), build_context_json(project, check))
       File.write(File.join(input_dir, "articles.json"), build_articles_json(project))
 
-      github_token = get_github_token(project)
-      return { success: false, error: "No GitHub token available" } unless github_token
+      # Try multi-repo mode first, fall back to legacy single-repo
+      repos_json = build_repos_json(project)
 
-      # Build environment variables for repositories
-      repos_json = project.repositories_for_analysis.to_json
+      if repos_json.any?
+        cmd = [
+          "docker", "run",
+          "--rm",
+          *claude_auth_docker_args,
+          "-e", "GITHUB_REPOS_JSON=#{repos_json.to_json}",
+          "-e", "CLAUDE_MODEL=#{project.claude_model_id}",
+          "-e", "TARGET_COMMIT=#{check.target_commit_sha}",
+          "-e", "BASE_COMMIT=#{check.base_commit_sha}",
+          "-v", "#{host_volume_path(input_dir)}:/input:ro",
+          "-v", "#{host_volume_path(output_dir)}:/output",
+          "--network", "host",
+          "--entrypoint", "/check_article_updates.sh",
+          docker_image
+        ]
+        Rails.logger.info "[CheckArticleUpdatesJob] Using multi-repo mode with #{repos_json.size} repositories"
+      else
+        github_token = get_github_token(project)
+        return { success: false, error: "No GitHub token available" } unless github_token
 
-      cmd = [
-        "docker", "run",
-        "--rm",
-        *claude_auth_docker_args,
-        "-e", "GITHUB_TOKEN=#{github_token}",
-        "-e", "GITHUB_REPO=#{project.primary_github_repo}",
-        "-e", "GITHUB_REPOS=#{repos_json}",
-        "-e", "CLAUDE_MODEL=#{project.claude_model_id}",
-        "-e", "TARGET_COMMIT=#{check.target_commit_sha}",
-        "-e", "BASE_COMMIT=#{check.base_commit_sha}",
-        "-v", "#{host_volume_path(input_dir)}:/input:ro",
-        "-v", "#{host_volume_path(output_dir)}:/output",
-        "--network", "host",
-        "--entrypoint", "/check_article_updates.sh",
-        docker_image
-      ]
+        # Build environment variables for repositories
+        legacy_repos_json = project.repositories_for_analysis.to_json
+
+        cmd = [
+          "docker", "run",
+          "--rm",
+          *claude_auth_docker_args,
+          "-e", "GITHUB_TOKEN=#{github_token}",
+          "-e", "GITHUB_REPO=#{project.primary_github_repo}",
+          "-e", "GITHUB_REPOS=#{legacy_repos_json}",
+          "-e", "CLAUDE_MODEL=#{project.claude_model_id}",
+          "-e", "TARGET_COMMIT=#{check.target_commit_sha}",
+          "-e", "BASE_COMMIT=#{check.base_commit_sha}",
+          "-v", "#{host_volume_path(input_dir)}:/input:ro",
+          "-v", "#{host_volume_path(output_dir)}:/output",
+          "--network", "host",
+          "--entrypoint", "/check_article_updates.sh",
+          docker_image
+        ]
+        Rails.logger.info "[CheckArticleUpdatesJob] Using legacy single-repo mode"
+      end
 
       Rails.logger.info "[CheckArticleUpdatesJob] Running Docker update check for project #{project.id}"
 
@@ -226,6 +249,26 @@ class CheckArticleUpdatesJob < ApplicationJob
 
       unless status.success?
         raise "Failed to build Docker image: #{stderr}"
+      end
+    end
+  end
+
+  def build_repos_json(project)
+    project.project_repositories.filter_map do |pr|
+      begin
+        adapter = pr.vcs_adapter
+        token = adapter.installation_token(pr.github_installation_id)
+        entry = {
+          repo: pr.github_repo,
+          directory: pr.clone_directory_name,
+          token: token,
+          clone_url: adapter.clone_url(pr.github_repo, token)
+        }
+        entry[:branch] = pr.branch if pr.branch.present?
+        entry
+      rescue => e
+        Rails.logger.error "[CheckArticleUpdatesJob] Failed to get token for repo #{pr.github_repo}: #{e.class}: #{e.message}"
+        nil
       end
     end
   end

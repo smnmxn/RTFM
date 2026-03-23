@@ -48,6 +48,9 @@ gem "omniauth-rails_csrf_protection"
 # GitHub API client
 gem "octokit"
 
+# HTTP client for Bitbucket API
+gem "faraday"
+
 # JWT for GitHub App authentication
 gem "jwt"
 

@@ -30,7 +30,7 @@ RTFM is a developer-first platform that automatically converts code changes into
 - **Frontend**: Tailwind CSS, Hotwire (Turbo & Stimulus), ERB
 - **Auth**: OmniAuth (GitHub, Google, Apple) + email/password (bcrypt)
 - **AI**: Claude Code CLI (in Docker), Anthropic API
-- **VCS**: GitHub API via Octokit, wrapped in `Vcs::` adapter layer for multi-provider support
+- **VCS**: GitHub API via Octokit + Bitbucket Cloud API via Faraday, wrapped in `Vcs::` adapter layer for multi-provider support
 - **Image Generation**: Puppeteer + Chromium (in Docker)
 - **Testing**: Minitest, Playwright (E2E)
 
@@ -150,7 +150,7 @@ The application follows a **Webhook → Worker → Service** pattern:
 ## Key Directories
 
 - `app/services/` - Business logic (GitHub fetching, AI prompting)
-- `app/services/vcs/` - VCS provider abstraction layer (adapters for GitHub, future providers)
+- `app/services/vcs/` - VCS provider abstraction layer (adapters for GitHub and Bitbucket Cloud)
 - `app/jobs/` - Sidekiq workers for async processing
 - `app/controllers/webhooks/` - Incoming API events from GitHub
 - `docker/claude-analyzer/` - Docker image with Claude Code CLI for codebase analysis and article generation
@@ -215,6 +215,8 @@ Required in `.env`:
 - `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` - OAuth for GitHub App
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` - OAuth for Google (optional, buttons hidden if not set)
 - `APPLE_CLIENT_ID` / `APPLE_TEAM_ID` / `APPLE_KEY_ID` / `APPLE_PRIVATE_KEY` - Sign in with Apple (optional)
+- `BITBUCKET_CLIENT_ID` / `BITBUCKET_CLIENT_SECRET` - OAuth for Bitbucket Cloud (optional, buttons hidden if not set)
+- `BITBUCKET_WEBHOOK_SECRET` - Shared secret for Bitbucket webhook HMAC verification
 - `REDIS_URL` - For Sidekiq (default: `redis://localhost:6379/1`)
 - `HOST_URL` - Webhook callback URL (use ngrok for local dev)
 

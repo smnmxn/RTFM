@@ -25,19 +25,49 @@ class AnalyzePullRequestJobTest < ActiveJob::TestCase
     end
   end
 
+  class FakeAdapter
+    def initialize(diff_response)
+      @diff_response = diff_response
+    end
+
+    def compare(repo_id, base_sha, head_sha, client: nil, accept: nil)
+      @diff_response
+    end
+
+    def pull_request_diff(repo_id, pr_number, client: nil, accept: nil)
+      @diff_response
+    end
+
+    def installation_token(installation_id)
+      "fake_token"
+    end
+
+    def clone_url(repo_id, token)
+      "https://fake.com/#{repo_id}.git"
+    end
+  end
+
   class TestableJob < AnalyzePullRequestJob
     cattr_accessor :fake_client
+    cattr_accessor :fake_adapter
     cattr_accessor :fake_analysis_result
 
     def perform(**kwargs)
-      # Temporarily patch ProjectRepository#client to return our fake
-      original_method = ProjectRepository.instance_method(:client)
-      fake = self.class.fake_client
-      ProjectRepository.define_method(:client) { fake }
+      # Temporarily patch ProjectRepository to return our fakes
+      original_client = ProjectRepository.instance_method(:client)
+      original_vcs_client = ProjectRepository.instance_method(:vcs_client)
+      original_vcs_adapter = ProjectRepository.instance_method(:vcs_adapter)
+      fake_c = self.class.fake_client
+      fake_a = self.class.fake_adapter
+      ProjectRepository.define_method(:client) { fake_c }
+      ProjectRepository.define_method(:vcs_client) { fake_c }
+      ProjectRepository.define_method(:vcs_adapter) { fake_a }
 
       super
     ensure
-      ProjectRepository.define_method(:client, original_method)
+      ProjectRepository.define_method(:client, original_client)
+      ProjectRepository.define_method(:vcs_client, original_vcs_client)
+      ProjectRepository.define_method(:vcs_adapter, original_vcs_adapter)
     end
 
     private
@@ -48,6 +78,7 @@ class AnalyzePullRequestJobTest < ActiveJob::TestCase
   end
 
   test "creates update record with AI-generated content on success" do
+    TestableJob.fake_adapter = FakeAdapter.new("+added line\n-removed line")
     TestableJob.fake_client = FakeOctokitClient.new("+added line\n-removed line")
     TestableJob.fake_analysis_result = {
       success: true,
@@ -87,6 +118,7 @@ class AnalyzePullRequestJobTest < ActiveJob::TestCase
   end
 
   test "falls back to placeholder content when AI analysis fails" do
+    TestableJob.fake_adapter = FakeAdapter.new("+added line\n-removed line")
     TestableJob.fake_client = FakeOctokitClient.new("+added line\n-removed line")
     TestableJob.fake_analysis_result = { success: false, error: "Docker timeout" }
 
@@ -134,6 +166,7 @@ class AnalyzePullRequestJobTest < ActiveJob::TestCase
   end
 
   test "uses PR number as title when title is blank and AI fails" do
+    TestableJob.fake_adapter = FakeAdapter.new("+added line\n-removed line")
     TestableJob.fake_client = FakeOctokitClient.new("")
     TestableJob.fake_analysis_result = { success: false, error: "No AI" }
 
@@ -150,6 +183,7 @@ class AnalyzePullRequestJobTest < ActiveJob::TestCase
   end
 
   test "keeps original title when AI returns empty title" do
+    TestableJob.fake_adapter = FakeAdapter.new("+added line\n-removed line")
     TestableJob.fake_client = FakeOctokitClient.new("")
     TestableJob.fake_analysis_result = {
       success: true,
@@ -171,6 +205,7 @@ class AnalyzePullRequestJobTest < ActiveJob::TestCase
   end
 
   test "creates no recommendations when AI determines none needed" do
+    TestableJob.fake_adapter = FakeAdapter.new("+added line\n-removed line")
     TestableJob.fake_client = FakeOctokitClient.new("")
     TestableJob.fake_analysis_result = {
       success: true,

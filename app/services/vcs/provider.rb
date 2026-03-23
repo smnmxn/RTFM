@@ -1,7 +1,8 @@
 module Vcs
   class Provider
     ADAPTERS = {
-      github: "Vcs::Github::Adapter"
+      github: "Vcs::Github::Adapter",
+      bitbucket: "Vcs::Bitbucket::Adapter"
     }.freeze
 
     def self.for(name)

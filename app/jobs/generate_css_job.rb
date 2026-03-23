@@ -23,20 +23,38 @@ class GenerateCssJob < ApplicationJob
       docker_image = "rtfm/claude-analyzer:latest"
       build_docker_image_if_needed(docker_image)
 
-      github_token = get_github_token(project)
-      return unless github_token
+      # Try multi-repo mode first, fall back to legacy single-repo
+      repos_json = build_repos_json(project)
 
-      cmd = [
-        "docker", "run",
-        "--rm",
-        "-e", "GITHUB_REPO=#{project.github_repo}",
-        "-e", "GITHUB_TOKEN=#{github_token}",
-        *claude_auth_docker_args,
-        "-v", "#{host_volume_path(output_dir)}:/output",
-        "--network", "host",
-        "--entrypoint", "/generate_css.sh",
-        docker_image
-      ]
+      if repos_json.any?
+        cmd = [
+          "docker", "run",
+          "--rm",
+          "-e", "GITHUB_REPOS_JSON=#{repos_json.to_json}",
+          *claude_auth_docker_args,
+          "-v", "#{host_volume_path(output_dir)}:/output",
+          "--network", "host",
+          "--entrypoint", "/generate_css.sh",
+          docker_image
+        ]
+        Rails.logger.info "[GenerateCssJob] Using multi-repo mode with #{repos_json.size} repositories"
+      else
+        github_token = get_github_token(project)
+        return unless github_token
+
+        cmd = [
+          "docker", "run",
+          "--rm",
+          "-e", "GITHUB_REPO=#{project.github_repo}",
+          "-e", "GITHUB_TOKEN=#{github_token}",
+          *claude_auth_docker_args,
+          "-v", "#{host_volume_path(output_dir)}:/output",
+          "--network", "host",
+          "--entrypoint", "/generate_css.sh",
+          docker_image
+        ]
+        Rails.logger.info "[GenerateCssJob] Using legacy single-repo mode"
+      end
 
       Rails.logger.info "[GenerateCssJob] Running Docker CSS generation for #{project.github_repo}"
 
@@ -75,6 +93,7 @@ class GenerateCssJob < ApplicationJob
         # Extract images after CSS is saved to avoid race condition on analysis_metadata
         ExtractImagesJob.perform_later(project_id: project.id)
       else
+        Rollbar.error("GenerateCssJob failed", project_id: project.id, error: stderr)
         Rails.logger.error "[GenerateCssJob] CSS generation failed for project #{project.id}: #{stderr}"
         # Still extract images even if CSS fails
         ExtractImagesJob.perform_later(project_id: project.id)
@@ -105,6 +124,26 @@ class GenerateCssJob < ApplicationJob
 
       unless status.success?
         raise "Failed to build Docker image: #{stderr}"
+      end
+    end
+  end
+
+  def build_repos_json(project)
+    project.project_repositories.filter_map do |pr|
+      begin
+        adapter = pr.vcs_adapter
+        token = adapter.installation_token(pr.github_installation_id)
+        entry = {
+          repo: pr.github_repo,
+          directory: pr.clone_directory_name,
+          token: token,
+          clone_url: adapter.clone_url(pr.github_repo, token)
+        }
+        entry[:branch] = pr.branch if pr.branch.present?
+        entry
+      rescue => e
+        Rails.logger.error "[GenerateCssJob] Failed to get token for repo #{pr.github_repo}: #{e.class}: #{e.message}"
+        nil
       end
     end
   end

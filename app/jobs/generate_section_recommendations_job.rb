@@ -48,6 +48,7 @@ class GenerateSectionRecommendationsJob < ApplicationJob
         Rails.logger.info "[GenerateSectionRecommendationsJob] Generated #{result[:recommendations]&.size || 0} recommendations for section #{section.id}"
         broadcast_toast(project, message: "New article ideas for #{section.name}", action_url: "/projects/#{project.slug}?tab=inbox", action_label: "View", event_type: "recommendations_generated", notification_metadata: { section_name: section.name, recommendation_count: result[:recommendations]&.size || 0 })
       else
+        Rollbar.error("GenerateSectionRecommendationsJob failed", project_id: project.id, error: result[:error])
         section.reload.update!(recommendations_status: "failed")
         Rails.logger.warn "[GenerateSectionRecommendationsJob] Generation failed for section #{section.id}: #{result[:error]}"
         broadcast_toast(project, message: "We couldn't generate recommendations for #{section.name}", type: "error", event_type: "recommendations_generated")
@@ -84,22 +85,42 @@ class GenerateSectionRecommendationsJob < ApplicationJob
         Rails.logger.info "[GenerateSectionRecommendationsJob] Wrote file_tree.txt (#{project.analysis_metadata['file_tree'].length} bytes)"
       end
 
-      github_token = get_github_token(project)
-      return { success: false, error: "No GitHub token available" } unless github_token
+      # Try multi-repo mode first, fall back to legacy single-repo
+      repos_json = build_repos_json(project)
 
-      cmd = [
-        "docker", "run",
-        "--rm",
-        *claude_auth_docker_args,
-        *debug_docker_args,
-        "-e", "GITHUB_TOKEN=#{github_token}",
-        "-e", "GITHUB_REPO=#{project.github_repo}",
-        "-v", "#{host_volume_path(input_dir)}:/input:ro",
-        "-v", "#{host_volume_path(output_dir)}:/output",
-        "--network", "host",
-        "--entrypoint", "/generate_section_recommendations.sh",
-        docker_image
-      ]
+      if repos_json.any?
+        cmd = [
+          "docker", "run",
+          "--rm",
+          *claude_auth_docker_args,
+          *debug_docker_args,
+          "-e", "GITHUB_REPOS_JSON=#{repos_json.to_json}",
+          "-v", "#{host_volume_path(input_dir)}:/input:ro",
+          "-v", "#{host_volume_path(output_dir)}:/output",
+          "--network", "host",
+          "--entrypoint", "/generate_section_recommendations.sh",
+          docker_image
+        ]
+        Rails.logger.info "[GenerateSectionRecommendationsJob] Using multi-repo mode with #{repos_json.size} repositories"
+      else
+        github_token = get_github_token(project)
+        return { success: false, error: "No GitHub token available" } unless github_token
+
+        cmd = [
+          "docker", "run",
+          "--rm",
+          *claude_auth_docker_args,
+          *debug_docker_args,
+          "-e", "GITHUB_TOKEN=#{github_token}",
+          "-e", "GITHUB_REPO=#{project.github_repo}",
+          "-v", "#{host_volume_path(input_dir)}:/input:ro",
+          "-v", "#{host_volume_path(output_dir)}:/output",
+          "--network", "host",
+          "--entrypoint", "/generate_section_recommendations.sh",
+          docker_image
+        ]
+        Rails.logger.info "[GenerateSectionRecommendationsJob] Using legacy single-repo mode"
+      end
 
       Rails.logger.info "[GenerateSectionRecommendationsJob] Running Docker for section #{section.id} (#{section.name})"
 
@@ -226,6 +247,26 @@ class GenerateSectionRecommendationsJob < ApplicationJob
 
       unless status.success?
         raise "Failed to build Docker image: #{stderr}"
+      end
+    end
+  end
+
+  def build_repos_json(project)
+    project.project_repositories.filter_map do |pr|
+      begin
+        adapter = pr.vcs_adapter
+        token = adapter.installation_token(pr.github_installation_id)
+        entry = {
+          repo: pr.github_repo,
+          directory: pr.clone_directory_name,
+          token: token,
+          clone_url: adapter.clone_url(pr.github_repo, token)
+        }
+        entry[:branch] = pr.branch if pr.branch.present?
+        entry
+      rescue => e
+        Rails.logger.error "[GenerateSectionRecommendationsJob] Failed to get token for repo #{pr.github_repo}: #{e.class}: #{e.message}"
+        nil
       end
     end
   end

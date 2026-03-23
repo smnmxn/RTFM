@@ -39,9 +39,14 @@ if [ -n "${GITHUB_REPOS_JSON}" ]; then
         REPO=$(echo "$GITHUB_REPOS_JSON" | jq -r ".[$i].repo")
         DIR=$(echo "$GITHUB_REPOS_JSON" | jq -r ".[$i].directory")
         TOKEN=$(echo "$GITHUB_REPOS_JSON" | jq -r ".[$i].token")
+        CLONE_URL=$(echo "$GITHUB_REPOS_JSON" | jq -r ".[$i].clone_url // empty")
+
+        if [ -z "$CLONE_URL" ]; then
+            CLONE_URL="https://x-access-token:${TOKEN}@github.com/${REPO}.git"
+        fi
 
         echo "Cloning $REPO to /repos/$DIR..."
-        if ! git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/${REPO}.git" "/repos/$DIR" 2>&1; then
+        if ! git clone --depth 1 "$CLONE_URL" "/repos/$DIR" 2>&1; then
             echo "ERROR: Failed to clone repository $REPO"
             exit 1
         fi

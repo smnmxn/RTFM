@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   # Webhooks (available on all domains)
   namespace :webhooks do
     post "github", to: "github#create"
+    post "bitbucket", to: "bitbucket#create"
   end
 
   # Pay gem webhook endpoint (Stripe)
@@ -68,6 +69,9 @@ Rails.application.routes.draw do
   # GitHub App installation callback (bare domain fallback)
   get "/github_app/callback", to: "github_app#callback", as: nil
 
+  # Bitbucket OAuth callback (bare domain fallback)
+  get "/bitbucket_app/callback", to: "bitbucket_app#callback", as: nil
+
   # Test-only login endpoint for E2E tests
   # Bypasses OAuth since OmniAuth mocks don't work across threads
   # Defined outside subdomain constraint so it's available on all hosts
@@ -120,6 +124,10 @@ Rails.application.routes.draw do
     # GitHub App installation
     get "/github_app/install", to: "github_app#install", as: :github_app_install
     get "/github_app/callback", to: "github_app#callback", as: :github_app_callback
+
+    # Bitbucket OAuth
+    get "/bitbucket_app/install", to: "bitbucket_app#install", as: :bitbucket_app_install
+    get "/bitbucket_app/callback", to: "bitbucket_app#callback", as: :bitbucket_app_callback
 
     # Projects (list)
     get "/projects", to: "projects#index", as: :projects

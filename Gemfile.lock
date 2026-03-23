@@ -520,6 +520,7 @@ DEPENDENCIES
   connection_pool (~> 2.4)
   debug
   dotenv
+  faraday
   front_matter_parser
   heroicon
   image_processing (~> 1.2)

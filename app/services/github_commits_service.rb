@@ -7,7 +7,7 @@ class GithubCommitsService
 
   def call(page: 1, per_page: 30)
     repo = @project.primary_repository
-    adapter = repo&.vcs_adapter || Vcs::Provider.for(:github)
+    adapter = repo&.vcs_adapter || Vcs::Provider.for(repo&.provider || :github)
     client = repo&.vcs_client || @project.github_client
     unless client
       return Result.new(success?: false, error: "No VCS installation found for this project.")

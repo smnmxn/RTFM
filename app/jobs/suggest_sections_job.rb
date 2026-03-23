@@ -41,6 +41,7 @@ class SuggestSectionsJob < ApplicationJob
         # Trigger CSS generation (which chains image extraction after saving)
         GenerateCssJob.perform_later(project_id: project.id)
       else
+        Rollbar.error("SuggestSectionsJob failed", project_id: project.id, error: result[:error])
         project.reload.update!(sections_generation_status: "failed")
         Rails.logger.warn "[SuggestSectionsJob] Suggestion failed for project #{project.id}: #{result[:error]}"
         broadcast_toast(project, message: "We couldn't suggest sections", type: "error", event_type: "sections_suggested")
@@ -80,23 +81,40 @@ class SuggestSectionsJob < ApplicationJob
         Rails.logger.info "[SuggestSectionsJob] Wrote file_tree.txt (#{project.analysis_metadata['file_tree'].length} bytes)"
       end
 
-      # Get installation token for Docker
-      github_token = get_github_token(project)
-      return { success: false, error: "No GitHub token available" } unless github_token
+      # Build repos JSON for multi-repo/multi-provider support
+      repos_json = build_repos_json(project)
 
-      cmd = [
-        "docker", "run",
-        "--rm",
-        *claude_auth_docker_args,
-        *debug_docker_args,
-        "-e", "GITHUB_TOKEN=#{github_token}",
-        "-e", "GITHUB_REPO=#{project.github_repo}",
-        "-v", "#{host_volume_path(input_dir)}:/input:ro",
-        "-v", "#{host_volume_path(output_dir)}:/output",
-        "--network", "host",
-        "--entrypoint", "/suggest_sections.sh",
-        docker_image
-      ]
+      if repos_json.any?
+        cmd = [
+          "docker", "run",
+          "--rm",
+          *claude_auth_docker_args,
+          *debug_docker_args,
+          "-e", "GITHUB_REPOS_JSON=#{repos_json.to_json}",
+          "-v", "#{host_volume_path(input_dir)}:/input:ro",
+          "-v", "#{host_volume_path(output_dir)}:/output",
+          "--network", "host",
+          "--entrypoint", "/suggest_sections.sh",
+          docker_image
+        ]
+      else
+        github_token = get_github_token(project)
+        return { success: false, error: "No GitHub token available" } unless github_token
+
+        cmd = [
+          "docker", "run",
+          "--rm",
+          *claude_auth_docker_args,
+          *debug_docker_args,
+          "-e", "GITHUB_TOKEN=#{github_token}",
+          "-e", "GITHUB_REPO=#{project.github_repo}",
+          "-v", "#{host_volume_path(input_dir)}:/input:ro",
+          "-v", "#{host_volume_path(output_dir)}:/output",
+          "--network", "host",
+          "--entrypoint", "/suggest_sections.sh",
+          docker_image
+        ]
+      end
 
       Rails.logger.info "[SuggestSectionsJob] Running Docker for project #{project.id}"
 
@@ -219,6 +237,26 @@ class SuggestSectionsJob < ApplicationJob
 
       unless status.success?
         raise "Failed to build Docker image: #{stderr}"
+      end
+    end
+  end
+
+  def build_repos_json(project)
+    project.project_repositories.filter_map do |pr|
+      begin
+        adapter = pr.vcs_adapter
+        token = adapter.installation_token(pr.github_installation_id)
+        entry = {
+          repo: pr.github_repo,
+          directory: pr.clone_directory_name,
+          token: token,
+          clone_url: adapter.clone_url(pr.github_repo, token)
+        }
+        entry[:branch] = pr.branch if pr.branch.present?
+        entry
+      rescue => e
+        Rails.logger.error "[SuggestSectionsJob] Failed to get token for repo #{pr.github_repo}: #{e.class}: #{e.message}"
+        nil
       end
     end
   end

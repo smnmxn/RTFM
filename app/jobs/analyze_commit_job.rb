@@ -25,25 +25,27 @@ class AnalyzeCommitJob < ApplicationJob
 
     # Find the project repository record for this source repo
     project_repo = project.project_repositories.find_by(github_repo: @source_repo)
-    client = project_repo&.client || project.github_client
+    adapter = project_repo&.vcs_adapter || Vcs::Provider.for(:github)
+    client = project_repo&.vcs_client || project.github_client
     return unless client
 
     # Use baseline to get cumulative diff (baseline..commit), falling back to single commit diff
     @baseline_sha = baseline_sha || project.analysis_commit_sha
     if @baseline_sha.present? && @baseline_sha != commit_sha
       Rails.logger.info "[AnalyzeCommitJob] Fetching compare diff: #{@baseline_sha[0..6]}..#{commit_sha[0..6]}"
-      comparison = client.compare(
+      diff = adapter.compare(
         @source_repo,
         @baseline_sha,
         commit_sha,
+        client: client,
         accept: "application/vnd.github.v3.diff"
       )
-      diff = comparison
     else
       Rails.logger.info "[AnalyzeCommitJob] No baseline, fetching single commit diff for #{commit_sha[0..6]}"
-      diff = client.commit(
+      diff = adapter.commit_diff(
         @source_repo,
         commit_sha,
+        client: client,
         accept: "application/vnd.github.v3.diff"
       )
     end
@@ -82,6 +84,7 @@ class AnalyzeCommitJob < ApplicationJob
         broadcast_toast(project, message: "We've reviewed code changes from commit #{commit_sha[0..6]}", action_url: "/projects/#{project.slug}#code-history", action_label: "View", event_type: "commit_analyzed", notification_metadata: { commit_sha: commit_sha, commit_title: commit_title, article_titles: article_titles })
       else
         # Fall back to placeholder content
+        Rollbar.error("AnalyzeCommitJob failed", project_id: project.id, error: result[:error])
         update.update!(
           content: placeholder_content(commit_sha, commit_title, commit_message, diff),
           analysis_status: "failed"

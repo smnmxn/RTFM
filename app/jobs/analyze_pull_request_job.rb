@@ -28,24 +28,27 @@ class AnalyzePullRequestJob < ApplicationJob
 
     # Find the project repository record for this source repo
     project_repo = project.project_repositories.find_by(github_repo: @source_repo)
-    client = project_repo&.client || project.github_client
+    adapter = project_repo&.vcs_adapter || Vcs::Provider.for(:github)
+    client = project_repo&.vcs_client || project.github_client
     return unless client
 
     # Use baseline to get cumulative diff if available, otherwise use PR diff
     baseline_sha = project.analysis_commit_sha
     if baseline_sha.present? && @merge_commit_sha.present?
       Rails.logger.info "[AnalyzePullRequestJob] Fetching compare diff: #{baseline_sha[0..6]}..#{@merge_commit_sha[0..6]}"
-      diff = client.compare(
+      diff = adapter.compare(
         @source_repo,
         baseline_sha,
         @merge_commit_sha,
+        client: client,
         accept: "application/vnd.github.v3.diff"
       )
     else
       Rails.logger.info "[AnalyzePullRequestJob] No baseline/merge SHA, fetching PR diff for PR ##{pull_request_number}"
-      diff = client.pull_request(
+      diff = adapter.pull_request_diff(
         @source_repo,
         pull_request_number,
+        client: client,
         accept: "application/vnd.github.v3.diff"
       )
     end
@@ -88,6 +91,7 @@ class AnalyzePullRequestJob < ApplicationJob
         broadcast_toast(project, message: "We've reviewed code changes from PR ##{pull_request_number}", action_url: "/projects/#{project.slug}#code-history", action_label: "View", event_type: "pr_analyzed", notification_metadata: { pr_number: pull_request_number, pr_title: pull_request_title, article_titles: article_titles })
       else
         # Fall back to placeholder content
+        Rollbar.error("AnalyzePullRequestJob failed", project_id: project.id, error: result[:error])
         update.update!(
           content: placeholder_content(pull_request_number, pull_request_title, pull_request_body, diff),
           analysis_status: "failed"

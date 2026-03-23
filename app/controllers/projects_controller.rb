@@ -449,14 +449,26 @@ class ProjectsController < ApplicationController
   end
 
   def repositories
-    result = GithubRepositoriesService.new(current_user).call
+    github_result = GithubRepositoriesService.new(current_user).call
+    bitbucket_result = BitbucketRepositoriesService.new(current_user).call
 
-    Rails.logger.info "[ProjectsController#repositories] Success: #{result.success?}, Repos: #{result.repositories&.size || 0}, Installations: #{result.installations&.size || 0}"
+    Rails.logger.info "[ProjectsController#repositories] GitHub: #{github_result.success?}, Repos: #{github_result.repositories&.size || 0} | Bitbucket: #{bitbucket_result.success?}, Repos: #{bitbucket_result.repositories&.size || 0}"
 
+    # Merge results from both providers
+    result = github_result
     if result.success?
-      @repositories = result.repositories
+      @repositories = (github_result.repositories || []) + (bitbucket_result.success? ? bitbucket_result.repositories || [] : [])
+      @repositories.sort_by! { |r|
+        pushed_at = r[:pushed_at]
+        case pushed_at
+        when Time, DateTime then pushed_at.to_time
+        when String then Time.parse(pushed_at) rescue Time.at(0)
+        else Time.at(0)
+        end
+      }.reverse!
       @installations = result.installations
       @org_access_limited = result.org_access_limited
+      @has_bitbucket = BitbucketConnection.active.for_user(current_user).exists?
 
       # Pass through onboarding project if in wizard
       @onboarding_project = current_user.projects.find_by(slug: params[:onboarding_project_slug]) if params[:onboarding_project_slug].present?

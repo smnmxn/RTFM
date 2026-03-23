@@ -54,7 +54,7 @@ module Onboarding
 
       # Handle legacy single-repo format for backwards compatibility
       if repositories_params.empty? && params[:github_repo].present?
-        repositories_params = [ { "github_repo" => params[:github_repo], "installation_id" => params[:installation_id], "selected" => "1" } ]
+        repositories_params = [ { "github_repo" => params[:github_repo], "installation_id" => params[:installation_id], "provider" => params[:provider] || "github", "selected" => "1" } ]
         Rails.logger.info "[Onboarding::ProjectsController#connect] Using legacy format: #{repositories_params.inspect}"
       end
 
@@ -74,33 +74,21 @@ module Onboarding
       selected_repos.each do |repo_params|
         repo_full_name = repo_params["github_repo"]
         installation_id = repo_params["installation_id"]
+        provider = repo_params["provider"] || "github"
 
         next if repo_full_name.blank?
 
-        # Find the installation
-        installation = GithubAppInstallation.find_by(github_installation_id: installation_id)
-        unless installation
-          errors << "GitHub App installation not found for #{repo_full_name}."
-          next
+        if provider == "bitbucket"
+          result = connect_bitbucket_repo(repo_full_name, installation_id)
+        else
+          result = connect_github_repo(repo_full_name, installation_id)
         end
 
-        # Check if repo is already connected to another project by the same user
-        existing_repo = ProjectRepository
-          .joins(:project)
-          .find_by(github_repo: repo_full_name, projects: { user_id: current_user.id })
-        if existing_repo && existing_repo.project_id != @project.id
-          errors << "#{repo_full_name} is already connected to your project '#{existing_repo.project.name}'."
-          next
+        if result[:error]
+          errors << result[:error]
+        else
+          connected_repos << repo_full_name
         end
-
-        # Create ProjectRepository record (new system)
-        @project.project_repositories.find_or_create_by!(github_repo: repo_full_name) do |pr|
-          pr.github_installation_id = installation.github_installation_id
-          pr.provider = "github"
-          pr.is_primary = @project.project_repositories.empty?
-        end
-
-        connected_repos << repo_full_name
       end
 
       if connected_repos.empty? && errors.any?
@@ -110,13 +98,15 @@ module Onboarding
 
       # Update legacy fields for backwards compatibility (use primary repo)
       primary_repo = @project.primary_repository
-      if primary_repo
+      if primary_repo && primary_repo.provider == "github"
         installation = GithubAppInstallation.find_by(github_installation_id: primary_repo.github_installation_id)
         @project.assign_attributes(
           github_repo: primary_repo.github_repo,
           github_app_installation: installation
         )
         @project.save!
+      elsif primary_repo
+        @project.update!(github_repo: primary_repo.github_repo)
       end
 
       # Check if any repo has multiple branches — if so, ask user to pick
@@ -376,6 +366,64 @@ module Onboarding
         analysis_started_at: Time.current
       )
       AnalyzeCodebaseJob.perform_later(@project.id)
+    end
+
+    def connect_github_repo(repo_full_name, installation_id)
+      installation = GithubAppInstallation.find_by(github_installation_id: installation_id)
+      unless installation
+        return { error: "GitHub App installation not found for #{repo_full_name}." }
+      end
+
+      existing_repo = ProjectRepository
+        .joins(:project)
+        .find_by(github_repo: repo_full_name, projects: { user_id: current_user.id })
+      if existing_repo && existing_repo.project_id != @project.id
+        return { error: "#{repo_full_name} is already connected to your project '#{existing_repo.project.name}'." }
+      end
+
+      @project.project_repositories.find_or_create_by!(github_repo: repo_full_name) do |pr|
+        pr.github_installation_id = installation.github_installation_id
+        pr.provider = "github"
+        pr.is_primary = @project.project_repositories.empty?
+      end
+
+      { error: nil }
+    end
+
+    def connect_bitbucket_repo(repo_full_name, connection_id)
+      connection = BitbucketConnection.find_by(id: connection_id)
+      unless connection
+        return { error: "Bitbucket connection not found for #{repo_full_name}." }
+      end
+
+      existing_repo = ProjectRepository
+        .joins(:project)
+        .find_by(github_repo: repo_full_name, provider: "bitbucket", projects: { user_id: current_user.id })
+      if existing_repo && existing_repo.project_id != @project.id
+        return { error: "#{repo_full_name} is already connected to your project '#{existing_repo.project.name}'." }
+      end
+
+      project_repo = @project.project_repositories.find_or_create_by!(github_repo: repo_full_name) do |pr|
+        pr.github_installation_id = connection.id
+        pr.provider = "bitbucket"
+        pr.is_primary = @project.project_repositories.empty?
+      end
+
+      # Register webhook for Bitbucket repos
+      begin
+        webhook_result = Vcs::Bitbucket::WebhookManager.new.register(
+          connection,
+          repo_full_name,
+          Rails.application.routes.url_helpers.webhooks_bitbucket_url(host: ENV.fetch("HOST_URL", "localhost:3000")),
+          ENV["BITBUCKET_WEBHOOK_SECRET"]
+        )
+        project_repo.update!(webhook_uuid: webhook_result[:uuid])
+      rescue => e
+        Rails.logger.error "[Onboarding] Failed to register Bitbucket webhook for #{repo_full_name}: #{e.message}"
+        # Don't block connection — webhook can be repaired later
+      end
+
+      { error: nil }
     end
 
     def fetch_repo_homepage_url

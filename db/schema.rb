@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_23_162537) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_23_171333) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -155,6 +155,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_162537) do
     t.index ["source_commit_sha"], name: "index_articles_on_source_commit_sha"
   end
 
+  create_table "bitbucket_connections", force: :cascade do |t|
+    t.string "access_token", null: false
+    t.datetime "created_at", null: false
+    t.string "refresh_token", null: false
+    t.string "scopes"
+    t.datetime "suspended_at"
+    t.datetime "token_expires_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.string "workspace_name"
+    t.string "workspace_slug", null: false
+    t.string "workspace_uuid"
+    t.index ["user_id", "workspace_slug"], name: "index_bitbucket_connections_on_user_id_and_workspace_slug", unique: true
+    t.index ["user_id"], name: "index_bitbucket_connections_on_user_id"
+    t.index ["workspace_slug"], name: "index_bitbucket_connections_on_workspace_slug"
+  end
+
   create_table "claude_usages", force: :cascade do |t|
     t.string "auth_method"
     t.integer "cache_creation_tokens", default: 0, null: false
@@ -229,8 +246,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_162537) do
     t.datetime "created_at", null: false
     t.string "currency"
     t.bigint "customer_id", null: false
-    t.json "data"
-    t.json "metadata"
+    t.jsonb "data"
+    t.jsonb "metadata"
     t.string "processor_id", null: false
     t.string "stripe_account"
     t.bigint "subscription_id"
@@ -241,7 +258,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_162537) do
 
   create_table "pay_customers", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.json "data"
+    t.jsonb "data"
     t.boolean "default"
     t.datetime "deleted_at", precision: nil
     t.bigint "owner_id"
@@ -256,7 +273,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_162537) do
 
   create_table "pay_merchants", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.json "data"
+    t.jsonb "data"
     t.boolean "default"
     t.bigint "owner_id"
     t.string "owner_type"
@@ -269,7 +286,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_162537) do
   create_table "pay_payment_methods", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "customer_id", null: false
-    t.json "data"
+    t.jsonb "data"
     t.boolean "default"
     t.string "processor_id", null: false
     t.string "stripe_account"
@@ -284,9 +301,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_162537) do
     t.datetime "current_period_end", precision: nil
     t.datetime "current_period_start", precision: nil
     t.bigint "customer_id", null: false
-    t.json "data"
+    t.jsonb "data"
     t.datetime "ends_at", precision: nil
-    t.json "metadata"
+    t.jsonb "metadata"
     t.boolean "metered"
     t.string "name", null: false
     t.string "pause_behavior"
@@ -307,7 +324,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_162537) do
 
   create_table "pay_webhooks", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.json "event"
+    t.jsonb "event"
     t.string "event_type"
     t.string "processor"
     t.datetime "updated_at", null: false
@@ -349,6 +366,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_162537) do
     t.bigint "project_id", null: false
     t.string "provider", default: "github", null: false
     t.datetime "updated_at", null: false
+    t.string "webhook_uuid"
     t.index ["github_repo"], name: "index_project_repositories_on_github_repo"
     t.index ["project_id"], name: "index_project_repositories_on_project_id"
     t.index ["provider"], name: "index_project_repositories_on_provider"
@@ -565,6 +583,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_162537) do
   add_foreign_key "articles", "projects"
   add_foreign_key "articles", "recommendations"
   add_foreign_key "articles", "sections"
+  add_foreign_key "bitbucket_connections", "users"
   add_foreign_key "claude_usages", "projects"
   add_foreign_key "github_app_installations", "users"
   add_foreign_key "invites", "users"

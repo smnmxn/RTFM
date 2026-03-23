@@ -56,6 +56,7 @@ class GenerateArticleJob < ApplicationJob
         track_product_event("article.generated", user: project.user, project: project, article_id: article.id)
         broadcast_toast(project, message: "Your article is ready: #{article.title}", action_url: "/projects/#{project.slug}?tab=inbox&selected=article_#{article.id}", action_label: "View", event_type: "article_generated", notification_metadata: { article_title: article.title, article_id: article.id })
       else
+        Rollbar.error("GenerateArticleJob failed", project_id: project.id, error: result[:error])
         article.update!(
           content: placeholder_content(recommendation),
           generation_status: :generation_failed
@@ -126,24 +127,45 @@ class GenerateArticleJob < ApplicationJob
       current_article = recommendation.article
       write_existing_articles_corpus(input_dir, project, current_article) if current_article
 
-      github_token = get_github_token(project)
-      return { success: false, error: "No GitHub token available" } unless github_token
+      # Try multi-repo mode first, fall back to legacy single-repo
+      repos_json = build_repos_json(project)
 
-      # Run Docker with the article generation script
-      cmd = [
-        "docker", "run",
-        "--rm",
-        *claude_auth_docker_args,
-        *debug_docker_args,
-        "-e", "GITHUB_TOKEN=#{github_token}",
-        "-e", "GITHUB_REPO=#{project.github_repo}",
-        "-e", "CLAUDE_MODEL=#{project.claude_model_id}",
-        "-v", "#{host_volume_path(input_dir)}:/input:ro",
-        "-v", "#{host_volume_path(output_dir)}:/output",
-        "--network", "host",
-        "--entrypoint", "/generate_article.sh",
-        docker_image
-      ]
+      if repos_json.any?
+        cmd = [
+          "docker", "run",
+          "--rm",
+          *claude_auth_docker_args,
+          *debug_docker_args,
+          "-e", "GITHUB_REPOS_JSON=#{repos_json.to_json}",
+          "-e", "CLAUDE_MODEL=#{project.claude_model_id}",
+          "-v", "#{host_volume_path(input_dir)}:/input:ro",
+          "-v", "#{host_volume_path(output_dir)}:/output",
+          "--network", "host",
+          "--entrypoint", "/generate_article.sh",
+          docker_image
+        ]
+        Rails.logger.info "[GenerateArticleJob] Using multi-repo mode with #{repos_json.size} repositories"
+      else
+        github_token = get_github_token(project)
+        return { success: false, error: "No GitHub token available" } unless github_token
+
+        # Run Docker with the article generation script
+        cmd = [
+          "docker", "run",
+          "--rm",
+          *claude_auth_docker_args,
+          *debug_docker_args,
+          "-e", "GITHUB_TOKEN=#{github_token}",
+          "-e", "GITHUB_REPO=#{project.github_repo}",
+          "-e", "CLAUDE_MODEL=#{project.claude_model_id}",
+          "-v", "#{host_volume_path(input_dir)}:/input:ro",
+          "-v", "#{host_volume_path(output_dir)}:/output",
+          "--network", "host",
+          "--entrypoint", "/generate_article.sh",
+          docker_image
+        ]
+        Rails.logger.info "[GenerateArticleJob] Using legacy single-repo mode"
+      end
 
       Rails.logger.info "[GenerateArticleJob] Running Docker article generation for recommendation #{recommendation.id}"
 
@@ -354,16 +376,18 @@ class GenerateArticleJob < ApplicationJob
   end
 
   def fetch_pr_diff(project, source_update)
-    token = get_github_token(project)
-    return nil unless token.present?
+    repo = project.primary_repository
+    adapter = repo&.vcs_adapter || Vcs::Provider.for(:github)
+    client = repo&.vcs_client || project.github_client
+    return nil unless client
 
-    client = Octokit::Client.new(access_token: token)
-    client.pull_request(
-      project.github_repo,
+    adapter.pull_request_diff(
+      project.primary_github_repo,
       source_update.pull_request_number,
+      client: client,
       accept: "application/vnd.github.v3.diff"
     )
-  rescue Octokit::Error => e
+  rescue Vcs::Error => e
     Rails.logger.warn "[GenerateArticleJob] Could not fetch PR diff: #{e.message}"
     nil
   end
@@ -469,6 +493,26 @@ class GenerateArticleJob < ApplicationJob
     end
 
     markdown.join("\n")
+  end
+
+  def build_repos_json(project)
+    project.project_repositories.filter_map do |pr|
+      begin
+        adapter = pr.vcs_adapter
+        token = adapter.installation_token(pr.github_installation_id)
+        entry = {
+          repo: pr.github_repo,
+          directory: pr.clone_directory_name,
+          token: token,
+          clone_url: adapter.clone_url(pr.github_repo, token)
+        }
+        entry[:branch] = pr.branch if pr.branch.present?
+        entry
+      rescue => e
+        Rails.logger.error "[GenerateArticleJob] Failed to get token for repo #{pr.github_repo}: #{e.class}: #{e.message}"
+        nil
+      end
+    end
   end
 
   def get_github_token(project)

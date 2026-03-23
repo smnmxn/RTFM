@@ -83,6 +83,7 @@ class ExtractImagesJob < ApplicationJob
           Rails.logger.warn "[ExtractImagesJob] No images extracted for project #{project.id}"
         end
       else
+        Rollbar.error("ExtractImagesJob failed", project_id: project.id, error: stderr)
         Rails.logger.error "[ExtractImagesJob] Image extraction failed for project #{project.id}: #{stderr}"
       end
     rescue Timeout::Error => e

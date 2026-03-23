@@ -29,10 +29,27 @@ if [ ! -f /input/articles.json ]; then
 fi
 
 # Clone the repository
-echo "Cloning repository..."
-if ! git clone "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" /repo 2>&1; then
-    echo "ERROR: Failed to clone repository ${GITHUB_REPO}"
-    exit 1
+if [ -n "${GITHUB_REPOS_JSON}" ]; then
+    # Multi-provider mode — use clone_url from JSON (first repo)
+    CLONE_URL=$(echo "$GITHUB_REPOS_JSON" | jq -r '.[0].clone_url')
+    REPO_NAME=$(echo "$GITHUB_REPOS_JSON" | jq -r '.[0].repo')
+    BRANCH=$(echo "$GITHUB_REPOS_JSON" | jq -r '.[0].branch // empty')
+    BRANCH_ARGS=""
+    if [ -n "$BRANCH" ]; then
+        BRANCH_ARGS="--branch ${BRANCH}"
+    fi
+    echo "Cloning ${REPO_NAME}..."
+    if ! git clone $BRANCH_ARGS "$CLONE_URL" /repo 2>&1; then
+        echo "ERROR: Failed to clone repository ${REPO_NAME}"
+        exit 1
+    fi
+else
+    # Legacy single-repo mode
+    echo "Cloning repository..."
+    if ! git clone "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" /repo 2>&1; then
+        echo "ERROR: Failed to clone repository ${GITHUB_REPO}"
+        exit 1
+    fi
 fi
 
 cd /repo

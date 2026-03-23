@@ -22,6 +22,7 @@ class GenerateProjectRecommendationsJob < ApplicationJob
         create_recommendations(project, result[:recommendations])
         Rails.logger.info "[GenerateProjectRecommendationsJob] Generated #{result[:recommendations]&.size || 0} recommendations for project #{project.id}"
       else
+        Rollbar.error("GenerateProjectRecommendationsJob failed", project_id: project.id, error: result[:error])
         Rails.logger.warn "[GenerateProjectRecommendationsJob] Generation failed for project #{project.id}: #{result[:error]}"
       end
     rescue StandardError => e
@@ -43,21 +44,40 @@ class GenerateProjectRecommendationsJob < ApplicationJob
       # Write context file with project info and existing updates
       File.write(File.join(input_dir, "context.json"), build_context_json(project))
 
-      github_token = get_github_token(project)
-      return { success: false, error: "No GitHub token available" } unless github_token
+      # Try multi-repo mode first, fall back to legacy single-repo
+      repos_json = build_repos_json(project)
 
-      cmd = [
-        "docker", "run",
-        "--rm",
-        "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
-        "-e", "GITHUB_TOKEN=#{github_token}",
-        "-e", "GITHUB_REPO=#{project.github_repo}",
-        "-v", "#{host_volume_path(input_dir)}:/input:ro",
-        "-v", "#{host_volume_path(output_dir)}:/output",
-        "--network", "host",
-        "--entrypoint", "/generate_project_recommendations.sh",
-        docker_image
-      ]
+      if repos_json.any?
+        cmd = [
+          "docker", "run",
+          "--rm",
+          "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
+          "-e", "GITHUB_REPOS_JSON=#{repos_json.to_json}",
+          "-v", "#{host_volume_path(input_dir)}:/input:ro",
+          "-v", "#{host_volume_path(output_dir)}:/output",
+          "--network", "host",
+          "--entrypoint", "/generate_project_recommendations.sh",
+          docker_image
+        ]
+        Rails.logger.info "[GenerateProjectRecommendationsJob] Using multi-repo mode with #{repos_json.size} repositories"
+      else
+        github_token = get_github_token(project)
+        return { success: false, error: "No GitHub token available" } unless github_token
+
+        cmd = [
+          "docker", "run",
+          "--rm",
+          "-e", "ANTHROPIC_API_KEY=#{ENV['ANTHROPIC_API_KEY']}",
+          "-e", "GITHUB_TOKEN=#{github_token}",
+          "-e", "GITHUB_REPO=#{project.github_repo}",
+          "-v", "#{host_volume_path(input_dir)}:/input:ro",
+          "-v", "#{host_volume_path(output_dir)}:/output",
+          "--network", "host",
+          "--entrypoint", "/generate_project_recommendations.sh",
+          docker_image
+        ]
+        Rails.logger.info "[GenerateProjectRecommendationsJob] Using legacy single-repo mode"
+      end
 
       Rails.logger.info "[GenerateProjectRecommendationsJob] Running Docker for project #{project.id}"
 
@@ -171,6 +191,26 @@ class GenerateProjectRecommendationsJob < ApplicationJob
 
       unless status.success?
         raise "Failed to build Docker image: #{stderr}"
+      end
+    end
+  end
+
+  def build_repos_json(project)
+    project.project_repositories.filter_map do |pr|
+      begin
+        adapter = pr.vcs_adapter
+        token = adapter.installation_token(pr.github_installation_id)
+        entry = {
+          repo: pr.github_repo,
+          directory: pr.clone_directory_name,
+          token: token,
+          clone_url: adapter.clone_url(pr.github_repo, token)
+        }
+        entry[:branch] = pr.branch if pr.branch.present?
+        entry
+      rescue => e
+        Rails.logger.error "[GenerateProjectRecommendationsJob] Failed to get token for repo #{pr.github_repo}: #{e.class}: #{e.message}"
+        nil
       end
     end
   end

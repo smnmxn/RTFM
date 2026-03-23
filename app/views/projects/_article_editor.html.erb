@@ -95,13 +95,15 @@
           <% end %>
         <% elsif article.generation_running? %>
           <div class="text-center py-12">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 app-accent-bg mx-auto"></div>
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-current app-accent-text mx-auto"></div>
             <p class="mt-4 app-text-secondary">Article content is being generated...</p>
+            <p class="mt-2 text-sm app-text-muted">This may take a few minutes</p>
           </div>
         <% elsif article.generation_failed? %>
-<div class="text-center py-12">
+          <div class="text-center py-12">
             <%= heroicon "exclamation-triangle", options: { class: "mx-auto h-12 w-12 text-red-400" } %>
-            <p class="mt-4 text-red-600">Article generation failed</p>
+            <p class="mt-4 text-red-600 font-medium">Article generation failed</p>
+            <p class="mt-2 text-sm app-text-secondary">Click "Regenerate" to try again</p>
           </div>
         <% end %>
       </div>

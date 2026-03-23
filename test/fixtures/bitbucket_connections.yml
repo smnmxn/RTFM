@@ -1,0 +1,19 @@
+one:
+  user: one
+  workspace_slug: my-workspace
+  workspace_name: My Workspace
+  workspace_uuid: "{workspace-uuid-123}"
+  access_token: fake_access_token_123
+  refresh_token: fake_refresh_token_123
+  token_expires_at: <%= 2.hours.from_now.iso8601 %>
+  scopes: "repository pullrequest webhook"
+
+expired:
+  user: one
+  workspace_slug: expired-workspace
+  workspace_name: Expired Workspace
+  workspace_uuid: "{workspace-uuid-456}"
+  access_token: expired_access_token
+  refresh_token: expired_refresh_token
+  token_expires_at: <%= 1.hour.ago.iso8601 %>
+  scopes: "repository pullrequest webhook"

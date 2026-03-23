@@ -23,6 +23,16 @@ class ProjectRepository < ApplicationRecord
     vcs_adapter.authenticate(github_installation_id)
   end
 
+  # Returns the connection record for this repo's provider
+  def installation_record
+    case provider
+    when "github"
+      GithubAppInstallation.find_by(github_installation_id: github_installation_id)
+    when "bitbucket"
+      BitbucketConnection.find_by(id: github_installation_id)
+    end
+  end
+
   def installation
     GithubAppInstallation.find_by(github_installation_id: github_installation_id)
   end
@@ -45,5 +55,21 @@ class ProjectRepository < ApplicationRecord
   # Get the repo name from github_repo
   def repo_name
     github_repo.split("/").last
+  end
+
+  # Clean up provider-specific resources before destroying
+  before_destroy :cleanup_webhook
+
+  private
+
+  def cleanup_webhook
+    return unless provider == "bitbucket" && webhook_uuid.present?
+
+    connection = BitbucketConnection.find_by(id: github_installation_id)
+    return unless connection
+
+    Vcs::Bitbucket::WebhookManager.new.delete(connection, github_repo, webhook_uuid)
+  rescue => e
+    Rails.logger.warn "[ProjectRepository] Failed to clean up Bitbucket webhook: #{e.message}"
   end
 end

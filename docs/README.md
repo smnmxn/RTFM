@@ -13,7 +13,8 @@
 | [Phase 3.6](phases/phase-3.6-article-mockups.md) | AI-Generated UI Mockups | Complete |
 | [Phase 4](phases/phase-4-custom-domains.md) | Custom Domain Support | Complete |
 | [Phase 5](phases/phase-5-vcs-abstraction.md) | VCS Provider Abstraction Layer | Complete |
-| Phase 6 | Polish & Deployment | Pending |
+| [Phase 6](phases/phase-6-bitbucket-integration.md) | Bitbucket Cloud Integration | Complete |
+| Phase 7 | Polish & Deployment | Pending |
 
 ## Quick Start
 
