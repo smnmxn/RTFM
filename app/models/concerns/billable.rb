@@ -47,10 +47,12 @@ module Billable
   def sync_plan_from_subscription!
     return if enterprise? # Enterprise is admin-set only
 
+    old_plan = plan
     sub = active_subscription
 
     if sub.nil? || sub.ends_at&.past?
       update!(plan: "free", plan_status: "active", trial_ends_at: nil)
+      fire_plan_change_event(old_plan, "free") if old_plan != "free"
       return
     end
 
@@ -64,5 +66,16 @@ module Billable
     new_trial_ends_at = sub.trial_ends_at
 
     update!(plan: "pro", plan_status: new_status, trial_ends_at: new_trial_ends_at)
+    fire_plan_change_event(old_plan, "pro") if old_plan != "pro"
+  end
+
+  private
+
+  def fire_plan_change_event(from_plan, to_plan)
+    RecordProductEventJob.perform_later(
+      user_id: id,
+      event_name: "user.plan_changed",
+      properties: { from: from_plan, to: to_plan }
+    )
   end
 end

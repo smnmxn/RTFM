@@ -1,0 +1,13 @@
+[Admin] <%= @event.event_name %>
+<%= "=" * (@event.event_name.length + 8) %>
+
+<%= @message %>
+
+Event: <%= @event.event_name %>
+User:  <%= @user.email %>
+<% if @project %>Project: <%= @project.name %>
+<% end %><% if @event.properties.present? %><% @event.properties.each do |key, value| %><%= key.humanize %>: <%= value %>
+<% end %><% end %>Time:  <%= @timestamp.strftime("%-d %b %Y, %-I:%M %p %Z") %>
+
+---
+Admin notification from SupportPages.io.

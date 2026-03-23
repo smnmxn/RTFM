@@ -13,8 +13,9 @@
     <p class="mt-1 text-3xl font-bold app-text"><%= number_with_delimiter(@data[:engagement][:video_plays]) %></p>
   </div>
   <div class="app-surface rounded-xl border app-border p-5">
-    <p class="text-sm app-text-muted">Waitlist Signups</p>
-    <p class="mt-1 text-3xl font-bold app-text"><%= number_with_delimiter(@data[:engagement][:waitlist_submits]) %></p>
+    <p class="text-sm app-text-muted">Signups</p>
+    <p class="mt-1 text-3xl font-bold app-text"><%= number_with_delimiter(@data[:summary][:signups]) %></p>
+    <p class="mt-0.5 text-xs app-text-muted"><%= @data[:summary][:signup_rate] %>% conversion</p>
   </div>
 </div>
 
@@ -169,9 +170,8 @@
       <p class="text-lg font-semibold app-text"><%= @data[:engagement][:avg_video_progress] %>%</p>
     </div>
     <div>
-      <p class="text-xs app-text-muted">Waitlist Conversion</p>
-      <% waitlist_rate = @data[:summary][:unique_visitors] > 0 ? (@data[:engagement][:waitlist_submits].to_f / @data[:summary][:unique_visitors] * 100).round(1) : 0 %>
-      <p class="text-lg font-semibold app-text"><%= waitlist_rate %>%</p>
+      <p class="text-xs app-text-muted">Signup Conversion</p>
+      <p class="text-lg font-semibold app-text"><%= @data[:summary][:signup_rate] %>%</p>
     </div>
     <div>
       <p class="text-xs app-text-muted">CTA Clicks</p>

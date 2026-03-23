@@ -2,7 +2,7 @@ class AnalyticsEvent < ApplicationRecord
   belongs_to :visitor, primary_key: :visitor_id, foreign_key: :visitor_id, optional: true
   belongs_to :project, optional: true
 
-  EVENT_TYPES = %w[page_view video_play video_progress waitlist_submit cta_click].freeze
+  EVENT_TYPES = %w[page_view video_play video_progress waitlist_submit cta_click signup].freeze
 
   validates :visitor_id, presence: true
   validates :event_type, presence: true, inclusion: { in: EVENT_TYPES }

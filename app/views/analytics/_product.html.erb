@@ -82,6 +82,18 @@
       <p class="text-xs app-text-muted mt-0.5">Help Centre Page Views</p>
       <p class="text-xs app-text-muted">Support deflection proxy</p>
     </div>
+
+    <!-- Free → Paid Conversion -->
+    <div>
+      <div class="flex items-baseline gap-2">
+        <p class="text-2xl font-bold app-text"><%= @data[:fundraise_metrics][:free_to_paid_upgrades] %></p>
+        <% if @data[:fundraise_metrics][:free_to_paid_rate] %>
+          <p class="text-xs app-text-muted"><%= @data[:fundraise_metrics][:free_to_paid_rate] %>%</p>
+        <% end %>
+      </div>
+      <p class="text-xs app-text-muted mt-0.5">Free &rarr; Paid Upgrades</p>
+      <p class="text-xs app-text-muted"><%= @data[:fundraise_metrics][:total_signups] %> signups in period</p>
+    </div>
   </div>
 </div>
 

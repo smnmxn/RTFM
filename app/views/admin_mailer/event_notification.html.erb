@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; color: #1e293b; -webkit-text-size-adjust: 100%;">
+  <div style="max-width: 560px; margin: 0 auto; padding: 32px 16px;">
+    <%# Brand header %>
+    <div style="text-align: left; margin-bottom: 24px;">
+      <%= image_tag "logo.png", style: "height: 40px;", alt: "supportpages.io" %>
+    </div>
+
+    <%# Main card %>
+    <div style="background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden;">
+      <div style="padding: 20px 24px 16px;">
+        <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 12px;">Admin Notification</div>
+        <div style="font-size: 16px; font-weight: 600; color: #0f172a; margin-bottom: 12px;"><%= @message %></div>
+      </div>
+
+      <%# Details %>
+      <div style="margin: 0 24px 20px; background: #f8fafc; border-radius: 6px; padding: 12px 16px;">
+        <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
+          <tr>
+            <td style="color: #94a3b8; padding: 3px 12px 3px 0; white-space: nowrap; vertical-align: top;">Event</td>
+            <td style="color: #1e293b; padding: 3px 0;"><%= @event.event_name %></td>
+          </tr>
+          <tr>
+            <td style="color: #94a3b8; padding: 3px 12px 3px 0; white-space: nowrap; vertical-align: top;">User</td>
+            <td style="color: #1e293b; padding: 3px 0;"><%= @user.email %></td>
+          </tr>
+          <% if @project %>
+            <tr>
+              <td style="color: #94a3b8; padding: 3px 12px 3px 0; white-space: nowrap; vertical-align: top;">Project</td>
+              <td style="color: #1e293b; padding: 3px 0;"><%= @project.name %></td>
+            </tr>
+          <% end %>
+          <% if @event.properties.present? %>
+            <% @event.properties.each do |key, value| %>
+              <tr>
+                <td style="color: #94a3b8; padding: 3px 12px 3px 0; white-space: nowrap; vertical-align: top;"><%= key.humanize %></td>
+                <td style="color: #1e293b; padding: 3px 0;"><%= value %></td>
+              </tr>
+            <% end %>
+          <% end %>
+          <tr>
+            <td style="color: #94a3b8; padding: 3px 12px 3px 0; white-space: nowrap; vertical-align: top;">Time</td>
+            <td style="color: #1e293b; padding: 3px 0;"><%= @timestamp.strftime("%-d %b %Y, %-I:%M %p %Z") %></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <%# Footer %>
+    <div style="margin-top: 24px; font-size: 12px; color: #94a3b8; text-align: center; line-height: 1.5;">
+      This is an admin notification from SupportPages.io.
+    </div>
+  </div>
+</body>
+</html>

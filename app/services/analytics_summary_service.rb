@@ -27,10 +27,16 @@ class AnalyticsSummaryService
 
   def summary
     page_views = @events.page_views
+    unique_visitors = page_views.distinct.count(:visitor_id)
+    signups = @events.where(event_type: "signup").count
+    signup_rate = unique_visitors > 0 ? (signups.to_f / unique_visitors * 100).round(1) : 0
+
     {
       total_page_views: page_views.count,
-      unique_visitors: page_views.distinct.count(:visitor_id),
-      total_engagement: @events.engagement.count
+      unique_visitors: unique_visitors,
+      total_engagement: @events.engagement.count,
+      signups: signups,
+      signup_rate: signup_rate
     }
   end
 
@@ -191,10 +197,13 @@ class AnalyticsSummaryService
       hash[cta || "unknown"] += 1
     end
 
+    signups = @events.where(event_type: "signup").count
+
     {
       video_plays: video_plays,
       avg_video_progress: avg_progress,
       waitlist_submits: waitlist_submits,
+      signups: signups,
       cta_clicks: cta_clicks.count,
       cta_detail: cta_detail
     }
@@ -212,13 +221,13 @@ class AnalyticsSummaryService
         progress.to_i >= 50
       }
       .map(&:visitor_id).uniq.count
-    waitlist_visitors = @events.where(event_type: "waitlist_submit").distinct.count(:visitor_id)
+    signup_visitors = @events.where(event_type: "signup").distinct.count(:visitor_id)
 
     steps = [
       { name: "Page View", count: total_page_views },
       { name: "Video Play", count: video_play_visitors },
       { name: "Video 50%", count: video_50_visitors },
-      { name: "Waitlist Signup", count: waitlist_visitors }
+      { name: "Signup", count: signup_visitors }
     ]
 
     rates = steps.each_cons(2).map do |prev, curr|

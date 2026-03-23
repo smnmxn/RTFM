@@ -94,6 +94,12 @@ class ProductAnalyticsSummaryService
     help_centre_views = AnalyticsEvent.between(@start_date, @end_date).page_views.count
     help_centre_visitors = AnalyticsEvent.between(@start_date, @end_date).page_views.distinct.count(:visitor_id)
 
+    # 7. Free → Paid conversion
+    plan_changes = @events.for_event("user.plan_changed").to_a
+    free_to_paid_upgrades = plan_changes.count { |e| e.properties&.dig("from") == "free" && e.properties&.dig("to") == "pro" }
+    total_signups = User.where(created_at: @start_date..@end_date).count
+    free_to_paid_rate = total_signups > 0 ? (free_to_paid_upgrades.to_f / total_signups * 100).round(1) : nil
+
     {
       design_partners_live: design_partners_live,
       median_ttfv_minutes: median_ttfv,
@@ -105,7 +111,10 @@ class ProductAnalyticsSummaryService
       onboarding_started: created_count,
       repo_connected: connected_repo_count,
       help_centre_views: help_centre_views,
-      help_centre_visitors: help_centre_visitors
+      help_centre_visitors: help_centre_visitors,
+      free_to_paid_upgrades: free_to_paid_upgrades,
+      free_to_paid_rate: free_to_paid_rate,
+      total_signups: total_signups
     }
   end
 

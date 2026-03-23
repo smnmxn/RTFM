@@ -6,6 +6,7 @@ class ProductEvent < ApplicationRecord
   validates :category, presence: true
 
   before_validation :set_category
+  after_create :notify_admins_if_applicable
 
   scope :since, ->(date) { where("created_at >= ?", date) }
   scope :between, ->(start_date, end_date) { where(created_at: start_date..end_date) }
@@ -18,5 +19,11 @@ class ProductEvent < ApplicationRecord
 
   def set_category
     self.category = event_name.to_s.split(".").first if event_name.present? && category.blank?
+  end
+
+  def notify_admins_if_applicable
+    AdminNotificationDispatcher.dispatch(self)
+  rescue => e
+    Rails.logger.error("[AdminNotification] Failed to dispatch: #{e.message}")
   end
 end

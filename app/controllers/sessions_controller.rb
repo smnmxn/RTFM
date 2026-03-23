@@ -64,6 +64,7 @@ class SessionsController < ApplicationController
       invite&.redeem!(user)
       session.delete(:invite_token)
       log_in_user(user)
+      record_signup_event
     else
       flash.now[:alert] = user.errors.full_messages.join(", ")
       render :new, status: :unprocessable_entity
@@ -147,6 +148,7 @@ class SessionsController < ApplicationController
     session[:user_id] = user.id
 
     identify_visitor(user)
+    record_signup_event
 
     landing = default_landing_path(user)
     if landing == choose_plan_path
@@ -168,6 +170,23 @@ class SessionsController < ApplicationController
       email: user.email,
       name: user.name,
       user_id: user.id
+    )
+  end
+
+  def record_signup_event
+    if cookies[:_sp_vid].present?
+      RecordAnalyticsEventJob.perform_later(
+        visitor_id: cookies[:_sp_vid],
+        event_type: "signup",
+        page_path: request.path,
+        referrer_url: request.referer,
+        user_agent: request.user_agent
+      )
+    end
+
+    RecordProductEventJob.perform_later(
+      user_id: current_user.id,
+      event_name: "user.signed_up"
     )
   end
 
